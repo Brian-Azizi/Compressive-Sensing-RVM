@@ -1,0 +1,214 @@
+\hypertarget{utilities_8h}{
+\section{utilities.h File Reference}
+\label{utilities_8h}\index{utilities.h@{utilities.h}}
+}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{utilities_8h_a61e027aeaafe3ac70e24c00657f496b6}{multiply2D2D} (double $\ast$$\ast$A, double $\ast$$\ast$B, double $\ast$$\ast$C, int Arows, int Bcols, int Acols)
+\item 
+double \hyperlink{utilities_8h_a9f70f21157eaa977bd2cab0c04ffafcb}{calcVariance} (double $\ast$patchTarget\_\-, int N)
+\item 
+double \hyperlink{utilities_8h_ab6eca469f43b93993024152791c6a578}{multiply1D1Dnum} (double $\ast$A, double $\ast$B, int length)
+\item 
+void \hyperlink{utilities_8h_a01d739c1d5baa66039838ad27c345562}{multiply2D1D} (double $\ast$$\ast$A, double $\ast$B, double $\ast$C, int rows, int cols)
+\item 
+void \hyperlink{utilities_8h_ad4a2a9dcac022132c925d12bd3b6c94d}{multiply1D2D} (double $\ast$A, double $\ast$$\ast$B, double $\ast$C, int rows, int cols)
+\item 
+void \hyperlink{utilities_8h_a412375f97c08d197a78635e1beec0ad5}{multiply1D1Dmat} (double $\ast$A, double $\ast$B, double $\ast$$\ast$C, int row\_\-size, int col\_\-size)
+\item 
+void \hyperlink{utilities_8h_a45196247aa15719c85c9a744f6e9b511}{transpose2D} (double $\ast$$\ast$A, double $\ast$$\ast$B, int rows, int cols)
+\item 
+double \hyperlink{utilities_8h_aba4ca43fd79bd064f2cf67634628d005}{norm2vectors} (double $\ast$A, double $\ast$B, int length)
+\item 
+double \hyperlink{utilities_8h_a6ac0d2d9eb64eba5ed5ebbe6906e2ed0}{norm1vector} (double $\ast$A, int length)
+\item 
+void \hyperlink{utilities_8h_af2ad58f9488eb558d8b08df31802b166}{bubble\_\-sort} (int $\ast$A, int $\ast$loc, int numLength)
+\item 
+int \hyperlink{utilities_8h_af8b27360d48a9255e8a2eeaedc55a48f}{GetMinor} (double $\ast$$\ast$src, double $\ast$$\ast$dest, int row, int col, int order)
+\item 
+double \hyperlink{utilities_8h_acd4ed6bdaf501080e7c7ec315943bbb0}{CalcDeterminant} (double $\ast$$\ast$mat, int order)
+\item 
+void \hyperlink{utilities_8h_a9ba1f130d807deec9aa4c1ef95b66908}{MatrixInversion} (double $\ast$$\ast$A, int order, double $\ast$$\ast$Y)
+\item 
+void \hyperlink{utilities_8h_a4ad6febb9fe46a81d2355899e366ee11}{cholesky} (double $\ast$$\ast$orig, double $\ast$$\ast$chol, int n)
+\item 
+void \hyperlink{utilities_8h_a1f52715b82d0613683ec2dc5498cec53}{inversed} (double $\ast$$\ast$in, int n, double $\ast$$\ast$out)
+\end{DoxyCompactItemize}
+
+
+\subsection{Function Documentation}
+\hypertarget{utilities_8h_af2ad58f9488eb558d8b08df31802b166}{
+\index{utilities.h@{utilities.h}!bubble\_\-sort@{bubble\_\-sort}}
+\index{bubble\_\-sort@{bubble\_\-sort}!utilities.h@{utilities.h}}
+\subsubsection[{bubble\_\-sort}]{\setlength{\rightskip}{0pt plus 5cm}void bubble\_\-sort (
+\begin{DoxyParamCaption}
+\item[{int $\ast$}]{A, }
+\item[{int $\ast$}]{loc, }
+\item[{int}]{numLength}
+\end{DoxyParamCaption}
+)}}
+\label{utilities_8h_af2ad58f9488eb558d8b08df31802b166}
+\hypertarget{utilities_8h_acd4ed6bdaf501080e7c7ec315943bbb0}{
+\index{utilities.h@{utilities.h}!CalcDeterminant@{CalcDeterminant}}
+\index{CalcDeterminant@{CalcDeterminant}!utilities.h@{utilities.h}}
+\subsubsection[{CalcDeterminant}]{\setlength{\rightskip}{0pt plus 5cm}double CalcDeterminant (
+\begin{DoxyParamCaption}
+\item[{double $\ast$$\ast$}]{mat, }
+\item[{int}]{order}
+\end{DoxyParamCaption}
+)}}
+\label{utilities_8h_acd4ed6bdaf501080e7c7ec315943bbb0}
+\hypertarget{utilities_8h_a9f70f21157eaa977bd2cab0c04ffafcb}{
+\index{utilities.h@{utilities.h}!calcVariance@{calcVariance}}
+\index{calcVariance@{calcVariance}!utilities.h@{utilities.h}}
+\subsubsection[{calcVariance}]{\setlength{\rightskip}{0pt plus 5cm}double calcVariance (
+\begin{DoxyParamCaption}
+\item[{double $\ast$}]{patchTarget\_\-, }
+\item[{int}]{N}
+\end{DoxyParamCaption}
+)}}
+\label{utilities_8h_a9f70f21157eaa977bd2cab0c04ffafcb}
+\hypertarget{utilities_8h_a4ad6febb9fe46a81d2355899e366ee11}{
+\index{utilities.h@{utilities.h}!cholesky@{cholesky}}
+\index{cholesky@{cholesky}!utilities.h@{utilities.h}}
+\subsubsection[{cholesky}]{\setlength{\rightskip}{0pt plus 5cm}void cholesky (
+\begin{DoxyParamCaption}
+\item[{double $\ast$$\ast$}]{orig, }
+\item[{double $\ast$$\ast$}]{chol, }
+\item[{int}]{n}
+\end{DoxyParamCaption}
+)}}
+\label{utilities_8h_a4ad6febb9fe46a81d2355899e366ee11}
+\hypertarget{utilities_8h_af8b27360d48a9255e8a2eeaedc55a48f}{
+\index{utilities.h@{utilities.h}!GetMinor@{GetMinor}}
+\index{GetMinor@{GetMinor}!utilities.h@{utilities.h}}
+\subsubsection[{GetMinor}]{\setlength{\rightskip}{0pt plus 5cm}int GetMinor (
+\begin{DoxyParamCaption}
+\item[{double $\ast$$\ast$}]{src, }
+\item[{double $\ast$$\ast$}]{dest, }
+\item[{int}]{row, }
+\item[{int}]{col, }
+\item[{int}]{order}
+\end{DoxyParamCaption}
+)}}
+\label{utilities_8h_af8b27360d48a9255e8a2eeaedc55a48f}
+\hypertarget{utilities_8h_a1f52715b82d0613683ec2dc5498cec53}{
+\index{utilities.h@{utilities.h}!inversed@{inversed}}
+\index{inversed@{inversed}!utilities.h@{utilities.h}}
+\subsubsection[{inversed}]{\setlength{\rightskip}{0pt plus 5cm}void inversed (
+\begin{DoxyParamCaption}
+\item[{double $\ast$$\ast$}]{in, }
+\item[{int}]{n, }
+\item[{double $\ast$$\ast$}]{out}
+\end{DoxyParamCaption}
+)}}
+\label{utilities_8h_a1f52715b82d0613683ec2dc5498cec53}
+\hypertarget{utilities_8h_a9ba1f130d807deec9aa4c1ef95b66908}{
+\index{utilities.h@{utilities.h}!MatrixInversion@{MatrixInversion}}
+\index{MatrixInversion@{MatrixInversion}!utilities.h@{utilities.h}}
+\subsubsection[{MatrixInversion}]{\setlength{\rightskip}{0pt plus 5cm}void MatrixInversion (
+\begin{DoxyParamCaption}
+\item[{double $\ast$$\ast$}]{A, }
+\item[{int}]{order, }
+\item[{double $\ast$$\ast$}]{Y}
+\end{DoxyParamCaption}
+)}}
+\label{utilities_8h_a9ba1f130d807deec9aa4c1ef95b66908}
+\hypertarget{utilities_8h_a412375f97c08d197a78635e1beec0ad5}{
+\index{utilities.h@{utilities.h}!multiply1D1Dmat@{multiply1D1Dmat}}
+\index{multiply1D1Dmat@{multiply1D1Dmat}!utilities.h@{utilities.h}}
+\subsubsection[{multiply1D1Dmat}]{\setlength{\rightskip}{0pt plus 5cm}void multiply1D1Dmat (
+\begin{DoxyParamCaption}
+\item[{double $\ast$}]{A, }
+\item[{double $\ast$}]{B, }
+\item[{double $\ast$$\ast$}]{C, }
+\item[{int}]{row\_\-size, }
+\item[{int}]{col\_\-size}
+\end{DoxyParamCaption}
+)}}
+\label{utilities_8h_a412375f97c08d197a78635e1beec0ad5}
+\hypertarget{utilities_8h_ab6eca469f43b93993024152791c6a578}{
+\index{utilities.h@{utilities.h}!multiply1D1Dnum@{multiply1D1Dnum}}
+\index{multiply1D1Dnum@{multiply1D1Dnum}!utilities.h@{utilities.h}}
+\subsubsection[{multiply1D1Dnum}]{\setlength{\rightskip}{0pt plus 5cm}double multiply1D1Dnum (
+\begin{DoxyParamCaption}
+\item[{double $\ast$}]{A, }
+\item[{double $\ast$}]{B, }
+\item[{int}]{length}
+\end{DoxyParamCaption}
+)}}
+\label{utilities_8h_ab6eca469f43b93993024152791c6a578}
+\hypertarget{utilities_8h_ad4a2a9dcac022132c925d12bd3b6c94d}{
+\index{utilities.h@{utilities.h}!multiply1D2D@{multiply1D2D}}
+\index{multiply1D2D@{multiply1D2D}!utilities.h@{utilities.h}}
+\subsubsection[{multiply1D2D}]{\setlength{\rightskip}{0pt plus 5cm}void multiply1D2D (
+\begin{DoxyParamCaption}
+\item[{double $\ast$}]{A, }
+\item[{double $\ast$$\ast$}]{B, }
+\item[{double $\ast$}]{C, }
+\item[{int}]{rows, }
+\item[{int}]{cols}
+\end{DoxyParamCaption}
+)}}
+\label{utilities_8h_ad4a2a9dcac022132c925d12bd3b6c94d}
+\hypertarget{utilities_8h_a01d739c1d5baa66039838ad27c345562}{
+\index{utilities.h@{utilities.h}!multiply2D1D@{multiply2D1D}}
+\index{multiply2D1D@{multiply2D1D}!utilities.h@{utilities.h}}
+\subsubsection[{multiply2D1D}]{\setlength{\rightskip}{0pt plus 5cm}void multiply2D1D (
+\begin{DoxyParamCaption}
+\item[{double $\ast$$\ast$}]{A, }
+\item[{double $\ast$}]{B, }
+\item[{double $\ast$}]{C, }
+\item[{int}]{rows, }
+\item[{int}]{cols}
+\end{DoxyParamCaption}
+)}}
+\label{utilities_8h_a01d739c1d5baa66039838ad27c345562}
+\hypertarget{utilities_8h_a61e027aeaafe3ac70e24c00657f496b6}{
+\index{utilities.h@{utilities.h}!multiply2D2D@{multiply2D2D}}
+\index{multiply2D2D@{multiply2D2D}!utilities.h@{utilities.h}}
+\subsubsection[{multiply2D2D}]{\setlength{\rightskip}{0pt plus 5cm}void multiply2D2D (
+\begin{DoxyParamCaption}
+\item[{double $\ast$$\ast$}]{A, }
+\item[{double $\ast$$\ast$}]{B, }
+\item[{double $\ast$$\ast$}]{C, }
+\item[{int}]{Arows, }
+\item[{int}]{Bcols, }
+\item[{int}]{Acols}
+\end{DoxyParamCaption}
+)}}
+\label{utilities_8h_a61e027aeaafe3ac70e24c00657f496b6}
+\hypertarget{utilities_8h_a6ac0d2d9eb64eba5ed5ebbe6906e2ed0}{
+\index{utilities.h@{utilities.h}!norm1vector@{norm1vector}}
+\index{norm1vector@{norm1vector}!utilities.h@{utilities.h}}
+\subsubsection[{norm1vector}]{\setlength{\rightskip}{0pt plus 5cm}double norm1vector (
+\begin{DoxyParamCaption}
+\item[{double $\ast$}]{A, }
+\item[{int}]{length}
+\end{DoxyParamCaption}
+)}}
+\label{utilities_8h_a6ac0d2d9eb64eba5ed5ebbe6906e2ed0}
+\hypertarget{utilities_8h_aba4ca43fd79bd064f2cf67634628d005}{
+\index{utilities.h@{utilities.h}!norm2vectors@{norm2vectors}}
+\index{norm2vectors@{norm2vectors}!utilities.h@{utilities.h}}
+\subsubsection[{norm2vectors}]{\setlength{\rightskip}{0pt plus 5cm}double norm2vectors (
+\begin{DoxyParamCaption}
+\item[{double $\ast$}]{A, }
+\item[{double $\ast$}]{B, }
+\item[{int}]{length}
+\end{DoxyParamCaption}
+)}}
+\label{utilities_8h_aba4ca43fd79bd064f2cf67634628d005}
+\hypertarget{utilities_8h_a45196247aa15719c85c9a744f6e9b511}{
+\index{utilities.h@{utilities.h}!transpose2D@{transpose2D}}
+\index{transpose2D@{transpose2D}!utilities.h@{utilities.h}}
+\subsubsection[{transpose2D}]{\setlength{\rightskip}{0pt plus 5cm}void transpose2D (
+\begin{DoxyParamCaption}
+\item[{double $\ast$$\ast$}]{A, }
+\item[{double $\ast$$\ast$}]{B, }
+\item[{int}]{rows, }
+\item[{int}]{cols}
+\end{DoxyParamCaption}
+)}}
+\label{utilities_8h_a45196247aa15719c85c9a744f6e9b511}
