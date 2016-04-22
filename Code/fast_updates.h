@@ -339,7 +339,7 @@ void fast_updates(double **BASIS, double *targets, double *coefficients, int N, 
 				coefficients[rows] = mean[where_is[rows]]/scaling[rows];
 		
 
-		noiseStd = 1 /beta;
+//		noiseStd = 1 /beta;     //Commented out by BA - believed to be a bug.
 
 
 //perform this if we are interested in the error bars of the estimation for the cascade
