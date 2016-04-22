@@ -230,10 +230,10 @@ void fast_updates(double **BASIS, double *targets, double *coefficients, int N, 
 			covariance[rows][cols] = covariance[rows][cols] - TAU[rows][cols];
 	
 	for (int cols=0;cols<included_basis;cols++)
-		covariance[included_basis][cols] = s_i[cols];
+		covariance[included_basis][cols] = beta*s_i[cols];
 		
 	for (int rows=0;rows<included_basis;rows++)
-		covariance[rows][included_basis] = s_i[rows];
+		covariance[rows][included_basis] = beta*s_i[rows];
 		
 	covariance[included_basis][included_basis] = s_ii;
 	

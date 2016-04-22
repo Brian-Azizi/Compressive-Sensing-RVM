@@ -1,9 +1,9 @@
 /***************Outside the RVM - Application specific************************/
 
 int signalResolution =128; //define the dimension of the problem
-int blockResolution = 128; //define the dimension of the signal patches used - higher the better accuracy, but longer computational time
-double init_noiseStd = 0.1;
-int percentage = 75; //define the percentage of original measurements to be sensed
+int blockResolution = 8; //define the dimension of the signal patches used - higher the better accuracy, but longer computational time
+double init_noiseStd = 1;
+int percentage = 60; //define the percentage of original measurements to be sensed
 
 
 //First layer basis functions
