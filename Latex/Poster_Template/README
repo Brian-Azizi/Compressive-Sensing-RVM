@@ -1,0 +1,16 @@
+In order to compile this LaTeX document you should run the following:
+bibtex MPhil_Poster_Template
+pdflatex MPhil_Poster_Template.tex
+bibtex MPhil_Poster_Template
+pdflatex MPhil_Poster_Template.tex
+pdflatex MPhil_Poster_Template.tex
+
+in order to get all the cross-references correct, including those
+from your BiBTeX file references.bib
+
+The above template will produce a poster suitable for printing onto A2 paper.
+
+If you need to produce an A1 poster, you should use
+MPhil_Poster_Template_A1.tex instead. This gives a three column version of the above.
+
+Students who are part of the Materials CDT should use the .tex files beginning CDT_ instead.

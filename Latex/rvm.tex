@@ -1,4 +1,5 @@
-\documentclass[final,3p,times,twocolumn]{report} %{elsarticle}
+%%\documentclass[final,3p,times,twocolumn]{elsarticle}
+\documentclass[final,3p,times,twocolumn]{report}
 
 %% Use the option review to obtain double line spacing
 %% \documentclass[preprint,review,12pt]{elsarticle}
@@ -128,10 +129,10 @@
 \LARGE
 \textbf{Brian Azizi}
 \vfill
-
-\normalsize
-A thesis submitted in partial fulfillment of the requirements for\\
-the degree of Master of Philosophy
+Project Progress Report
+%\normalsize
+%A thesis submitted in partial fulfillment of the requirements for\\
+%the degree of Master of Philosophy
 
 \vspace{0.8cm}
 
@@ -165,15 +166,16 @@ Cambridge, UK\\
 %\address{Cavendish Laboratory, Department of Physics, J J Thomson
  % Avenue, Cambridge. CB3 0HE}
 
-\begin{abstract}
-\textbf{Project Outcome:} The project outcome shall be a generic compressive sensing algorithm which takes as input 3D data which can be interpreted as video and encodes this efficiently and also reconstructs data when data is missing.
+\renewcommand{\abstractname}{Project Outcome}
+\begin{abstract}                
+The project outcome shall be a generic compressive sensing algorithm which takes as input 3D data which can be interpreted as video and encodes this efficiently and also reconstructs data when data is missing.
 \end{abstract}
 
-% Acknowledgements
-\renewcommand{\abstractname}{Acknowledgements}
-\begin{abstract}
-Shoutouts to Georgios!
-\end{abstract}
+% % Acknowledgements
+% \renewcommand{\abstractname}{Acknowledgements}
+% \begin{abstract}
+% Shoutouts to Nikos and Anita and Georgios and Foba.
+% \end{abstract}
 \tableofcontents
 
 %\end{frontmatter}
@@ -184,12 +186,49 @@ Shoutouts to Georgios!
 % \linenumbers
 
 %% main text
-\chapter{Introduction}
+\chapter{Problem Formulation}
 \label{chap:Intro}
-Bishop \cite{Bishop}.
+\section{Introduction}
+Since beginning this project at the end of March, I have spent most of my time reviewing the work done by Georgios Pilikos and Anita Faul on Bayesian Compressive Sensing in image reconstruction.
+The objective of my project is to extend their work to 3 dimensional signals (videos).
 
-\chapter{RVM}
+I will give a description of the compressive sensing (CS) framework and the theory behind the building blocks of their software (RVM, wavelet transforms, cascade).
+I will then summarize my findings from reviewing the code base.
+Finally, I will outline my current ideas on how to extend their work.
+
+\section{Compressive Sensing}
+Consider a digital signal $\bs x \in \mathbb{R}^N$. 
+For example, $\bs x$ could be a 1-dimensional signal such as a speech signal.
+In that case, the individual components of the vector $\bs x$ contain (typically equidistant) samples of the corresponding analogue (continuous) speech signal.
+
+Conventionally, the sampling rate is based on the sampling theorem by Shannon and Nyquist.
+The theorem states that it is possible to prefectly reconstruct the original analogue signal from the acquired samples if the sampling rate is at least twice the highest frequency in the signal.
+
+In recent years, an emerging framework called compressive sensing (CS) has enabled us to perfectly reconstruct a certain class of signals from far fewer samples than required by the Shannon-Nyquist Theorem. 
+The requirement is that the desired signal $\bs x$ exhibits \emph{sparsity} in some domain.
+This means that $\bs x$ (or some basis transformation of it) has only a few non-zero elements.
+
+CS allows for reconstruction of $\bs x \in \mathbb{R}^N$ using only $M$ samples, where $M << N$.
+Let $\bs y \in \mathbb{R}^M$ be the vector containing these measurements.
+Our aim is to find $\bs x$ such that
+\begin{equation*}
+\bs\Omega\bs x = \bs y
+\end{equation*}
+where $\bs\Omega$ is a known $M\times N$ matrix called the \emph{sensing matrix}.
+
+
+\section{2D signals}
+For illustrative purposes, we will regard $\bs x$ as an image.
+In this case, $N$ is equal to the total number of pixels and we can treat $\bs x$ as a matrix whose dimensions are the resolution of the image that we have ``unrolled'' into a vector.
+We would do this by putting all the rows of the matrix sequentially into a single row vector and transposing (so that we end up with a column vector).
+
+
+
+
+\chapter{Sparse Bayesian Learning}
 \label{chap:RVM}
+\cite{tipping2001}
+\chapter{Wavelets}
 %\section*{Acknowledgements}
 %Here I acknowledge the assistance of my supervisor, my industrial sponsor,
 %and the effects of caffeine on my ability to produce this report on time.

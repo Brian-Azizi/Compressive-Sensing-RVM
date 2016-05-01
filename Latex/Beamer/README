@@ -1,0 +1,4 @@
+The .tex template found herein uses the Beamer LaTeX package.
+Full documentation can be found in http://www.ctan.org/tex-archive/macros/latex/contrib/beamer/doc/beameruserguide.pdf
+This is not an official University of Cambridge template. It is an attempt
+to reproduce their official PowerPoint template in Beamer.
