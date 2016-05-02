@@ -32,7 +32,7 @@ function raw = yuv2rawBW_save(fileIn, widthIn, heightIn, format, ...
         waitbar(k/framesOut,h);
         for i = 1:heightOut
             for j = 1:widthOut
-                fprintf(fid,'%g ',raw(i,j,k));
+                fprintf(fid,'%u ',raw(i,j,k));
             end
             fprintf(fid,'\n');
         end
