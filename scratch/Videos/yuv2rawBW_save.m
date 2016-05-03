@@ -1,5 +1,5 @@
 function raw = yuv2rawBW_save(fileIn, widthIn, heightIn, format, ...
-    fileOut, widthOut, heightOut, framesOut)
+    fileOut, widthOut, heightOut, framesOut, saving)
 % yuv2rawBW_save(fileIn,widthIn,heightIn,format,fileOut,widthOut,heightOut,framesOut)
 % Converts a .yuv video sequence to a raw integer array (in gray-scale) of
 % dimensions [heightOut,widthOut,framesOut] and saves the output as 
@@ -26,17 +26,19 @@ function raw = yuv2rawBW_save(fileIn, widthIn, heightIn, format, ...
     cropped_mov = new_mov(1:framesOut);
     raw = mov2rawBW(cropped_mov);
     
-    h = waitbar(0,'Saving to file');
-    fid = fopen(fileOut,'wt');
-    for k = 1:framesOut
-        waitbar(k/framesOut,h);
-        for i = 1:heightOut
-            for j = 1:widthOut
-                fprintf(fid,'%u ',raw(i,j,k));
+    if saving
+        h = waitbar(0,'Saving to file');
+        fid = fopen(fileOut,'wt');
+        for k = 1:framesOut
+            waitbar(k/framesOut,h);
+            for i = 1:heightOut
+                for j = 1:widthOut
+                    fprintf(fid,'%u ',raw(i,j,k));
+                end
+                fprintf(fid,'\n');
             end
-            fprintf(fid,'\n');
         end
+        fclose(fid);
+        close(h);
     end
-    fclose(fid);
-    close(h);
 end

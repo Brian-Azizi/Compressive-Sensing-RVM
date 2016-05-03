@@ -1,5 +1,5 @@
 function raw = yuv2raw_save(fileIn, widthIn, heightIn, format, ...
-    fileOut, widthOut, heightOut, framesOut)
+    fileOut, widthOut, heightOut, framesOut, saving)
 % yuv2rawBW_save(fileIn,widthIn,heightIn,format,fileOut,widthOut,heightOut,framesOut)
 % Converts a .yuv video sequence to a raw integer array (in gray-scale) of
 % dimensions [heightOut,widthOut,framesOut] and saves the output as 
@@ -31,26 +31,27 @@ function raw = yuv2raw_save(fileIn, widthIn, heightIn, format, ...
     Gfile = strcat(fileOut(1:dotIdx-1),'_G',fileOut(dotIdx:end));
     Bfile = strcat(fileOut(1:dotIdx-1),'_B',fileOut(dotIdx:end));
     
-    
-    h = waitbar(0,'Saving to file');
-    fidR = fopen(Rfile,'wt');
-    fidG = fopen(Gfile,'wt');
-    fidB = fopen(Bfile,'wt');
-    for k = 1:framesOut
-        waitbar(k/framesOut,h);
-        for i = 1:heightOut
-            for j = 1:widthOut
-                fprintf(fidR,'%u ',raw(i,j,1,k));
-                fprintf(fidG,'%u ',raw(i,j,2,k));
-                fprintf(fidB,'%u ',raw(i,j,3,k));
+    if saving
+        h = waitbar(0,'Saving to file');
+        fidR = fopen(Rfile,'wt');
+        fidG = fopen(Gfile,'wt');
+        fidB = fopen(Bfile,'wt');
+        for k = 1:framesOut
+            waitbar(k/framesOut,h);
+            for i = 1:heightOut
+                for j = 1:widthOut
+                    fprintf(fidR,'%u ',raw(i,j,1,k));
+                    fprintf(fidG,'%u ',raw(i,j,2,k));
+                    fprintf(fidB,'%u ',raw(i,j,3,k));
+                end
+                fprintf(fidR,'\n');
+                fprintf(fidG,'\n');
+                fprintf(fidB,'\n');
             end
-            fprintf(fidR,'\n');
-            fprintf(fidG,'\n');
-            fprintf(fidB,'\n');
         end
+        fclose(fidR);
+        fclose(fidG);
+        fclose(fidB);
+        close(h);
     end
-    fclose(fidR);
-    fclose(fidG);
-    fclose(fidB);
-    close(h);
 end
