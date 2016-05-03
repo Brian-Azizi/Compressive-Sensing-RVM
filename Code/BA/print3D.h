@@ -1,4 +1,5 @@
-void print3D(std::ostream& out, int const * const * const * const signal, int signalWidth, int signalHeight, int signalFrames)
+template<class T>
+void print3D(std::ostream& out, T const*const*const*const signal, int signalWidth, int signalHeight, int signalFrames)
 {
     for (int k = 0; k < signalFrames; ++k) { 
 	for (int i = 0; i < signalHeight; ++i) {
@@ -8,5 +9,6 @@ void print3D(std::ostream& out, int const * const * const * const signal, int si
 	    out << std::endl;
 	}
     }
+
     return;
 }

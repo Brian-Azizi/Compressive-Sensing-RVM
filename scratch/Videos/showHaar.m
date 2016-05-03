@@ -1,4 +1,4 @@
-input = 'Sequences/akiyo_cif.yuv';
+input = 'Sequences/soccer_cif.yuv';
 rateHaar = 15;
 rateRaw = 30;
 

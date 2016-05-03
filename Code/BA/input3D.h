@@ -1,16 +1,8 @@
-void input3D(int ***signal, const std::string& inputFile, int signalWidth, int signalHeight, int signalFrames)
+template<class T>
+void input3D(T ***signal, const std::string& inputFile, int signalWidth, int signalHeight, int signalFrames)
 {    
-    // int ***signal = new int**[signalHeight];
-    // for (int i = 0; i < signalHeight; ++i) {
-    // 	signal[i] = new int*[signalWidth];
-    // 	for (int j = 0; j < signalWidth; ++j) {
-    // 	    signal[i][j] = new int[signalFrames];
-    // 	}
-    // }
-    
     std::ifstream myFile(inputFile.c_str());
-    //    myFile.open(inputFile.c_str());
-    int number;
+    T number;
     int cols = 0;
     int rows = 0;
     int slices = 0;
