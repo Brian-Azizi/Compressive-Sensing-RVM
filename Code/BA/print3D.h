@@ -1,5 +1,5 @@
 template<class T>
-void print3D(std::ostream& out, T const*const*const*const signal, int signalWidth, int signalHeight, int signalFrames)
+void print3D(std::ostream& out, T const*const*const*const signal, int signalHeight, int signalWidth, int signalFrames)
 {
     for (int k = 0; k < signalFrames; ++k) { 
 	for (int i = 0; i < signalHeight; ++i) {

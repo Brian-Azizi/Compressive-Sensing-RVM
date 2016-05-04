@@ -1,10 +1,10 @@
 template<class T>
-void input3D(T ***signal, const std::string& inputFile, int signalWidth, int signalHeight, int signalFrames)
+void input3D(T ***signal, const std::string& inputFile, int signalHeight, int signalWidth, int signalFrames)
 {    
     std::ifstream myFile(inputFile.c_str());
     T number;
-    int cols = 0;
     int rows = 0;
+    int cols = 0;
     int slices = 0;
     
     while (myFile >> number) {
