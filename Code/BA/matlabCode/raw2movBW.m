@@ -1,7 +1,7 @@
 function mov = raw2movBW(raw)
     sz = size(raw);
-    width = sz(2);
     height = sz(1);
+    width = sz(2);
     frames = sz(3);
     mov = [];
     for k = 1:frames

@@ -1,5 +1,5 @@
-function out = yuv2movBW(File,width,height,format)
-    mov = yuv2mov(File,width,height,format);
+function out = yuv2movBW(File,height,width,format)
+    mov = yuv2mov(File,height,width,format);
     numFrames = size(mov,2);
     out = mov;
     for i = 1:numFrames

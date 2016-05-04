@@ -4,7 +4,7 @@ rateRaw = 30;
 
 output = 'out.txt'; % dummy
 
-raw = yuv2raw_save(input,352,288,'420',output,256,256,256,false);
+raw = yuv2raw_save(input,288,352,'420',output,256,256,256,false);
 haar = uint8(haar3D_RGB(raw));
 
 clear output;

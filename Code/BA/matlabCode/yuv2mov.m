@@ -1,15 +1,15 @@
 %yuv2mov creates a Matlab-Movie from a YUV-File.
-%	yuv2mov('Filename', width, height, format) reads the specified file
+%	yuv2mov('Filename', height, width, format) reads the specified file
 %	using width and height for resolution and format for YUV-subsampling.
 %	
 %	Filename --> Name of File (e.g. 'Test.yuv')
-%   width    --> width of a frame  (e.g. 352)
 %   height   --> height of a frame (e.g. 280)
+%   width    --> width of a frame  (e.g. 352)
 %   format   --> subsampling rate ('400','411','420','422' or '444')
 %
-%example: mov = yuv2mov('Test.yuv',352,288,'420');
+%example: mov = yuv2mov('Test.yuv',288,352,'420');
 
-function mov = yuv2mov(File,width,height,format)
+function mov = yuv2mov(File,height,width,format)
 
     mov = [];
     %set factor for UV-sampling

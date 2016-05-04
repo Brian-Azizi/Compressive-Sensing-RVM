@@ -1,4 +1,4 @@
-function out = rawCorrupter(raw, percentage, width, height, numFrames, channels)
+function out = rawCorrupter(raw, percentage, height, width, numFrames, channels)
 out = raw;
 idx = rand(height,width);
 frame = uint8(zeros(height,width));

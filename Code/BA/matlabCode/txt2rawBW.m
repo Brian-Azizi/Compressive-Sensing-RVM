@@ -1,4 +1,4 @@
-function raw = txt2rawBW(txt,width,height,frames)
+function raw = txt2rawBW(txt,height,width,frames)
 A = load(txt);
 raw = zeros(height,width,frames);
 tmp = reshape(A',[width,height,frames]);
