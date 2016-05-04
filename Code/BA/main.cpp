@@ -10,7 +10,7 @@
 #include "input3D.h"
 #include "print3D.h"
 #include "haarTransform3D.h"
-
+#include "getPatch3D.h"
 
 int main()
 {
@@ -46,13 +46,39 @@ int main()
     }
     haarTransform3D(signal, transform, signalWidth, signalHeight, signalFrames);
     std::cout << "Haar transform done." << std::endl;
-
-    print3D(std::cout, transform, signalWidth, signalHeight, signalFrames);
    
+    
+    // Declare signal patch
+    signalType ***signalPatchTruth = new signalType** [blockHeight];
+    for (int i = 0; i < blockHeight; ++i) {
+	signalPatchTruth[i] = new signalType* [blockWidth];
+	for (int j = 0; j < blockWidth; ++j) {
+	    signalPatchTruth[i][j] = new signalType [blockFrames];
+	}
+    }
+    for (int blockIndexRows = 0; blockIndexRows < numBlocksHeight; ++blockIndexRows) {
+	for (int blockIndexCols = 0; blockIndexCols < numBlocksWidth; ++blockIndexCols) {
+	    for (int blockIndexFrames = 0; blockIndexFrames < numBlocksFrames; ++blockIndexFrames) {
+		// Get patch 
+		getPatch3D(signal, signalPatchTruth, blockWidth, blockHeight, blockFrames, blockIndexRows, blockIndexCols, blockIndexFrames);
+		std::cout << "Patch (" << blockIndexCols << "," << blockIndexRows << "," << blockIndexFrames << ") :" << std::endl;
+		print3D(std::cout, signalPatchTruth, blockWidth, blockHeight, blockFrames);
+		std::cout << std::endl;
+		
+	    }
+	}
+    }
 
- 
 
     // Clean-up
+    for (int i = 0; i < blockHeight; ++i) {
+	for (int j = 0; j < blockWidth; ++j) {
+	    delete[] signalPatchTruth[i][j];
+	}
+	delete[] signalPatchTruth[i];
+    }
+    delete[] signalPatchTruth;
+
     for (int i = 0; i < signalHeight; ++i) {
 	for (int j = 0; j < signalWidth; ++j) {
 	    delete[] signal[i][j];
