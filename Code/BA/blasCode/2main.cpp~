@@ -1,0 +1,23 @@
+#include <iostream>
+
+int main()
+{
+    int N = 3;
+    double *a = new double[N];
+    double *b = new double[N];
+    for (int i = 0; i < N; ++i) {
+	a[i] = i*N;
+	b[i] = (i+1)*N;
+    }
+    
+    double result = ddot_(N,a,1,b,1);
+    std::cout << "a = ";
+    for (int i = 0; i < N; ++i) {
+	std::cout << a[i] << " ";
+    }
+    std::cout << std::endl << "b = ";
+    for (int i = 0; i < N; ++i) {
+	std::cout << b[i] << " ";
+    }
+    std::cout << std::endl << "a.b = " << result << std::endl;
+}

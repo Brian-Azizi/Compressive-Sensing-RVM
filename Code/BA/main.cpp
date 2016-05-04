@@ -12,12 +12,14 @@
 #include "haarTransform3D.h"
 #include "getPatch3D.h"
 #include "vectorize3D.h"
+#include "utilities.h"
 
 int main()
 {
     /* Test if Settings make sense and define constants.
        Note: No testing if input txt file is valid! */
     testSettings();
+    
     unsigned int const numBlocksHeight = signalHeight / blockHeight;
     unsigned int const numBlocksWidth = signalWidth / blockWidth;
     unsigned int const numBlocksFrames = signalFrames / blockFrames;
@@ -37,9 +39,7 @@ int main()
     }
     input3D(signal, inputFile, signalHeight, signalWidth, signalFrames);
     std::cout << "Input done." << std::endl;
-    
-    
-    
+        
     // 3D Haar transform;
     double ***transform = new double**[signalHeight];
     for (int i = 0; i < signalHeight; ++i) {
@@ -52,7 +52,7 @@ int main()
     std::cout << "Haar transform done." << std::endl;
    
     
-    // Declare signal patch
+    // Declare signal patch containers
     signalType ***signalPatchTruth = new signalType** [blockHeight];
     double ***signalPatchTransform = new double** [blockHeight];
     for (int i = 0; i < blockHeight; ++i) {
