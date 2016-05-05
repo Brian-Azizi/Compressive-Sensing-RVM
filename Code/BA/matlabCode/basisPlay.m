@@ -1,10 +1,11 @@
-%signalTxt = load('../test-4-8-2.txt');
+signalTxt = load('../test-4-8-2.txt');
 %signalTxt = load('../test-4-4-4.txt');
 %signalTxt = load('akiyo-16-8-64.txt');
-signalTxt = load('akiyo-32-16-64.txt');
-height = 32;
-width = 16;
-frames = 64;
+%signalTxt = load('akiyo-32-16-64.txt');
+
+height = 4;
+width = 8;
+frames = 2;
 signal = zeros(height,width, frames);
 for k = 1:frames
     signal(:,:,k) = signalTxt(height*(k-1)+1:height*k,:);
