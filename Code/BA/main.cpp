@@ -98,7 +98,11 @@ int main()
     /*** start logic ***/
 
     input3D(signal, inputFile, signalHeight, signalWidth, signalFrames); // get original input signal and store in a cube
-    corruptSignal(signal, corruptedSignal, sensedEntries, signalHeight, signalWidth, signalFrames, percentage); // simulate a corrupted signal and get indeces of sensed entries
+
+    //corruptSignal(signal, corruptedSignal, sensedEntries, signalHeight, signalWidth, signalFrames, percentage); // simulate a corrupted signal and get indeces of sensed entries
+
+    corruptSignal(signal, corruptedSignal, sensedEntries, signalHeight, signalWidth, signalFrames, percentage, corrupterSetting); // simulate a corrupted signal and get indeces of sensed entries
+
     haarBasis(PSI, blockHeight, blockWidth, blockFrames); // Get Basis matrix
     
 

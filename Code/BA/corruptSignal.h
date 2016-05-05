@@ -1,31 +1,52 @@
 template<class T>
-void corruptSignal(T ***signal, T ***corruptedSignal, bool ***sensed, int height, int width, int frames, double percentage)
+void corruptSignal(T ***signal, T ***corruptedSignal, bool ***sensed, int height, int width, int frames, double percentage, corruptionMode setting)
 {
     double randNum;
-    bool **filterMatrix = new bool*[height];
+    bool ***filterBlock = new bool**[height];
     for (int i = 0; i < height; ++i) {
-	filterMatrix[i] = new bool[width];
+	filterBlock[i] = new bool*[width];
+	for (int j = 0; j < width; ++j) {
+	    filterBlock[i][j] = new bool[frames];
+	}
     }
+    
     
     for (int i = 0; i < height; ++i) {
 	for (int j = 0; j < width; ++j) {
-	    randNum = ((double) rand()) / RAND_MAX; // between 0 and 1;
-	    if (randNum < percentage/100) {
-		filterMatrix[i][j] = false;
-	    } else {
-		filterMatrix[i][j] = true;
+	    for (int k = 0; k < frames; ++k) {
+		randNum = ((double) rand()) / RAND_MAX; // between 0 and 1;
+		if (randNum < percentage/100) {
+		    filterBlock[i][j][k] = false;
+		} else {
+		    filterBlock[i][j][k] = true;
+		}
 	    }
 	}
     }
     
-    for (int k = 0; k < frames; ++k) {
+    if (setting == timeRays) {
+	for (int k = 0; k < frames; ++k) {
+	    for (int i = 0; i < height; ++i) {
+		for (int j = 0; j < width; ++j) {
+		    sensed[i][j][k] = filterBlock[i][j][1];
+		    if (sensed[i][j][k]) {
+			corruptedSignal[i][j][k] = signal[i][j][k];
+		    } else {
+			corruptedSignal[i][j][k] = 0;
+		    }
+		}
+	    }
+	}
+    } else if (setting == uniform) {
 	for (int i = 0; i < height; ++i) {
 	    for (int j = 0; j < width; ++j) {
-		sensed[i][j][k] = filterMatrix[i][j];
-		if (filterMatrix[i][j]) {
-		    corruptedSignal[i][j][k] = signal[i][j][k];
-		} else {
-		    corruptedSignal[i][j][k] = 0;
+		for (int k = 0; k < frames; ++k) {
+		    sensed[i][j][k] = filterBlock[i][j][k];
+		    if (sensed[i][j][k]) {
+			corruptedSignal[i][j][k] = signal[i][j][k];
+		    } else {
+			corruptedSignal[i][j][k] = 0;
+		    }
 		}
 	    }
 	}
@@ -33,9 +54,12 @@ void corruptSignal(T ***signal, T ***corruptedSignal, bool ***sensed, int height
 
     // Clean-up
     for (int i = 0; i < height; ++i) {
-	delete[] filterMatrix[i];
+	for (int j = 0; j < width; ++j) {
+	    delete[] filterBlock[i][j];
+	}
+	delete[] filterBlock[i];
     }
-    delete[] filterMatrix;
+    delete[] filterBlock;
 
     return;
 }

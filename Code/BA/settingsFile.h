@@ -1,7 +1,7 @@
 std::string const inputFile = "foreman-128-128-64.txt";
 //std::string const inputFile = "test-4-8-2.txt";
-//std::string const inputFile = "akiyo-64-64-64.txt";
 
+/*** input settings ***/
 typedef unsigned short int signalType; 
 typedef double basisType;
 
@@ -13,13 +13,22 @@ unsigned int const blockHeight = 8;
 unsigned int const blockWidth = 8;
 unsigned int const blockFrames = 8;
 
-double const percentage = 30;
 
-// RVM parameters
+/*** corrupter settings ***/
+enum corruptionMode {uniform, timeRays};
+corruptionMode const corrupterSetting = uniform;
+
+double const percentage = 70;
+std::string const perc_label = "70%"; // labels for output files
+std::string const settings_label = "u";
+
+/*** RVM parameters ***/
 double const noiseStD = 0.5;
 int const deltaML_threshold = 1;
 bool const use_cascade = false;
 
-// Output files
-std::string const corruptSigFile = "corruptedSignal.txt";
-std::string const recovSigFile = "recoveredSignal.txt";
+
+/*** Output settings ***/
+std::string const corruptSigFile = perc_label + (settingsLabel + ("_corrupted_" + inputFile));
+std::string const recovSigFile = perc_label + (settingsLabel + ("_recovered_" + inputFile));
+
