@@ -6,6 +6,12 @@
 #include <stdexcept>
 #include <string>
 
+// GGP's files
+#include "utilities.h"
+#include "kronecker.h"
+#include "fast_updates.h"
+
+// BA's files
 #include "settingsFile.h"
 #include "settingsTester.h"
 #include "input3D.h"
@@ -15,13 +21,14 @@
 #include "haarTransform3D.h"
 #include "getPatch3D.h"
 #include "vectorize3D.h"
-#include "utilities.h"
-#include "kronecker.h"
 #include "haarBasis.h"
 #include "corruptSignal.h"
 #include "countSensed.h"
 #include "getTargets.h"
 #include "getDesignMatrix.h"
+#include "fillSensedInfo.h"
+#include "deVectorize.h"
+#include "putPatch3D.h"
 
 int main()
 {
@@ -66,8 +73,26 @@ int main()
 	    sensedPatch[i][j] = new bool [blockFrames];
 	}
     }
-    signalType *signalPatchVector = new signalType [blockSize]; // container for vectorized signal block
+    signalType *signalPatchVector = new signalType [blockSize]; // container for vectorized distorted signal block
     bool *sensedPatchVector = new bool [blockSize];		// container for vectorizes sensedEntries block
+    
+    
+    basisType *recoveredVector = new basisType[blockSize]; // container for RVM predictions vector
+    basisType ***recoveredPatch = new basisType**[blockHeight]; // container for RVM predicted signal patch
+    for (int i = 0; i < blockHeight; ++i) {
+	recoveredPatch[i] = new basisType*[blockWidth];
+	for (int j = 0; j < blockWidth; ++j) {
+	    recoveredPatch[i][j] = new basisType[blockFrames];
+	}
+    }
+
+    basisType ***recoveredSignal = new basisType**[signalHeight]; // container for storing the complete recovered signal
+    for (int i = 0; i < signalHeight; ++i) {
+	recoveredSignal[i] = new basisType*[signalWidth];
+	for (int j = 0; j < signalWidth; ++j) {
+	    recoveredSignal[i][j] = new basisType[signalFrames];
+	}
+    }
 
     /*** start logic ***/
 
@@ -80,6 +105,9 @@ int main()
     for (int blockIndexRows = 0; blockIndexRows < numBlocksHeight; ++blockIndexRows) {
 	for (int blockIndexCols = 0; blockIndexCols < numBlocksWidth; ++blockIndexCols) {
 	    for (int blockIndexFrames = 0; blockIndexFrames < numBlocksFrames; ++blockIndexFrames) {
+		std::cout << "Patch (" << blockIndexRows+1 << "," << blockIndexCols+1 << "," << blockIndexFrames+1
+			  << ")    of    (" << numBlocksHeight << "," << numBlocksWidth << "," << numBlocksFrames << ")" << std::endl;
+		
 		getPatch3D(corruptedSignal, signalPatch, blockHeight, blockWidth, blockFrames, blockIndexRows, blockIndexCols, blockIndexFrames);
 		getPatch3D(sensedEntries, sensedPatch, blockHeight, blockWidth, blockFrames, blockIndexRows, blockIndexCols, blockIndexFrames);
 		vectorize3D(signalPatch, signalPatchVector, blockHeight, blockWidth, blockFrames);
@@ -87,17 +115,39 @@ int main()
 		
 		int measurements = countSensed(sensedPatchVector, blockSize);
 		
-		/*** Declare RVM variables ***/
+		/*** Declare and define RVM variables ***/
 		basisType *target = new basisType[measurements];   // need basisType for RVM
 		basisType **designMatrix = new basisType*[measurements];
 		for (int i = 0; i < measurements; ++i) {
-		    designMatrix[i] = new basisType[blockSize];
+		    designMatrix[i] = new basisType[dictionarySize];
 		}
 		getTargets(signalPatchVector, target, sensedPatchVector, blockSize, measurements);
-		getDesignMatrix(PSI, designMatrix, sensedPatchVector, blockSize, measurements);
+		getDesignMatrix(PSI, designMatrix, sensedPatchVector, dictionarySize, measurements);
+		
+		basisType *estimatedCoeff = new basisType[dictionarySize];
+		basisType *errors = new basisType[dictionarySize];
+		for (int i = 0; i < dictionarySize; ++i) {
+		    estimatedCoeff[i] = 0;
+		    errors[i] = 0;
+		}
 		
 
+		
+		/*** Start the RVM ***/
+		fast_updates(designMatrix, target, estimatedCoeff, measurements, dictionarySize, noiseStD, errors, PSI, use_cascade, deltaML_threshold);
+		std::cout << std::endl;
+		multiply2D1D(PSI, estimatedCoeff, recoveredVector, blockSize, dictionarySize);
+		fillSensedInfo(signalPatchVector, recoveredVector, sensedPatchVector, blockSize);
+
+		
+		/*** Save recovered patch ***/
+		deVectorize(recoveredVector, recoveredPatch, blockHeight, blockWidth, blockFrames);
+		putPatch3D(recoveredPatch, recoveredSignal, blockHeight, blockWidth, blockFrames, blockIndexRows, blockIndexCols, blockIndexFrames);
+		
 		/*** Clean-up loop ***/
+		delete[] errors;
+		delete[] estimatedCoeff;
+
 		for (int i = 0; i < measurements; ++i) {
 		    delete[] designMatrix[i];
 		}
@@ -108,11 +158,32 @@ int main()
     }
 
     /*** Output ***/
-    std::ofstream corruptOut("corrupt.txt");
-    print3D(corruptOut, corruptedSignal, signalHeight, signalWidth, signalFrames);
-    corruptOut.close();
-    
+    std::ofstream corrOut(corruptSigFile.c_str());
+    std::ofstream recOut(recovSigFile.c_str());
+    print3D(corrOut, corruptedSignal, signalHeight, signalWidth, signalFrames);
+    print3D(recOut, recoveredSignal, signalHeight, signalWidth, signalFrames);
+    corrOut.close();
+    recOut.close();
+
+			
     /*** Clean-up ***/
+    for (int i = 0; i < signalHeight; ++i) {
+	for (int j = 0; j < signalWidth; ++j) {
+	    delete[] recoveredSignal[i][j];
+	}
+	delete[] recoveredSignal[i];
+    }
+    delete[] recoveredSignal;
+
+    for (int i = 0; i < blockHeight; ++i) {
+	for (int j = 0; j < blockWidth; ++j) {
+	    delete[] recoveredPatch[i][j];
+	}
+	delete[] recoveredPatch[i];
+    }
+    delete[] recoveredPatch;
+
+    delete[] recoveredVector;
     delete[] sensedPatchVector;
     delete[] signalPatchVector;
 

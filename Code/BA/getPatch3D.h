@@ -9,4 +9,6 @@ void getPatch3D(T const*const*const*const signal , T ***patch, int blockHeight, 
 	    }
 	}
     }
+    
+    return;
 }
