@@ -1,4 +1,4 @@
-std::string const inputFile = "akiyo-128-128-64.txt";
+std::string const inputFile = "foreman-128-128-64.txt";
 //std::string const inputFile = "test-4-8-2.txt";
 //std::string const inputFile = "akiyo-64-64-64.txt";
 
