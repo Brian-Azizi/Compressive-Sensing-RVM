@@ -6,30 +6,33 @@
 #include <stdexcept>
 #include <sstream>
 #include <string>
+#include <sys/stat.h>
 
 // GGP's files
-#include "utilities.h"
-#include "kronecker.h"
-#include "fast_updates.h"
+#include "Headers/utilities.h"
+#include "Headers/kronecker.h"
+#include "Headers/fast_updates.h"
 
 // BA's files
 #include "settingsFile.h"
-#include "settingsTester.h"
-#include "input3D.h"
-#include "print3D.h"
-#include "print2D.h"
-#include "print1D.h"
-#include "haarTransform3D.h"
-#include "getPatch3D.h"
-#include "vectorize3D.h"
-#include "haarBasis.h"
-#include "corruptSignal.h"
-#include "countSensed.h"
-#include "getTargets.h"
-#include "getDesignMatrix.h"
-#include "fillSensedInfo.h"
-#include "deVectorize.h"
-#include "putPatch3D.h"
+#include "Headers/settingsTester.h"
+#include "Headers/input3D.h"
+#include "Headers/print3D.h"
+#include "Headers/print2D.h"
+#include "Headers/print1D.h"
+#include "Headers/haarTransform3D.h"
+#include "Headers/getPatch3D.h"
+#include "Headers/vectorize3D.h"
+#include "Headers/haarBasis.h"
+#include "Headers/newHaarBasis.h"
+#include "Headers/corruptSignal.h"
+#include "Headers/countSensed.h"
+#include "Headers/getTargets.h"
+#include "Headers/getDesignMatrix.h"
+#include "Headers/fillSensedInfo.h"
+#include "Headers/deVectorize.h"
+#include "Headers/putPatch3D.h"
+#include "Headers/output3D.h"
 
 int main()
 {
@@ -103,7 +106,7 @@ int main()
 
     corruptSignal(signal, corruptedSignal, sensedEntries, signalHeight, signalWidth, signalFrames, percentage, corrupterSetting); // simulate a corrupted signal and get indeces of sensed entries
 
-    haarBasis(PSI, blockHeight, blockWidth, blockFrames); // Get Basis matrix
+    haarBasis(PSI, blockHeight, blockWidth, blockFrames, scale); // Get Basis matrix
     
 
     // Loop over blocks of original signal
@@ -163,14 +166,9 @@ int main()
     }
 
     /*** Output ***/
-    std::ofstream corrOut(corruptSigFile.c_str());
-    std::ofstream recOut(recovSigFile.c_str());
-    print3D(corrOut, corruptedSignal, signalHeight, signalWidth, signalFrames);
-    print3D(recOut, recoveredSignal, signalHeight, signalWidth, signalFrames);
-    corrOut.close();
-    recOut.close();
-
-			
+    output3Dsignals(corruptedSignal, recoveredSignal, actualSimulation);
+		
+	
     /*** Clean-up ***/
     for (int i = 0; i < signalHeight; ++i) {
 	for (int j = 0; j < signalWidth; ++j) {

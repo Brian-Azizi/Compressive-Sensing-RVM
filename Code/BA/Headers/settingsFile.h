@@ -1,7 +1,22 @@
-std::string const inputFile = "foreman-128-128-64.txt";
-//std::string const inputFile = "test-4-8-2.txt";
+/*** Not settings ***/
+enum corruptionMode {uniform, timeRays, missingFrames};
+std::string settingStrings[] = {"uniform", "timeRays", "missingFrames"};
 
-/*** input settings ***/
+
+
+/*** Input settings ***/
+
+//std::string const inputFile = "akiyo-128-128-64.txt";
+std::string const inputFile = "foreman-128-128-64.txt";
+//std::string const inputFile = "soccer-128-128-64.txt";
+
+bool const actualSimulation = true; // set to false to prepend outfile names with "DUMMY_"
+
+
+//std::string const inputFile = "test-4-8-2.txt";
+//std::string const inputFile = "test-8-8-8.txt";
+//std::string const inputFile = "test-8-8-16.txt";
+
 typedef unsigned short int signalType; 
 typedef double basisType;
 
@@ -14,21 +29,16 @@ unsigned int const blockWidth = 8;
 unsigned int const blockFrames = 8;
 
 
-/*** corrupter settings ***/
-enum corruptionMode {uniform, timeRays};
-corruptionMode const corrupterSetting = uniform;
+/*** Corrupter settings ***/
+corruptionMode const corrupterSetting = timeRays;
+double const percentage = 30;
 
-double const percentage = 70;
-std::string const perc_label = "70%"; // labels for output files
-std::string const settings_label = "u";
+/*** Wavelet settings ***/
+int const scale = 1;		// so far, only scale 1 works
 
-/*** RVM parameters ***/
+/*** RVM settings ***/
 double const noiseStD = 0.5;
 int const deltaML_threshold = 1;
 bool const use_cascade = false;
 
-
-/*** Output settings ***/
-std::string const corruptSigFile = perc_label + (settingsLabel + ("_corrupted_" + inputFile));
-std::string const recovSigFile = perc_label + (settingsLabel + ("_recovered_" + inputFile));
 
