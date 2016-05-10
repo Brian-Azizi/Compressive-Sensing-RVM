@@ -24,47 +24,35 @@ void corruptSignal(T ***signal, T ***corruptedSignal, bool ***sensed, int height
 	}
     }
     
-    if (setting == timeRays) {
-	for (int k = 0; k < frames; ++k) {
-	    for (int i = 0; i < height; ++i) {
-		for (int j = 0; j < width; ++j) {
-		    sensed[i][j][k] = filterBlock[i][j][0];
-		    if (sensed[i][j][k]) {
-			corruptedSignal[i][j][k] = signal[i][j][k];
-		    } else {
-			corruptedSignal[i][j][k] = 0;
-		    }
-		}
-	    }
-	}
-    } else if (setting == uniform) {
+
+    for (int k = 0; k < frames; ++k) {
 	for (int i = 0; i < height; ++i) {
 	    for (int j = 0; j < width; ++j) {
-		for (int k = 0; k < frames; ++k) {
+		if (setting == uniform) {
 		    sensed[i][j][k] = filterBlock[i][j][k];
-		    if (sensed[i][j][k]) {
-			corruptedSignal[i][j][k] = signal[i][j][k];
-		    } else {
-			corruptedSignal[i][j][k] = 0;
-		    }
-		}
-	    }
-	}
-    } else if (setting == missingFrames) {
-	for (int k = 0; k < frames; ++k) {
-	    for (int i = 0; i < height; ++i) {
-		for (int j = 0; j < width; ++j) {
+		} else if (setting == timeRays) {
+		    sensed[i][j][k] = filterBlock[i][j][0];
+		} else if (setting == verticalFlicker) {
+		    sensed[i][j][k] = filterBlock[0][j][k];
+		} else if (setting == horizontalFlicker) {
+		    sensed[i][j][k] = filterBlock[i][0][k];
+		} else if (setting == missingFrames) {
 		    sensed[i][j][k] = filterBlock[0][0][k];
-		    if (sensed[i][j][k]) {
-			corruptedSignal[i][j][k] = signal[i][j][k];
-		    } else {
-			corruptedSignal[i][j][k] = 0;
-		    }
+		} else if (setting == verticalLines) {
+		    sensed[i][j][k] = filterBlock[0][j][0];
+		} else if (setting == horizontalLines) {
+		    sensed[i][j][k] = filterBlock[i][0][0];
+		}
+		
+		if (sensed[i][j][k]) {
+		    corruptedSignal[i][j][k] = signal[i][j][k];
+		} else {
+		    corruptedSignal[i][j][k] = 0;
 		}
 	    }
 	}
     }
-
+    
     // Clean-up
     for (int i = 0; i < height; ++i) {
 	for (int j = 0; j < width; ++j) {

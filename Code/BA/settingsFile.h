@@ -1,6 +1,6 @@
 /*** Not settings ***/
-enum corruptionMode {uniform, timeRays, missingFrames};
-std::string settingStrings[] = {"uniform", "timeRays", "missingFrames"};
+enum corruptionMode {uniform, timeRays, missingFrames, verticalFlicker, horizontalFlicker, verticalLines, horizontalLines};
+std::string settingStrings[] = {"uniform", "timeRays", "missingFrames", "verticalFlicker","horizontalFlicker","verticalLines","horizontalLines"};
 
 
 
@@ -24,17 +24,20 @@ unsigned int const signalHeight = 128;
 unsigned int const signalWidth = 128;
 unsigned int const signalFrames = 64;
 
-unsigned int const blockHeight = 8;
-unsigned int const blockWidth = 8;
-unsigned int const blockFrames = 8;
+unsigned int const blockHeight = 4;
+unsigned int const blockWidth = 4;
+unsigned int const blockFrames = 4;
+
+/*** print progress to standard output? ***/
+bool printToCOut = true;
 
 
 /*** Corrupter settings ***/
-corruptionMode const corrupterSetting = timeRays;
+corruptionMode const corrupterSetting = verticalLines;
 double const percentage = 30;
 
 /*** Wavelet settings ***/
-int const scale = 1;		// so far, only scale 1 works
+int const scale = 3;		// so far, only scale 1 works
 
 /*** RVM settings ***/
 double const noiseStD = 0.5;

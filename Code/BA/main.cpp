@@ -24,7 +24,6 @@
 #include "Headers/getPatch3D.h"
 #include "Headers/vectorize3D.h"
 #include "Headers/haarBasis.h"
-#include "Headers/newHaarBasis.h"
 #include "Headers/corruptSignal.h"
 #include "Headers/countSensed.h"
 #include "Headers/getTargets.h"
@@ -113,9 +112,10 @@ int main()
     for (int blockIndexRows = 0; blockIndexRows < numBlocksHeight; ++blockIndexRows) {
 	for (int blockIndexCols = 0; blockIndexCols < numBlocksWidth; ++blockIndexCols) {
 	    for (int blockIndexFrames = 0; blockIndexFrames < numBlocksFrames; ++blockIndexFrames) {
-		std::cout << "Patch (" << blockIndexRows+1 << "," << blockIndexCols+1 << "," << blockIndexFrames+1
-			  << ")    of    (" << numBlocksHeight << "," << numBlocksWidth << "," << numBlocksFrames << ")" << std::endl;
-		
+		if (printToCOut) {
+		    std::cout << "Patch (" << blockIndexRows+1 << "," << blockIndexCols+1 << "," << blockIndexFrames+1
+			      << ")    of    (" << numBlocksHeight << "," << numBlocksWidth << "," << numBlocksFrames << ")" << std::endl;
+		}
 		getPatch3D(corruptedSignal, signalPatch, blockHeight, blockWidth, blockFrames, blockIndexRows, blockIndexCols, blockIndexFrames);
 		getPatch3D(sensedEntries, sensedPatch, blockHeight, blockWidth, blockFrames, blockIndexRows, blockIndexCols, blockIndexFrames);
 		vectorize3D(signalPatch, signalPatchVector, blockHeight, blockWidth, blockFrames);
@@ -142,8 +142,10 @@ int main()
 
 		
 		/*** Start the RVM ***/
-		fast_updates(designMatrix, target, estimatedCoeff, measurements, dictionarySize, noiseStD, errors, PSI, use_cascade, deltaML_threshold);
-		std::cout << std::endl;
+		fast_updates(designMatrix, target, estimatedCoeff, measurements, dictionarySize, noiseStD, errors, PSI, use_cascade, deltaML_threshold, printToCOut);
+		if (printToCOut) {
+		    std::cout << std::endl;
+		}
 		multiply2D1D(PSI, estimatedCoeff, recoveredVector, blockSize, dictionarySize);
 		fillSensedInfo(signalPatchVector, recoveredVector, sensedPatchVector, blockSize);
 

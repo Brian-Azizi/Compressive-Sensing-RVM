@@ -3,10 +3,11 @@
 
 // BA edits: argument 6: changed pass-by-reference to pass-by-value
 
-void fast_updates(double **BASIS, double *targets, double *coefficients, int N, int M, double noiseStd,double *errors,double **PSI,bool calc, int change_in_ML_threshold)
+void fast_updates(double **BASIS, double *targets, double *coefficients, int N, int M, double noiseStd,double *errors,double **PSI,bool calc, int change_in_ML_threshold, bool printToCOut)
 {
-    std::cout << "Relevance Vector Machine: \t" << std::flush;
-
+    if (printToCOut) {
+        std::cout << "Relevance Vector Machine: \t" << std::flush;
+    }
 	//define constants to guide the execution of the RVM
 	
 
@@ -115,7 +116,7 @@ void fast_updates(double **BASIS, double *targets, double *coefficients, int N, 
 	
 	iterations = iterations + 1;
 
-	if (iterations % 10 == 0) {
+	if (printToCOut && iterations % 10 == 0) {
 	    std::cout << "." << std::flush;
 	}
 	
