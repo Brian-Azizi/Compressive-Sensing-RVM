@@ -28,20 +28,28 @@ void corruptSignal(T ***signal, T ***corruptedSignal, bool ***sensed, int height
     for (int k = 0; k < frames; ++k) {
 	for (int i = 0; i < height; ++i) {
 	    for (int j = 0; j < width; ++j) {
-		if (setting == uniform) {
+		switch (setting) {
+		case uniform:
 		    sensed[i][j][k] = filterBlock[i][j][k];
-		} else if (setting == timeRays) {
+		    break;
+		case timeRays:
 		    sensed[i][j][k] = filterBlock[i][j][0];
-		} else if (setting == verticalFlicker) {
+		    break;
+		case verticalFlicker:
 		    sensed[i][j][k] = filterBlock[0][j][k];
-		} else if (setting == horizontalFlicker) {
+		    break;
+		case horizontalFlicker:
 		    sensed[i][j][k] = filterBlock[i][0][k];
-		} else if (setting == missingFrames) {
+		    break;
+		case missingFrames:
 		    sensed[i][j][k] = filterBlock[0][0][k];
-		} else if (setting == verticalLines) {
+		    break;
+		case verticalLines:
 		    sensed[i][j][k] = filterBlock[0][j][0];
-		} else if (setting == horizontalLines) {
+		    break;
+		case horizontalLines:
 		    sensed[i][j][k] = filterBlock[i][0][0];
+		    break;
 		}
 		
 		if (sensed[i][j][k]) {
