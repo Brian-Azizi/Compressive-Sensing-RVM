@@ -17,27 +17,27 @@ bool const actualSimulation = true; // set to false to prepend outfile names wit
 //std::string const inputFile = "test-8-8-8.txt";
 //std::string const inputFile = "test-8-8-16.txt";
 
-typedef unsigned short int signalType; 
+typedef unsigned int signalType; 
 typedef double basisType;
 
 unsigned int const signalHeight = 128;
 unsigned int const signalWidth = 128;
 unsigned int const signalFrames = 64;
 
-unsigned int const blockHeight = 4;
-unsigned int const blockWidth = 4;
-unsigned int const blockFrames = 4;
+unsigned int const blockHeight = 8;
+unsigned int const blockWidth = 8;
+unsigned int const blockFrames = 8;
 
 /*** print progress to standard output? ***/
 bool printToCOut = true;
 
 
 /*** Corrupter settings ***/
-corruptionMode const corrupterSetting = verticalLines;
+corruptionMode const corrupterSetting = timeRays;
 double const percentage = 30;
 
 /*** Wavelet settings ***/
-int const scale = 3;		// so far, only scale 1 works
+int const scale = 3;		// now works for arbitrary scale > 0
 
 /*** RVM settings ***/
 double const noiseStD = 0.5;

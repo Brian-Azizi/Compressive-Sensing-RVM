@@ -106,7 +106,6 @@ int main()
     corruptSignal(signal, corruptedSignal, sensedEntries, signalHeight, signalWidth, signalFrames, percentage, corrupterSetting); // simulate a corrupted signal and get indeces of sensed entries
 
     haarBasis(PSI, blockHeight, blockWidth, blockFrames, scale); // Get Basis matrix
-    
 
     // Loop over blocks of original signal
     for (int blockIndexRows = 0; blockIndexRows < numBlocksHeight; ++blockIndexRows) {

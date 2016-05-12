@@ -9,7 +9,7 @@ framesOut = 64; %  power of 2
 rateRaw = 20;  % fps
 rateHaar = 20;
 
-saver = true;
+saver = false;
 output = strcat('../',inStem,'-',num2str(heightOut),...
         '-',num2str(widthOut),'-',num2str(framesOut),'.txt');
 

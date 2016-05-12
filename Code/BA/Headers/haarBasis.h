@@ -154,7 +154,8 @@ void haarBasis(T **BASIS, int height, int width, int frames, int scale)
 	}
     }
     /* Generate LLL filter */
-    _LLL_generate(LLL, scale, scale, height, width, frames, rPhiT, cPhiT, sPhiT);
+    int startScale = 1;
+    _LLL_generate(LLL, scale, startScale, height, width, frames, rPhiT, cPhiT, sPhiT);
        /* Generate Basis Matrix */
 
     // LLL

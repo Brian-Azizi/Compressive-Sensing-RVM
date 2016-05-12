@@ -2,18 +2,22 @@ template<class T>
 void _LLL_generate(T **LLL, int scale, int currentScale, int h, int w, int f, T **rPreFactor, T **cPreFactor, T **sPreFactor)
 {
     int const dimDivider = pow(2,scale-1);
-    int const smallH = h/dimDivider;
-    int const smallW = w/dimDivider;
-    int const smallF = f/dimDivider;
+    int const currentDimDivider = pow(2,currentScale);
+    int const smallH = h/currentDimDivider;
+    int const smallW = w/currentDimDivider;
+    int const smallF = f/currentDimDivider;
+    int const smallestH = h/dimDivider;
+    int const smallestW = w/dimDivider;
+    int const smallestF = f/dimDivider;
     
-    std::cout << "dimDivider = " << dimDivider << std::endl;
-    std::cout << "h = " << h << ", smallH = " << smallH << std::endl;
+    // std::cout << "dimDivider = " << dimDivider << " currentDimDivider = " << currentDimDivider<< std::endl;
+    // std::cout << "h = " << h << ", smallH = " << smallH << " smallestH = " << smallestH << std::endl;
     
-    if (currentScale == 1) {
+    if (currentScale == scale) {
 	int CR_dim1 = w*h;
-	int CR_dim2 = smallW * smallH / 4;
+	int CR_dim2 = smallestW * smallestH / 4;
 	int full_dim1 = f*w*h;
-	int full_dim2 = smallF * smallW * smallH / 8;
+	int full_dim2 = smallestF * smallestW * smallestH / 8;
 	T **tempCR = new T*[CR_dim1];
 	T **tempFull = new T*[full_dim1];
 	for (int i = 0; i < CR_dim1; ++i) {
@@ -23,13 +27,13 @@ void _LLL_generate(T **LLL, int scale, int currentScale, int h, int w, int f, T 
 	    tempFull[i] = new T[full_dim2];
 	}
 
-	kronecker(cPreFactor,rPreFactor,tempCR, w,smallW/2, h, smallH/2);
-	kronecker(sPreFactor,tempCR,LLL, f, smallF/2, CR_dim1, CR_dim2);
+	kronecker(cPreFactor,rPreFactor,tempCR, w,smallestW/2, h, smallestH/2);
+	kronecker(sPreFactor,tempCR,LLL, f, smallestF/2, CR_dim1, CR_dim2);
 
 	return;
     }
 
-    if (currentScale == 2) {
+    if (currentScale < scale) {
 	
 	/* 1) RHS factors:
 	   new_sPhiT  and  new_sPsiT (smallF x smallF/2),
@@ -50,7 +54,7 @@ void _LLL_generate(T **LLL, int scale, int currentScale, int h, int w, int f, T 
 		    new_sPsiT[i][j] = 1/sqrt(2);
 		} else if (i == 2*j + 1) {
 		    new_sPhiT[i][j] = 1/sqrt(2);
-		    new_sPsiT[i][j] = 1/sqrt(2);
+		    new_sPsiT[i][j] = -1/sqrt(2);
 		} else {
 		    new_sPhiT[i][j] = 0;
 		    new_sPsiT[i][j] = 0;
@@ -66,7 +70,7 @@ void _LLL_generate(T **LLL, int scale, int currentScale, int h, int w, int f, T 
 		    new_cPsiT[i][j] = 1/sqrt(2);
 		} else if (i == 2*j + 1) {
 		    new_cPhiT[i][j] = 1/sqrt(2);
-		    new_cPsiT[i][j] = 1/sqrt(2);
+		    new_cPsiT[i][j] = -1/sqrt(2);
 		} else {
 		    new_cPhiT[i][j] = 0;
 		    new_cPsiT[i][j] = 0;
@@ -82,7 +86,7 @@ void _LLL_generate(T **LLL, int scale, int currentScale, int h, int w, int f, T 
 		    new_rPsiT[i][j] = 1/sqrt(2);
 		} else if (i == 2*j + 1) {
 		    new_rPhiT[i][j] = 1/sqrt(2);
-		    new_rPsiT[i][j] = 1/sqrt(2);
+		    new_rPsiT[i][j] = -1/sqrt(2);
 		} else {
 		    new_rPhiT[i][j] = 0;
 		    new_rPsiT[i][j] = 0;
@@ -202,9 +206,17 @@ void _LLL_generate(T **LLL, int scale, int currentScale, int h, int w, int f, T 
 		LLL[i][7*full_dim2 + j] = tempFull[i][j];
 	    }
 	}
+	// new LLL
+	// kronecker(cPre_Phi, rPre_Phi, tempCR, w, smallW/2, h, smallH/2);
+	// kronecker(sPre_Phi,tempCR, tempFull,f,smallF/2,CR_dim1,CR_dim2);
+	// for (int i = 0; i < full_dim1; ++i) {
+	//     for (int j = 0; j < full_dim2; ++j) {
+	// 	LLL[i][j] = tempFull[i][j];
+	//     }
+	// }
 	
 	/* 5) form new_LLL */
-	_LLL_generate(new_LLL, scale, currentScale - 1, h, w, f, rPre_Phi, cPre_Phi, sPre_Phi);
+	_LLL_generate(new_LLL, scale, currentScale + 1, h, w, f, rPre_Phi, cPre_Phi, sPre_Phi);
 	for (int i = 0; i < full_dim1; ++i) {
 	    for (int j = 0; j < full_dim2; ++j) {
 		LLL[i][j] = new_LLL[i][j];

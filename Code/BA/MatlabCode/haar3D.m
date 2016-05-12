@@ -1,4 +1,4 @@
-function haar = haar3D(raw)
+function haar = haar3D(raw,scale)
     sz = size(raw); % assumed to be powers of 2
     width = sz(2);
     height = sz(1);
@@ -23,5 +23,9 @@ function haar = haar3D(raw)
         haar(:,:,k) = (tmp(:,:,2*k-1) + tmp(:,:,2*k))/sqrt(2);
         haar(:,:,frames/2+k) = (tmp(:,:,2*k-1) - tmp(:,:,2*k))/sqrt(2);
     end
-    
+    LLL = haar(1:height/2,1:width/2,1:frames/2);
+    if (scale > 1)
+        haar2 = haar3D(LLL,scale -1);
+        haar(1:height/2,1:width/2,1:frames/2) = haar2;
+    end
 end
