@@ -1,21 +1,21 @@
 % settings
-height = 128;
-width = 128;
-frames = 64;
+height = 288;
+width = 352;
+frames = 80;
 
-input = 'foreman-128-128-64';
-blockDim = '8-8-8';
-corrPerc = '30%';
-corrMode = 'verticalLines'; 
+input = 'stefan-288-352-80';
+blockDim = '4-4-2';
+corrPerc = '50%';
+corrMode = 'timeRays'; 
 scale = '1';
 
-frameRate = 20;
+frameRate = 30;
 
 origFile = strcat('../',input,'.txt');
-corruptFile = strcat('../Simulations/',input,'/',blockDim,...
+corruptFile = strcat('/local/data/public/ba308/Simulations/',input,'/',blockDim,...
     '_',corrPerc,'_',corrMode,'_',scale,...
     '_corrupted_',input,'.txt');
-recoverFile = strcat('../Simulations/',input,'/',blockDim,...
+recoverFile = strcat('/local/data/public/ba308/Simulations/',input,'/',blockDim,...
     '_',corrPerc,'_',corrMode,'_',scale,...
     '_recovered_',input,'.txt');
 

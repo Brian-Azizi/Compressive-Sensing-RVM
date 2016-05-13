@@ -55,11 +55,11 @@ void haarBasis(T **BASIS, int height, int width, int frames, int scale)
     for (int i = 0; i < height; ++i) {
 	for (int j = 0; j < height/2; ++j) {
 	    if (i == 2*j) {
-		rPhiT[i][j] = 1/sqrt(2);
-		rPsiT[i][j] = 1/sqrt(2);
+		rPhiT[i][j] = 1/std::sqrt(2);
+		rPsiT[i][j] = 1/std::sqrt(2);
 	    } else if (i == 2*j + 1) {
-		rPhiT[i][j] = 1/sqrt(2);
-		rPsiT[i][j] = -1/sqrt(2);
+		rPhiT[i][j] = 1/std::sqrt(2);
+		rPsiT[i][j] = -1/std::sqrt(2);
 	    } else {
 		rPhiT[i][j] = 0;
 		rPsiT[i][j] = 0;
@@ -70,11 +70,11 @@ void haarBasis(T **BASIS, int height, int width, int frames, int scale)
     for (int i = 0; i < width; ++i) {
 	for (int j = 0; j < width/2; ++j) {
 	    if (i == 2*j) {
-		cPhiT[i][j] = 1/sqrt(2);
-		cPsiT[i][j] = 1/sqrt(2);
+		cPhiT[i][j] = 1/std::sqrt(2);
+		cPsiT[i][j] = 1/std::sqrt(2);
 	    } else if (i == 2*j + 1) {
-		cPhiT[i][j] = 1/sqrt(2);
-		cPsiT[i][j] = -1/sqrt(2);
+		cPhiT[i][j] = 1/std::sqrt(2);
+		cPsiT[i][j] = -1/std::sqrt(2);
 	    } else {
 		cPhiT[i][j] = 0;
 		cPsiT[i][j] = 0;

@@ -54,13 +54,15 @@ int main()
 	    int scale = basisTestParams[i][3];
 	    
 	    std::stringstream inputName;
-	    inputName << "testFiles/basis_" << scale << "_" << h << "-" << w
+	    inputName << "/local/data/public/ba308/testFiles/basis_" << scale << "_" << h << "-" << w
 		      << "-" << f << ".txt";
 	    testBasis(inputName.str(),h,w,f,scale,errorTolerance);
 	} catch(std::runtime_error e) {
 	    ++fails;
 	    std::cerr << e.what();
-	}	
+	} catch(...) {
+	    std::cerr << "Some error with the test script occured!\n";
+	}
     }
     if (fails == 0) {
 	std::cout << "All " << numTests << " tests passed!\n";

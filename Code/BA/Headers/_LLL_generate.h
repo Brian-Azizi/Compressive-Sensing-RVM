@@ -10,9 +10,6 @@ void _LLL_generate(T **LLL, int scale, int currentScale, int h, int w, int f, T 
     int const smallestW = w/dimDivider;
     int const smallestF = f/dimDivider;
     
-    // std::cout << "dimDivider = " << dimDivider << " currentDimDivider = " << currentDimDivider<< std::endl;
-    // std::cout << "h = " << h << ", smallH = " << smallH << " smallestH = " << smallestH << std::endl;
-    
     if (currentScale == scale) {
 	int CR_dim1 = w*h;
 	int CR_dim2 = smallestW * smallestH / 4;
@@ -29,6 +26,14 @@ void _LLL_generate(T **LLL, int scale, int currentScale, int h, int w, int f, T 
 
 	kronecker(cPreFactor,rPreFactor,tempCR, w,smallestW/2, h, smallestH/2);
 	kronecker(sPreFactor,tempCR,LLL, f, smallestF/2, CR_dim1, CR_dim2);
+	for (int i = 0; i < CR_dim1; ++i) {
+	    delete[] tempCR[i];
+	}
+	delete[] tempCR;
+	for (int i = 0; i < full_dim1; ++i) {
+	    delete[] tempFull[i];
+	}
+	delete[] tempFull;
 
 	return;
     }
@@ -206,14 +211,6 @@ void _LLL_generate(T **LLL, int scale, int currentScale, int h, int w, int f, T 
 		LLL[i][7*full_dim2 + j] = tempFull[i][j];
 	    }
 	}
-	// new LLL
-	// kronecker(cPre_Phi, rPre_Phi, tempCR, w, smallW/2, h, smallH/2);
-	// kronecker(sPre_Phi,tempCR, tempFull,f,smallF/2,CR_dim1,CR_dim2);
-	// for (int i = 0; i < full_dim1; ++i) {
-	//     for (int j = 0; j < full_dim2; ++j) {
-	// 	LLL[i][j] = tempFull[i][j];
-	//     }
-	// }
 	
 	/* 5) form new_LLL */
 	_LLL_generate(new_LLL, scale, currentScale + 1, h, w, f, rPre_Phi, cPre_Phi, sPre_Phi);
@@ -222,5 +219,52 @@ void _LLL_generate(T **LLL, int scale, int currentScale, int h, int w, int f, T 
 		LLL[i][j] = new_LLL[i][j];
 	    }
 	}
+	
+	for (int i = 0; i < smallF ; ++i) {
+	    delete[] new_sPhiT[i];
+	    delete[] new_sPsiT[i];
+	}
+	delete[] new_sPhiT;
+	delete[] new_sPsiT;
+	for (int i = 0; i < smallW; ++i) {
+	    delete[] new_cPhiT[i];
+	    delete[] new_cPsiT[i];
+	}
+	delete[] new_cPhiT;
+	delete[] new_cPsiT;
+	for (int i = 0; i < smallH; ++i) {
+	    delete[] new_rPhiT[i];
+	    delete[] new_rPsiT[i];
+	}
+	delete[] new_rPhiT;
+	delete[] new_rPsiT;
+	for (int i = 0; i < f; ++i) {
+	    delete[] sPre_Phi[i];
+	    delete[] sPre_Psi[i];
+	}
+	delete[] sPre_Phi;
+	delete[] sPre_Psi;
+	for (int i = 0; i < w; ++i) {
+	    delete[] cPre_Phi[i];
+	    delete[] cPre_Psi[i];
+	}
+	delete[] cPre_Phi;
+	delete[] cPre_Psi;
+	for (int i = 0; i < h; ++i) {
+	    delete[] rPre_Phi[i];
+	    delete[] rPre_Psi[i];
+	}
+	delete[] rPre_Phi;
+	delete[] rPre_Psi;
+	for (int i = 0; i < CR_dim1; ++i) {
+	    delete[] tempCR[i];
+	}
+	delete[] tempCR;
+	for (int i = 0; i < full_dim1; ++i) {
+	    delete[] tempFull[i];
+	    delete[] new_LLL[i];
+	}
+	delete[] tempFull;
+	delete[] new_LLL;
     }
 }

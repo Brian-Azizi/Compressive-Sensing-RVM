@@ -2,10 +2,21 @@ void output3Dsignals(signalType ***corrupted, basisType ***recovered, bool actua
 {
     std::stringstream cs;
     std::stringstream rs;
-
-    /*** save in ResultsDump directory if it exists ***/
+    
+    /*** save in /local/data/public/ ***/
+    cs << "/local/data/public/";
+    rs << "/local/data/public/";
+    
+    /*** save in ba308 directory if it exists ***/
     struct stat sb;
-    if (stat("ResultsDump", &sb) == 0 && S_ISDIR(sb.st_mode)) {
+    if (stat("/local/data/public/ba308/", &sb) == 0 && S_ISDIR(sb.st_mode)) {
+	cs << "ba308/";
+	rs << "ba308/";
+    }
+    
+    /*** save in ResultsDump directory if it exists ***/
+    
+    if (stat("/local/data/public/ba308/ResultsDump", &sb) == 0 && S_ISDIR(sb.st_mode)) {
 	cs << "ResultsDump/";
 	rs << "ResultsDump/";
     }

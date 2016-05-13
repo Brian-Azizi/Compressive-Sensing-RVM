@@ -1,6 +1,7 @@
 #include <cassert>
 #include <cmath>
 #include <cstdlib>
+#include <ctime>
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
@@ -38,6 +39,9 @@ int main()
     /* Test if Settings make sense and define constants.
        Note: No testing if input txt file is valid! */
     testSettings();
+    
+    /*** RNG Settings ***/
+    std::srand(2); 
 
     /*** Program constants ***/
     unsigned int const numBlocksHeight = signalHeight / blockHeight;
