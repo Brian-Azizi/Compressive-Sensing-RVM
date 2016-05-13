@@ -1,16 +1,16 @@
-inStem = 'stefan';
+inStem = 'waterfall';
 inExtension = '_cif.yuv';
-input = strcat('Sequences/',inStem,inExtension);
+input = strcat('/local/data/public/ba308/Sequences/',inStem,inExtension);
 
-heightOut = 288; % power of 2
-widthOut = 352;  % power of 2
-framesOut = 80; %  power of 2
+heightOut = 128; % power of 2
+widthOut = 128;  % power of 2
+framesOut = 64; %  power of 2
 
 rateRaw = 20;  % fps
 rateHaar = 20;
 
 saver = true;
-output = strcat('../',inStem,'-',num2str(heightOut),...
+output = strcat('/local/data/public/ba308/InputFiles/',inStem,'_',num2str(heightOut),...
         '-',num2str(widthOut),'-',num2str(framesOut),'.txt');
 
 

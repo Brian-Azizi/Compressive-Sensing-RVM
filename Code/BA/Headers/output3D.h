@@ -32,8 +32,8 @@ void output3Dsignals(signalType ***corrupted, basisType ***recovered, bool actua
     cs << percentage << "%_" << settingStrings[corrupterSetting];
     rs << percentage << "%_" << settingStrings[corrupterSetting];
 
-    cs << "_" << scale << "_corrupted_" << inputFile;
-    rs << "_" << scale << "_recovered_" << inputFile;
+    cs << "_" << scale << "_corrupted_" << inputFileStem;
+    rs << "_" << scale << "_recovered_" << inputFileStem;
     
     std::string corruptSigFile = cs.str();
     std::string recoveredSigFile = rs.str();

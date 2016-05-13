@@ -1,17 +1,18 @@
 % settings
-height = 288;
-width = 352;
-frames = 80;
+name = 'waterfall';
+height = 128;
+width = 128;
+frames = 64;
 
-input = 'stefan-288-352-80';
-blockDim = '4-4-2';
-corrPerc = '50%';
+input = strcat(name,'_',num2str(height),'-',num2str(width),'-',num2str(frames));
+blockDim = '4-4-4';
+corrPerc = '30%';
 corrMode = 'timeRays'; 
 scale = '1';
 
-frameRate = 30;
+frameRate = 20;
 
-origFile = strcat('../',input,'.txt');
+origFile = strcat('/local/data/public/ba308/InputFiles/',input,'.txt');
 corruptFile = strcat('/local/data/public/ba308/Simulations/',input,'/',blockDim,...
     '_',corrPerc,'_',corrMode,'_',scale,...
     '_corrupted_',input,'.txt');
