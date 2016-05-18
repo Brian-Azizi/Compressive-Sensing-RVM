@@ -1,6 +1,6 @@
 void initialize(double **BASIS, double *targets, double *scaling, double &alpha, double &beta, double noiseStd, double *phi_column, int &in_model, int N, int M)
 {
-	std::cout << "	Initializing parameters..." << std::endl;
+    //	std::cout << "	Initializing parameters..." << std::endl;
 	
 	double alpha_min = 1.0e-3;
 	double alpha_max = 1.0e3;
@@ -70,8 +70,8 @@ void initialize(double **BASIS, double *targets, double *scaling, double &alpha,
 	if (alpha<0)
 		alpha = alpha_max;
 	
-	std::cout << "	Chosen init basis: " << in_model << std::endl;
-	std::cout << "	Initial alpha: " << alpha << std::endl;
+	//	std::cout << "	Chosen init basis: " << in_model << std::endl;
+	//std::cout << "	Initial alpha: " << alpha << std::endl;
 	
 	//end of alpha calculation
 	

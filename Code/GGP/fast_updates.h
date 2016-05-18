@@ -3,7 +3,7 @@
 
 void fast_updates(double **BASIS, double *targets, double *coefficients, int N, int M, double &noiseStd,double *errors,double **PSI,bool calc, int change_in_ML_threshold)
 {
-	std::cout << "Relevance Vector Machine:" << std::endl;
+    //	std::cout << "Relevance Vector Machine:" << std::endl;
 
 	//define constants to guide the execution of the RVM
 	
@@ -25,7 +25,7 @@ void fast_updates(double **BASIS, double *targets, double *coefficients, int N, 
 	
 	initialize(BASIS, targets, scaling, alpha, beta, noiseStd, phi_column, in_model, N, M);
 	
-	std::cout << "	End of initialization!" << std::endl;
+	//	std::cout << "	End of initialization!" << std::endl;
 		
 	/*declare variables to be used throughout*/
 	
@@ -171,7 +171,7 @@ void fast_updates(double **BASIS, double *targets, double *coefficients, int N, 
 	
 	if (selected_action==add_basis)
 	{
-	std::cout << "Iteration " << iterations <<  " Adding " << chosen_basis << std::endl;
+	    //	std::cout << "Iteration " << iterations <<  " Adding " << chosen_basis << std::endl;
 			
 	indeces_used[included_basis] = chosen_basis;
 	
@@ -230,10 +230,10 @@ void fast_updates(double **BASIS, double *targets, double *coefficients, int N, 
 			covariance[rows][cols] = covariance[rows][cols] - TAU[rows][cols];
 	
 	for (int cols=0;cols<included_basis;cols++)
-		covariance[included_basis][cols] = beta*s_i[cols];
+		covariance[included_basis][cols] = beta*s_i[cols]; // BA308: I pre-multiplied the RHS by beta; beta factor was missing before
 		
 	for (int rows=0;rows<included_basis;rows++)
-		covariance[rows][included_basis] = beta*s_i[rows];
+		covariance[rows][included_basis] = beta*s_i[rows]; // BA308: Same again
 		
 	covariance[included_basis][included_basis] = s_ii;
 	
@@ -314,7 +314,7 @@ void fast_updates(double **BASIS, double *targets, double *coefficients, int N, 
 		
 		
 	
-	std::cout << "Change in likelihood: " << max_DeltaML << std::endl;
+	//std::cout << "Change in likelihood: " << max_DeltaML << std::endl;
 		
 	if (max_DeltaML<change_in_ML_threshold)
 		{
@@ -329,7 +329,7 @@ void fast_updates(double **BASIS, double *targets, double *coefficients, int N, 
 	
 	
 	}
-		std::cout << "Added " << added_basis << std::endl;
+	//	std::cout << "Added " << added_basis << std::endl;
 
 		for (int rows=0;rows<M;rows++)
 			coefficients[rows] = 0;

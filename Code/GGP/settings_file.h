@@ -3,7 +3,7 @@
 int signalResolution =128; //define the dimension of the problem
 int blockResolution = 8; //define the dimension of the signal patches used - higher the better accuracy, but longer computational time
 double init_noiseStd = 0.5;
-int percentage = 20; //define the percentage of original measurements to be sensed
+int percentage = 70; //define the percentage of original measurements to be sensed
 
 
 //First layer basis functions

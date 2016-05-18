@@ -42,12 +42,12 @@ int main()
     
     /*** RNG Settings ***/
     std::srand(2); 
-
+    
     /*** Program constants ***/
     unsigned int const numBlocksHeight = signalHeight / blockHeight;
     unsigned int const numBlocksWidth = signalWidth / blockWidth;
     unsigned int const numBlocksFrames = signalFrames / blockFrames;
-
+    
     unsigned int const signalSize = signalHeight*signalWidth*signalFrames;
     unsigned int const blockSize = blockHeight*blockWidth*blockFrames;
     unsigned int const dictionarySize = blockSize;
@@ -70,6 +70,12 @@ int main()
     for (int i = 0; i < dictionarySize; ++i) {
 	PSI[i] = new basisType[dictionarySize];
     }
+    
+    basisType **PSI2 = new basisType*[dictionarySize]; // Basis matrix container for second scale
+    for (int i = 0; i < dictionarySize; ++i) {
+	PSI2[i] = new basisType[dictionarySize];
+    }
+    
     signalType ***signalPatch = new signalType** [blockHeight]; // container for blocks of distorted signal
     bool ***sensedPatch = new bool**[blockHeight];		// container for blocks of sensedEntries array
     for (int i = 0; i < blockHeight; ++i) { 
@@ -92,7 +98,7 @@ int main()
 	    recoveredPatch[i][j] = new basisType[blockFrames];
 	}
     }
-
+    
     basisType ***recoveredSignal = new basisType**[signalHeight]; // container for storing the complete recovered signal
     for (int i = 0; i < signalHeight; ++i) {
 	recoveredSignal[i] = new basisType*[signalWidth];
@@ -100,17 +106,16 @@ int main()
 	    recoveredSignal[i][j] = new basisType[signalFrames];
 	}
     }
-
+    
     /*** start logic ***/
-
+    
     input3D(signal, inputFile, signalHeight, signalWidth, signalFrames); // get original input signal and store in a cube
-
-    //corruptSignal(signal, corruptedSignal, sensedEntries, signalHeight, signalWidth, signalFrames, percentage); // simulate a corrupted signal and get indeces of sensed entries
-
+    
     corruptSignal(signal, corruptedSignal, sensedEntries, signalHeight, signalWidth, signalFrames, percentage, corrupterSetting); // simulate a corrupted signal and get indeces of sensed entries
-
+    
     haarBasis(PSI, blockHeight, blockWidth, blockFrames, scale); // Get Basis matrix
-
+    haarBasis(PSI2,blockHeight, blockWidth, blockFrames, scale+1); // Get Basis matrix for 2nd cascade
+    
     // Loop over blocks of original signal
     for (int blockIndexRows = 0; blockIndexRows < numBlocksHeight; ++blockIndexRows) {
 	for (int blockIndexCols = 0; blockIndexCols < numBlocksWidth; ++blockIndexCols) {
@@ -142,7 +147,7 @@ int main()
 		    errors[i] = 0;
 		}
 		
-
+		
 		
 		/*** Start the RVM ***/
 		fast_updates(designMatrix, target, estimatedCoeff, measurements, dictionarySize, noiseStD, errors, PSI, use_cascade, deltaML_threshold, printToCOut);
@@ -150,7 +155,9 @@ int main()
 		    std::cout << std::endl;
 		}
 		multiply2D1D(PSI, estimatedCoeff, recoveredVector, blockSize, dictionarySize);
-		fillSensedInfo(signalPatchVector, recoveredVector, sensedPatchVector, blockSize);
+		fillSensedInfo(signalPatchVector, recoveredVector, sensedPatchVector, blockSize);		
+		     
+		     
 
 		
 		/*** Save recovered patch ***/

@@ -1,7 +1,7 @@
-L0 = load('output-lenna.txt-0-.txt');
-L1 = load('output-lenna.txt-1-.txt');
-L2 = load('output-lenna.txt-2-.txt');
-L3 = load('output-lenna.txt-3-.txt');
+L0 = load('output-lenna512.txt-0-.txt');
+L1 = load('output-lenna512.txt-1-.txt');
+L2 = load('output-lenna512.txt-2-.txt');
+L3 = load('output-lenna512.txt-3-.txt');
 
 figure, colormap gray;
 subplot(2,2,1), imshow(uint8(L0))%imagesc(L0);

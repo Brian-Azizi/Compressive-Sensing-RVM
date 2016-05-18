@@ -1,8 +1,8 @@
-B = imread('128.png');
+B = imread('512.bmp');
 
 %B = imread('512.bmp');
-init_scale = 7;
-final_scale = 7;
+init_scale = 9;
+final_scale =9;
 
 A = B;
 transform = zeros(size(A));
@@ -35,7 +35,7 @@ for scale = init_scale:-1:final_scale
 end
 %transform(abs(transform(:)) < 50) = 0;
 
-figure; colormap gray;
+%figure; colormap gray;
 % subplot(1,2,1);
 % imagesc(B);
 % %imshow(B);
@@ -45,9 +45,15 @@ figure; colormap gray;
 transform = abs(transform);
 mn = min(min(transform));
 mx = max(max(transform));
-%transform = 255*transform/(mx-mn);
+transform = 255*(transform-mn)/(mx-mn);
 fig = figure;
-imshow(uint8(transform));
+tranhh = uint8(transform);
+ll = tranhh(1:sz/2,1:sz/2);
+tranhh = 255-tranhh;
+tranhh(1:sz/2,1:sz/2) = ll;
+tranhh = tranhh - 50;
+imshow(uint8(transform))
+%imagesc(tranhh); colormap gray
 %colormap gray;
 %axis off
 truesize(fig)
