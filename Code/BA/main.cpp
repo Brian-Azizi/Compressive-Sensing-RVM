@@ -137,7 +137,7 @@ int main()
 	for (int blockIndexCols = 0; blockIndexCols < numBlocksWidth; ++blockIndexCols) {
 	    for (int blockIndexFrames = 0; blockIndexFrames < numBlocksFrames; ++blockIndexFrames) {
 		if (printToCOut) {
-		    std::cout << "Patch (" << blockIndexRows+1 << "," 
+		    std::cout << "\tPatch (" << blockIndexRows+1 << "," 
 			      << blockIndexCols+1 << "," << blockIndexFrames+1
 			      << ")    of    (" << numBlocksHeight << "," 
 			      << numBlocksWidth << "," << numBlocksFrames 
@@ -241,8 +241,6 @@ int main()
 	output3Dsignals(cascadeRecoveredSignals[s], "recovered_" + ss.str(),\
 			actualSimulation);
     }
-
-
 
 
 	

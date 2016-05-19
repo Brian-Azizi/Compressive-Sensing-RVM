@@ -1,8 +1,13 @@
+#include "haarBasis2D.h"
 #include "_LLL_generate.h"
 
 template <class T>
 void haarBasis(T **BASIS, int height, int width, int frames, int scale)
 {
+    if (frames == 1) {
+	return haarBasis2D(BASIS, height, width, scale);
+    } else {
+
     
     /* Allocate space */
      
@@ -202,5 +207,6 @@ void haarBasis(T **BASIS, int height, int width, int frames, int scale)
     }
     delete[] sPhiT;
     delete[] sPsiT;
+    }
 }
 

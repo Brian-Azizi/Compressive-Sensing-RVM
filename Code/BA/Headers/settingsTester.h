@@ -58,9 +58,13 @@ void testSettings()
     } else if (blockWidth % scaleDim != 0) {
 	throw std::length_error("block width does not support scale of wavelet");
     } else if (blockFrames % scaleDim != 0) {
-	throw std::length_error("block depth does not support scale of wavelet");
+	if (blockFrames != 1) {
+	    throw std::length_error("block depth does not support scale of wavelet");
+	} else {
+	    std::cout << "block depth = 1 --> Using 2D wavelets" << std::endl;
+	}
     }
-    
+        
 
     // // Test signal sizes are powers of 2;
     // if (log2(signalHeight) != floor(log2(signalHeight)+0.5)) {

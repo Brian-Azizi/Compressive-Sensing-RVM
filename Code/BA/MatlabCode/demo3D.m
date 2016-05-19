@@ -1,14 +1,14 @@
 % settings
-name = 'foreman';
-height = 128;
-width = 128;
-frames = 64;
+name = 'lenna';
+height = 512;
+width = 512;
+frames = 1;
 
 input = strcat(name,'_',num2str(height),'-',num2str(width),'-',num2str(frames));
-blockDim = '4-4-4';
-corrPerc = '90%';
-corrMode = 'verticalFlicker'; 
-cascades = [1 2];
+blockDim = '16-16-1';
+corrPerc = '99%';
+corrMode = 'uniform'; 
+cascades = [1 2 3 4];
 
 frameRate = 20;
 
@@ -18,9 +18,22 @@ corruptFile = strcat('/local/data/public/ba308/Simulations/',input,'/',blockDim,
 original = txt2rawBW(origFile, height, width, frames);
 corrupt = txt2rawBW(corruptFile, height, width, frames);
 
-%implay(uint8(original), frameRate);
-implay(uint8(corrupt), frameRate);
 
+if frames == 1
+    figure;
+    imshow(uint8(original));
+    title([name,': original']);
+    
+    figure;
+    imshow(uint8(corrupt));
+    title([name,': ', corrPerc, ' corrupted']);
+else
+    oh = implay(uint8(original), frameRate);
+    set(oh.Parent,'name',[name,': original']);
+    
+    ch = implay(uint8(corrupt), frameRate);
+    set(ch.Parent,'name',[name,': ',corrPerc,' corrupted']);
+end
 
 recovers = zeros(height,width,frames,length(cascades));
 
@@ -31,7 +44,14 @@ for si = 1:length(cascades)
     '_',corrPerc,'_',corrMode,...
         label, input,'.txt');
     recovers(:,:,:,si) = txt2rawBW(recoverFile, height, width, frames);
-    implay(uint8(recovers(:,:,:,si)), frameRate);
+    if frames == 1
+        figure;
+        imshow(uint8(recovers(:,:,:,si)));
+        title([name,': cascade stage ', num2str(s), ' \ ', num2str(cascades(end))]);
+    else
+        rh = implay(uint8(recovers(:,:,:,si)), frameRate);
+        set(rh.Parent,'name',[name,': cascade stage ', num2str(s), ' \ ', num2str(cascades(end))]);
+    end
 end
 
 

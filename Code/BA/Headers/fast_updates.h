@@ -6,7 +6,7 @@
 void fast_updates(double **BASIS, double *targets, double *coefficients, int N, int M, double noiseStd,double *errors,double **PSI,bool calc, int change_in_ML_threshold, bool printToCOut)
 {
     if (printToCOut) {
-        std::cout << "Relevance Vector Machine: \t" << std::flush;
+        std::cout << "RVM: \t" << std::flush;
     }
 	//define constants to guide the execution of the RVM
 	
