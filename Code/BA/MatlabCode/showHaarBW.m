@@ -1,11 +1,11 @@
 
-inStem = 'soccer';
+inStem = 'foreman';
 inExtension = '_cif.yuv';
 input = strcat('/local/data/public/ba308/Sequences/',inStem,inExtension);
 
 heightOut = 288; % power of 2
 widthOut = 352;  % power of 2
-framesOut = 300; %  power of 2
+framesOut = 288; %  power of 2
 
 rateRaw = 30;  % fps
 rateHaar = 20;

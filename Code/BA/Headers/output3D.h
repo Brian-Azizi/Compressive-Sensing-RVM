@@ -1,51 +1,41 @@
-void output3Dsignals(signalType ***corrupted, basisType ***recovered, bool actualOutput = true)
+template<class T>
+void output3Dsignals(T ***sig, std::string label, bool actualOutput = true)
 {
-    std::stringstream cs;
-    std::stringstream rs;
+    std::stringstream ss;
     
     /*** save in /local/data/public/ ***/
-    cs << "/local/data/public/";
-    rs << "/local/data/public/";
+    ss << "/local/data/public/";
     
     /*** save in ba308 directory if it exists ***/
     struct stat sb;
     if (stat("/local/data/public/ba308/", &sb) == 0 && S_ISDIR(sb.st_mode)) {
-	cs << "ba308/";
-	rs << "ba308/";
+	ss << "ba308/";
     }
     
     /*** save in ResultsDump directory if it exists ***/
     
     if (stat("/local/data/public/ba308/ResultsDump", &sb) == 0 && S_ISDIR(sb.st_mode)) {
-	cs << "ResultsDump/";
-	rs << "ResultsDump/";
+	ss << "ResultsDump/";
     }
 
     if (!actualOutput) {
-	cs << "DUMMY_";
-	rs << "DUMMY_";
+	ss << "DUMMY_";
     }
 
-    cs << blockHeight << "-" << blockWidth << "-" << blockFrames << "_";
-    rs << blockHeight << "-" << blockWidth << "-" << blockFrames << "_";
+    ss << blockHeight << "-" << blockWidth << "-" << blockFrames << "_";   
+    ss << percentage << "%_" << settingStrings[corrupterSetting];
     
-    cs << percentage << "%_" << settingStrings[corrupterSetting];
-    rs << percentage << "%_" << settingStrings[corrupterSetting];
-
-    cs << "_" << scale << "_corrupted_" << inputFileStem;
-    rs << "_" << scale << "_recovered_" << inputFileStem;
+    if (use_cascade) {
+	ss << "_cascade";
+    }
     
-    std::string corruptSigFile = cs.str();
-    std::string recoveredSigFile = rs.str();
+    ss << "_" << scale << "_" << label << "_" << inputFileStem;
+    
+    std::string sigFile = ss.str();
 
-
-    std::ofstream corrOut(corruptSigFile.c_str());
-    print3D(corrOut, corrupted, signalHeight, signalWidth, signalFrames);
-    corrOut.close();
-
-    std::ofstream recOut(recoveredSigFile.c_str());
-    print3D(recOut, recovered, signalHeight, signalWidth, signalFrames);
-    recOut.close();
+    std::ofstream sigOut(sigFile.c_str());
+    print3D(sigOut, sig, signalHeight, signalWidth, signalFrames);
+    sigOut.close();
 
     return;
 }
