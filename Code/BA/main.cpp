@@ -236,9 +236,9 @@ int main()
     /*** Output ***/
     output3Dsignals(corruptedSignal, "corrupted", actualSimulation);
     for (int s = 0; s < cascadeSize; ++s) {
-	std::stringstream ss;
-	ss << s+1;
-	output3Dsignals(cascadeRecoveredSignals[s], "recovered_" + ss.str(),\
+	std::stringstream label;
+	label << "recovered_" << s+1 << "_of_" << endScale;
+	output3Dsignals(cascadeRecoveredSignals[s], label.str(),\
 			actualSimulation);
     }
 

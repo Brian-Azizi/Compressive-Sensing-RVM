@@ -1,16 +1,16 @@
 % settings
-name = 'lenna';
-height = 512;
-width = 512;
-frames = 1;
+name = 'test';
+height = 8;
+width = 8;
+frames = 16;
 
 input = strcat(name,'_',num2str(height),'-',num2str(width),'-',num2str(frames));
-blockDim = '16-16-1';
-corrPerc = '99%';
-corrMode = 'uniform'; 
-cascades = [1 2 3 4];
+blockDim = '8-8-8';
+corrPerc = '70%';
+corrMode = 'timeRays'; 
+cascades = [1 2 3];
 
-frameRate = 20;
+frameRate = 2;
 
 origFile = strcat('/local/data/public/ba308/InputFiles/',input,'.txt');
 corruptFile = strcat('/local/data/public/ba308/Simulations/',input,'/',blockDim,...
@@ -20,16 +20,16 @@ corrupt = txt2rawBW(corruptFile, height, width, frames);
 
 
 if frames == 1
-    figure;
-    imshow(uint8(original));
-    title([name,': original']);
+%     figure;
+%     imshow(uint8(original));
+%     title([name,': original']);
     
     figure;
     imshow(uint8(corrupt));
     title([name,': ', corrPerc, ' corrupted']);
 else
-    oh = implay(uint8(original), frameRate);
-    set(oh.Parent,'name',[name,': original']);
+%     oh = implay(uint8(original), frameRate);
+%     set(oh.Parent,'name',[name,': original']);
     
     ch = implay(uint8(corrupt), frameRate);
     set(ch.Parent,'name',[name,': ',corrPerc,' corrupted']);
@@ -39,7 +39,10 @@ recovers = zeros(height,width,frames,length(cascades));
 
 for si = 1:length(cascades)
     s = cascades(si);
-    label = strcat('_recovered_',num2str(s),'_');    
+    
+    %label = strcat('_recovered_',num2str(s),'_');    
+    label = strcat('_recovered_',num2str(s),'_of_',num2str(cascades(end)),'_'); 
+    
     recoverFile = strcat('/local/data/public/ba308/Simulations/',input,'/',blockDim,...
     '_',corrPerc,'_',corrMode,...
         label, input,'.txt');
