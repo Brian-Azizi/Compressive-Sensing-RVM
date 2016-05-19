@@ -1,3 +1,5 @@
+
+
 L0 = load('output-lenna512.txt-0-.txt');
 L1 = load('output-lenna512.txt-1-.txt');
 L2 = load('output-lenna512.txt-2-.txt');
