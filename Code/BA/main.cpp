@@ -39,7 +39,7 @@ int main()
 {
     /* Test if Settings make sense and define constants.
        Note: No testing if input txt file is valid! */
-    //    testSettings();
+    testSettings();
     
     /*** RNG Settings ***/
     std::srand(2); 
@@ -180,9 +180,15 @@ int main()
 		    }
 		    
 		    /*** Start the RVM ***/
+		    bool useCascade;
+		    if (s < cascadeSize - 1) {
+			useCascade = true;
+		    } else {
+			useCascade = false;
+		    }
 		    fast_updates(designMatrix, target, estimatedCoeff,\
 				 measurements, dictionarySize, noiseStD,\
-				 errors, cascadeBasis[s], use_cascade,\
+				 errors, cascadeBasis[s], useCascade,\
 				 deltaML_threshold, printToCOut);
 		    if (printToCOut) {
 			std::cout << std::endl;
@@ -200,7 +206,7 @@ int main()
 			       blockIndexRows, blockIndexCols, blockIndexFrames);
 		    
 		    /*** Prepare for next part of cascade ***/
-		    if (s < cascadeSize - 1) {
+		    if (useCascade) {
 			for (int i = 0; i < blockSize; ++i) { 
 			    if (errors[i] != 0) { // Get new mask 
 				sensedPatchVector[i] = true;

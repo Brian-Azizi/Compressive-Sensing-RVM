@@ -4,27 +4,17 @@ height = 128;
 width = 128;
 frames = 64;
 
-use_cascade = true;
-
 input = strcat(name,'_',num2str(height),'-',num2str(width),'-',num2str(frames));
 blockDim = '4-4-4';
 corrPerc = '90%';
-corrMode = 'uniform'; 
-if use_cascade == true
-    cscd = 'cascade_';
-else
-    cscd = '';
-end
+corrMode = 'verticalFlicker'; 
 cascades = [1 2];
-
-scale = '1';
 
 frameRate = 20;
 
 origFile = strcat('/local/data/public/ba308/InputFiles/',input,'.txt');
 corruptFile = strcat('/local/data/public/ba308/Simulations/',input,'/',blockDim,...
-    '_',corrPerc,'_',corrMode,'_',cscd, scale,...
-    '_corrupted_',input,'.txt');
+    '_',corrPerc,'_',corrMode, '_corrupted_',input,'.txt');
 original = txt2rawBW(origFile, height, width, frames);
 corrupt = txt2rawBW(corruptFile, height, width, frames);
 
@@ -36,14 +26,9 @@ recovers = zeros(height,width,frames,length(cascades));
 
 for si = 1:length(cascades)
     s = cascades(si);
-    if use_cascade == true
-        label = strcat('_recovered_',num2str(s),'_');
-    else
-        label = 'recovered_';
-    end
-    
+    label = strcat('_recovered_',num2str(s),'_');    
     recoverFile = strcat('/local/data/public/ba308/Simulations/',input,'/',blockDim,...
-    '_',corrPerc,'_',corrMode,'_',cscd, scale,...
+    '_',corrPerc,'_',corrMode,...
         label, input,'.txt');
     recovers(:,:,:,si) = txt2rawBW(recoverFile, height, width, frames);
     implay(uint8(recovers(:,:,:,si)), frameRate);

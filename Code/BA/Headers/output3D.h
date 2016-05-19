@@ -24,12 +24,8 @@ void output3Dsignals(T ***sig, std::string label, bool actualOutput = true)
 
     ss << blockHeight << "-" << blockWidth << "-" << blockFrames << "_";   
     ss << percentage << "%_" << settingStrings[corrupterSetting];
-    
-    if (use_cascade) {
-	ss << "_cascade";
-    }
-    
-    ss << "_" << scale << "_" << label << "_" << inputFileStem;
+        
+    ss << "_" << label << "_" << inputFileStem;
     
     std::string sigFile = ss.str();
 

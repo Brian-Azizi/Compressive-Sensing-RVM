@@ -21,7 +21,6 @@ std::string const inputFileStem = "foreman_128-128-64.txt";
 std::string const inputFile = "/local/data/public/ba308/InputFiles/" + inputFileStem;
 bool const actualSimulation = true; // set to false to prepend outfile names with "DUMMY_"
 
-
 typedef unsigned int signalType; 
 typedef double basisType;
 
@@ -29,30 +28,21 @@ unsigned int const signalHeight = 128; // unsigned ints: be careful with wrap-ar
 unsigned int const signalWidth = 128;
 unsigned int const signalFrames = 64;
 
-unsigned int const blockHeight = 4;
-unsigned int const blockWidth = 4;
-unsigned int const blockFrames = 4;
+unsigned int const blockHeight = 8;
+unsigned int const blockWidth = 8;
+unsigned int const blockFrames = 8;
 
 /*** print progress to standard output? ***/
 bool printToCOut = true;
 
-
 /*** Corrupter settings ***/
-corruptionMode const corrupterSetting = uniform;
+corruptionMode const corrupterSetting = verticalFlicker;
 double const percentage = 90;
 
-
 /*** Wavelet settings ***/
-int const scale = 1;		// now works for arbitrary scale > 0
-
-bool const use_cascade = true;
 int const startScale = 1;
-int const endScale = 2;
-
+int const endScale = 3;
 
 /*** RVM settings ***/
 double const noiseStD = 1;
 int const deltaML_threshold = 1;
-
-
-

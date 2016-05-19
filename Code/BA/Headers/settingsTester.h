@@ -28,12 +28,31 @@ void testSettings()
     }
     
     // Test that scale is greater than zero
-    if (scale < 1) {
-	throw std::length_error("scale is less than 1");
+    // if (scale < 1) {
+    // 	throw std::length_error("scale is less than 1");
+    // }
+    if (startScale < 1) {
+	throw std::length_error("startScale is less than 1");
+    }
+    if (endScale < 1) {
+	throw std::length_error("endScale is less than 1");
+    }
+    if (endScale < startScale) {
+	throw std::length_error("endScale is less than startScale");
     }
 
+    // // Test if block dimensions are divisible by 2^scale
+    // int const scaleDim = std::pow(2,scale);
+    // if (blockHeight % scaleDim != 0) {
+    // 	throw std::length_error("block height does not support scale of wavelet");
+    // } else if (blockWidth % scaleDim != 0) {
+    // 	throw std::length_error("block width does not support scale of wavelet");
+    // } else if (blockFrames % scaleDim != 0) {
+    // 	throw std::length_error("block depth does not support scale of wavelet");
+    // }
+
     // Test if block dimensions are divisible by 2^scale
-    int const scaleDim = std::pow(2,scale);
+    int const scaleDim = std::pow(2,endScale);
     if (blockHeight % scaleDim != 0) {
 	throw std::length_error("block height does not support scale of wavelet");
     } else if (blockWidth % scaleDim != 0) {
