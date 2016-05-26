@@ -2,8 +2,10 @@
 #include "full_statistics.h"
 
 // BA edits: argument 6: changed pass-by-reference to pass-by-value
+// BA edtis (24/5/16): used templates
 
-void fast_updates(double **BASIS, double *targets, double *coefficients, int N, int M, double noiseStd,double *errors,double **PSI,bool calc, int change_in_ML_threshold, bool printToCOut)
+template<class T>
+void fast_updates(T **BASIS, T *targets, T *coefficients, int N, int M, double noiseStd, T *errors, T **PSI,bool calc, int change_in_ML_threshold, bool printToCOut)
 {
     if (printToCOut) {
         std::cout << "RVM: \t" << std::flush;
@@ -116,7 +118,7 @@ void fast_updates(double **BASIS, double *targets, double *coefficients, int N, 
 	
 	iterations = iterations + 1;
 
-	if (printToCOut && iterations % 10 == 0) {
+	if (printToCOut && iterations % 5 == 0) {
 	    std::cout << "." << std::flush;
 	}
 	

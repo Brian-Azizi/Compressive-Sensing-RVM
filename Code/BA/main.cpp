@@ -1,3 +1,5 @@
+#define _Use_MATH_DEFINES
+
 #include <cassert>
 #include <cmath>
 #include <cstdlib>
@@ -34,6 +36,11 @@
 #include "Headers/deVectorize.h"
 #include "Headers/putPatch3D.h"
 #include "Headers/output3D.h"
+#include "Headers/dctMatrix.h"	// needed by dctBasis.h
+#include "Headers/dctBasis2D.h"
+#include "Headers/dctBasis.h"
+
+
 
 int main()
 {
@@ -128,8 +135,10 @@ int main()
     
     // Get basis matrices for various scales
     for (int s = 0; s < cascadeSize; ++s) {
-	haarBasis(cascadeBasis[s], blockHeight, blockWidth, \
-		  blockFrames, startScale+s);
+	/*haarBasis(cascadeBasis[s], blockHeight, blockWidth,	\
+	  blockFrames, startScale+s);*/
+	dctBasis(cascadeBasis[s], blockHeight, blockWidth,	\
+		 blockFrames);		
     }
     
     // Loop over blocks of original signal
@@ -191,7 +200,7 @@ int main()
 				 errors, cascadeBasis[s], useCascade,\
 				 deltaML_threshold, printToCOut);
 		    if (printToCOut) {
-			std::cout << std::endl;
+			std::cout << "||" << std::endl;
 		    }
 		    multiply2D1D(cascadeBasis[s], estimatedCoeff,\
 				 recoveredVector, blockSize, dictionarySize);

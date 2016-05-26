@@ -1,4 +1,4 @@
-void multiply2D2D(double **A,double **B,double **C,int Arows,int Bcols,int Acols )
+void multiply2D2D(double **A, double **B, double **C,int Arows,int Bcols,int Acols )
 {
 
 	for (int i=0;i<Arows;i++)
