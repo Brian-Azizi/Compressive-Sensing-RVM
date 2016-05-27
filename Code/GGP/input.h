@@ -2,7 +2,7 @@ vector<double> input(int signalResolution, string &filename)
 {
 	vector<double> signal(signalResolution*signalResolution); 
 	ifstream myfile;
-	filename = "lenna512.txt";
+	filename = "lenna.txt";
 	
 	myfile.open(filename.c_str()); // change the name of the file to read the signal in
 

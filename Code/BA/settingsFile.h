@@ -41,7 +41,7 @@ double const percentage = 50;
 
 /*** Wavelet settings ***/
 int const startScale = 1;	// Keep it at 1. Code doesn't work well at all if we skip 1.
-int const endScale = 1;	     	// For DCT keep Scale at 1
+int const endScale = 3;	     	// For DCT keep Scale at 1
 
 /*** RVM settings ***/
 double const noiseStD = 1;

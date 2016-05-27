@@ -135,10 +135,10 @@ int main()
     
     // Get basis matrices for various scales
     for (int s = 0; s < cascadeSize; ++s) {
-	/*haarBasis(cascadeBasis[s], blockHeight, blockWidth,	\
-	  blockFrames, startScale+s);*/
-	dctBasis(cascadeBasis[s], blockHeight, blockWidth,	\
-		 blockFrames);		
+	haarBasis(cascadeBasis[s], blockHeight, blockWidth,	\
+		  blockFrames, startScale+s);
+	/*dctBasis(cascadeBasis[s], blockHeight, blockWidth,	\
+	  blockFrames);		*/
     }
     
     // Loop over blocks of original signal
