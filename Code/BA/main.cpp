@@ -27,6 +27,7 @@
 #include "Headers/haarTransform3D.h"
 #include "Headers/getPatch3D.h"
 #include "Headers/vectorize3D.h"
+#include "Headers/getBasis.h"
 #include "Headers/haarBasis.h"
 #include "Headers/corruptSignal.h"
 #include "Headers/countSensed.h"
@@ -135,9 +136,11 @@ int main()
     
     // Get basis matrices for various scales
     for (int s = 0; s < cascadeSize; ++s) {
-	haarBasis(cascadeBasis[s], blockHeight, blockWidth,	\
-		  blockFrames, startScale+s);
-	/*dctBasis(cascadeBasis[s], blockHeight, blockWidth,	\
+	getBasis(cascadeBasis[s], blockHeight, blockWidth, \
+		 blockFrames, startScale+s, basisMode);
+	/*haarBasis(cascadeBasis[s], blockHeight, blockWidth,	\
+	  blockFrames, startScale+s);
+	  dctBasis(cascadeBasis[s], blockHeight, blockWidth,	\
 	  blockFrames);		*/
     }
     

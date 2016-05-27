@@ -8,7 +8,8 @@ input = strcat(name,'_',num2str(height),'-',num2str(width),'-',num2str(frames));
 blockDim = '8-8-8';
 corrPerc = '50%';
 corrMode = 'uniform'; 
-topScale = 1;
+basisMode = 'haar';
+topScale = 2;
 
 cascades = 1:topScale;
 
@@ -16,7 +17,7 @@ frameRate = 30;
 
 origFile = strcat('/local/data/public/ba308/InputFiles/',input,'.txt');
 corruptFile = strcat('/local/data/public/ba308/Simulations/',input,'/',blockDim,...
-    '_',corrPerc,'_',corrMode, '_corrupted_',input,'.txt');
+    '_',corrPerc,'_',corrMode,'_',basisMode, '_corrupted_',input,'.txt');
 original = txt2rawBW(origFile, height, width, frames);
 corrupt = txt2rawBW(corruptFile, height, width, frames);
 
@@ -48,7 +49,7 @@ for si = 1:length(cascades)
     label = strcat('_recovered_',num2str(s),'_of_',num2str(cascades(end)),'_'); 
     
     recoverFile = strcat('/local/data/public/ba308/Simulations/',input,'/',blockDim,...
-    '_',corrPerc,'_',corrMode,...
+    '_',corrPerc,'_',corrMode,'_', basisMode,...
         label, input,'.txt');
     recovers(:,:,:,si) = txt2rawBW(recoverFile, height, width, frames);
     

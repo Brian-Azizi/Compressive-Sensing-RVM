@@ -24,7 +24,7 @@ void output3Dsignals(T ***sig, std::string label, bool actualOutput = true)
 
     ss << blockHeight << "-" << blockWidth << "-" << blockFrames << "_";   
     ss << percentage << "%_" << settingStrings[corrupterSetting];
-        
+    ss << "_" << basisFunctionStrings[basisMode];
     ss << "_" << label << "_" << inputFileStem;
     
     std::string sigFile = ss.str();

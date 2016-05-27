@@ -2,6 +2,10 @@
 enum corruptionMode {uniform, timeRays, missingFrames, verticalFlicker, horizontalFlicker, verticalLines, horizontalLines};
 std::string settingStrings[] = {"uniform", "timeRays", "missingFrames", "verticalFlicker","horizontalFlicker","verticalLines","horizontalLines"};
 
+enum basisFunctionMode {haar, dct};
+std::string basisFunctionStrings[] = {"haar", "dct"};
+
+int const startScale = 1;	// Keep it at 1. Code doesn't work well at all if we skip 1.
 
 /*** Input settings ***/
 //std::string const inputFileStem = "akiyo_128-128-64.txt";
@@ -28,9 +32,9 @@ unsigned int const signalHeight = 128; // unsigned ints: be careful with wrap-ar
 unsigned int const signalWidth = 128;
 unsigned int const signalFrames = 64;
 
-unsigned int const blockHeight = 8;
-unsigned int const blockWidth = 8;
-unsigned int const blockFrames = 8;
+unsigned int const blockHeight = 2;
+unsigned int const blockWidth = 2;
+unsigned int const blockFrames = 2;
 
 /*** print progress to standard output? ***/
 bool printToCOut = true;
@@ -39,9 +43,10 @@ bool printToCOut = true;
 corruptionMode const corrupterSetting = uniform;
 double const percentage = 50;
 
-/*** Wavelet settings ***/
-int const startScale = 1;	// Keep it at 1. Code doesn't work well at all if we skip 1.
-int const endScale = 3;	     	// For DCT keep Scale at 1
+/*** Basis Function settings ***/
+basisFunctionMode const basisMode = dct;
+
+int const endScale = 1;	     	// For DCT keep Scale at 1
 
 /*** RVM settings ***/
 double const noiseStD = 1;
