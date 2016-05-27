@@ -1,3 +1,5 @@
+/* Not needed in current application */
+
 /*Assumes that signalWidth, signalHeight and signalFrames are powers of 2*/
 template<class T>
 void haarTransform3D (T const*const*const*const signal, double *** transform, int signalHeight, int signalWidth, int signalFrames)

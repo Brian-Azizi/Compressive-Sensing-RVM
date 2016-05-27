@@ -1,6 +1,3 @@
-#include "haarBasis2D.h"
-#include "_LLL_generate.h"
-
 template <class T>
 void haarBasis(T **BASIS, int height, int width, int frames, int scale)
 {
