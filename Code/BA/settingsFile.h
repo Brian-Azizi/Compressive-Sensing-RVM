@@ -1,7 +1,3 @@
-//Test comment
-// Test comment 2
-
-
 /*** Input settings ***/
 //std::string const inputFileStem = "akiyo_128-128-64.txt";
 //std::string const inputFileStem = "foreman_128-128-64.txt";
@@ -27,8 +23,8 @@ unsigned int const signalHeight = 512; // unsigned ints: be careful with wrap-ar
 unsigned int const signalWidth = 512;
 unsigned int const signalFrames = 1;
 
-unsigned int const blockHeight = 32;
-unsigned int const blockWidth = 32;
+unsigned int const blockHeight = 16;
+unsigned int const blockWidth = 16;
 unsigned int const blockFrames = 1;
 
 /*** print progress to standard output? ***/
@@ -39,13 +35,14 @@ int const rngSeed = time(NULL);
 
 /*** Corrupter settings ***/
 corruptionMode const corrupterSetting = uniform;
-double const percentage = 50;
+double const percentage = 30;
 
 /*** Basis Function settings ***/
-basisFunctionMode const basisMode = haar;
+basisFunctionMode const basisMode = dct;
 
-int const endScale = 5;	     	// For DCT keep Scale at 1
+int const endScale = 1;	     	// For DCT keep Scale at 1
 
 /*** RVM settings ***/
 double const noiseStD = 1;
 double const deltaML_threshold = 1;
+

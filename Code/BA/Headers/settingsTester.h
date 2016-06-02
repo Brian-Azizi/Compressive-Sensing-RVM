@@ -61,7 +61,7 @@ void testSettings()
 	if (blockFrames != 1) {
 	    throw std::length_error("block depth does not support scale of wavelet");
 	} else {
-	    std::cout << "block depth = 1 --> Using 2D wavelets" << std::endl;
+	    if (printToCOut) std::cout << "block depth = 1 --> Using 2D wavelets" << std::endl;
 	}
     }
         
@@ -85,6 +85,6 @@ void testSettings()
     // }
     
     /* If all tests pass, then the signal is correctly divided up into block patches.*/
-    std::cout << "Settings test successful" << std::endl;
+    if(printToCOut) std::cout << "Settings test successful" << std::endl;
     return;
 }

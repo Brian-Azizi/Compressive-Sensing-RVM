@@ -5,13 +5,18 @@ width = 512;
 frames = 1;
 
 input = strcat(name,'_',num2str(height),'-',num2str(width),'-',num2str(frames));
-blockDim = '32-32-1';
-corrPerc = '99%';
+blockDim = '16-16-1';
+corrPerc = '30%';
 corrMode = 'uniform'; 
-basisMode = 'haar';
-topScale = 5;
+basisMode = 'dct';
+topScale = 1;
+
+numFiles = (512/16)*(512/16)*(1/1);
 
 cascades = 1:topScale;
+
+
+
 
 frameRate = 30;
 
@@ -64,6 +69,8 @@ for si = 1:length(cascades)
     end
     end
 end
+
+testBlock2
 
 analyzePix
 

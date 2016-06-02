@@ -144,10 +144,6 @@ int main()
     for (int s = 0; s < cascadeSize; ++s) {
 	getBasis(cascadeBasis[s], blockHeight, blockWidth, \
 		 blockFrames, startScale+s, basisMode);
-	/*haarBasis(cascadeBasis[s], blockHeight, blockWidth,	\
-	  blockFrames, startScale+s);
-	  dctBasis(cascadeBasis[s], blockHeight, blockWidth,	\
-	  blockFrames);		*/
     }
     
     // Loop over blocks of original signal

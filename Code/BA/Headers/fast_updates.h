@@ -325,8 +325,8 @@ void fast_updates(T **BASIS, T *targets, T *coefficients, int N, int M, double n
 		
 	if (max_DeltaML<change_in_ML_threshold)
 		{
-		last_iteration = true;
-		break;
+		    last_iteration = true;
+		    //printf("max_DeltaML = %.12f\n", max_DeltaML);
 		}
 		
 		
