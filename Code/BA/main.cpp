@@ -52,11 +52,11 @@
 int main()
 {
     /* Test if Settings make sense and define constants.
-       Note: No testing if input txt file is valid! */
+       Note: Does not test if input txt file is valid! */
     testSettings();
     
     /*** RNG Settings ***/
-    std::srand(3);//time(NULL)); 
+    std::srand(rngSeed);
     
     /*** Program constants ***/
     unsigned int const numBlocksHeight = signalHeight / blockHeight;

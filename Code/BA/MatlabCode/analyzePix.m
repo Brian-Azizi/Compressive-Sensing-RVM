@@ -1,5 +1,5 @@
 tabStats = zeros(topScale,7);
-figure; title(name);
+figure('name',name);
 N = height*width*frames;
 
 for i = 1:topScale

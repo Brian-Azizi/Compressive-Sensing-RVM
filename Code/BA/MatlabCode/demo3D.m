@@ -1,15 +1,15 @@
 % settings
-name = 'foreman';
-height = 128;
-width = 128;
-frames = 64;
+name = 'lenna';
+height = 512;
+width = 512;
+frames = 1;
 
 input = strcat(name,'_',num2str(height),'-',num2str(width),'-',num2str(frames));
-blockDim = '8-8-8';
-corrPerc = '50%';
+blockDim = '32-32-1';
+corrPerc = '99%';
 corrMode = 'uniform'; 
 basisMode = 'haar';
-topScale = 2;
+topScale = 5;
 
 cascades = 1:topScale;
 
@@ -25,19 +25,19 @@ surpressOutput = false;
 
 if ~surpressOutput
 if frames == 1
-    figure;
+    figure('name',origFile);
     imshow(original, [0 255]);
-    title([name,': original']);
+%     title(origFile);
     
-    figure;
+    figure('name',corruptFile);
     imshow(corrupt, [0 255]);
-    title([name,': ', corrPerc, ' corrupted']);
+%     title(corruptFile);
 else
     oh = implay(uint8(original), frameRate);
-    set(oh.Parent,'name',[name,': original']);
+    set(oh.Parent,'name',origFile);
     
     ch = implay(uint8((corrupt)), frameRate);
-    set(ch.Parent,'name',[name,': ',corrPerc,' corrupted']);
+    set(ch.Parent,'name',corruptFile);
 end
 end
 
@@ -55,12 +55,12 @@ for si = 1:length(cascades)
     
     if ~surpressOutput
     if frames == 1
-        figure;
+        figure('name',recoverFile);
         imshow(recovers(:,:,:,si),[0 255]);
-        title([name,': cascade stage ', num2str(s), ' \ ', num2str(cascades(end))]);
+%         title(recoverFile);
     else
         rh = implay(uint8((recovers(:,:,:,si))), frameRate);
-        set(rh.Parent,'name',[name,': cascade stage ', num2str(s), ' \ ', num2str(cascades(end))]);
+        set(rh.Parent,'name',recoverFile);
     end
     end
 end
