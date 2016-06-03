@@ -39,6 +39,8 @@
 int main()
 {
 
+    // Dummy comment
+
     // test Basis function generation
 
     double errorTolerance = 1e-8;
