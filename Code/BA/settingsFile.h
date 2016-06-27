@@ -23,19 +23,20 @@ unsigned int const signalHeight = 512; // unsigned ints: be careful with wrap-ar
 unsigned int const signalWidth = 512;
 unsigned int const signalFrames = 1;
 
-unsigned int const blockHeight = 16;
-unsigned int const blockWidth = 16;
+unsigned int const blockHeight = 8;
+unsigned int const blockWidth = 8;
 unsigned int const blockFrames = 1;
 
 /*** print progress to standard output? ***/
 bool printToCOut = true;
 
 /*** RNG Settings ***/
-int const rngSeed = time(NULL);
+//int const rngSeed = time(NULL);
+int const rngSeed = 42;
 
 /*** Corrupter settings ***/
 corruptionMode const corrupterSetting = uniform;
-double const percentage = 30;
+double const percentage = 70;
 
 /*** Basis Function settings ***/
 basisFunctionMode const basisMode = dct;

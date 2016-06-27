@@ -7,3 +7,5 @@ std::string basisFunctionStrings[] = {"haar", "dct"};
 
 int const startScale = 1;	// Keep it at 1. Code doesn't work well at all if we skip 1.
 
+
+
