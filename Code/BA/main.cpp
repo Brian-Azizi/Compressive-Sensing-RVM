@@ -13,9 +13,13 @@
 #include <sys/stat.h>
 #include <vector>
 
+#include "classes.h"		// class definitions
+#include "functions.h"		// function definitions
+
+
 // GGP's files
 #include "Headers/utilities.h"	// linear algebra utilities
-#include "Headers/kronecker.h"	     // To calculate kronecker products
+//#include "Headers/kronecker.h"	     // To calculate kronecker products
 #include "Headers/init.h"	// Needed for fast_updates
 #include "Headers/full_statistics.h" // Needed for fast_updates
 #include "Headers/fast_updates.h"    // RVM engine
@@ -24,30 +28,28 @@
 #include "Headers/definitions.h" // Needed by settings file
 #include "settingsFile.h"
 #include "Headers/settingsTester.h" // test that settings file is okay
-#include "Headers/input3D.h" // gets input data from raw txt file and stores in rank3 array
-#include "Headers/print3D.h" // outputs rank3 arrays to an output stream
-#include "Headers/print2D.h" // outputs rank2 arrays to an output stream
-#include "Headers/print1D.h" // outputs rank1 arrays to an output stream
-#include "Headers/getPatch3D.h"	// copies a block out of the larger 3D signal
-#include "Headers/vectorize3D.h" // turns rank3 array (block) into a rank1 array
-#include "Headers/getBasis.h"	 // Interface for basis functions
-#include "Headers/_LL_generate2D.h" // Needed for haarBasis2D
-#include "Headers/haarBasis2D.h"    // Needed for haarBasis
-#include "Headers/_LLL_generate.h"  // Needed for haarBasis
-#include "Headers/haarBasis.h"	    // Needed for getBasis
-#include "Headers/corruptSignal.h" // applies corruption to signal block
-#include "Headers/countSensed.h" // counts uncorrupted pixels in signal block
-#include "Headers/getTargets.h"	// gets target vector from sensed signal pixels
-#include "Headers/getDesignMatrix.h" // gets design matrix from dictionary matrix
-#include "Headers/fillSensedInfo.h" // fills reconstructed signal with previously sensed pixels
-#include "Headers/deVectorize.h" // turns rank1 arrays back into rank3 arrays
-#include "Headers/putPatch3D.h"	// copies a signal block back into the larger 3D signal
+//#include "Headers/input3D.h" // gets input data from raw txt file and stores in rank3 array
+//#include "Headers/print3D.h" // outputs rank3 arrays to an output stream
+//#include "Headers/print2D.h" // outputs rank2 arrays to an output stream
+//#include "Headers/print1D.h" // outputs rank1 arrays to an output stream
+//#include "Headers/getPatch3D.h"	// copies a block out of the larger 3D signal
+//#include "Headers/vectorize3D.h" // turns rank3 array (block) into a rank1 array
+//#include "Headers/getBasis.h"	 // Interface for basis functions
+//#include "Headers/_LL_generate2D.h" // Needed for haarBasis2D
+//#include "Headers/haarBasis2D.h"    // Needed for haarBasis
+//#include "Headers/_LLL_generate.h"  // Needed for haarBasis
+//#include "Headers/haarBasis.h"	    // Needed for getBasis
+//#include "Headers/corruptSignal.h" // applies corruption to signal block
+//#include "Headers/countSensed.h" // counts uncorrupted pixels in signal block
+//#include "Headers/getTargets.h"	// gets target vector from sensed signal pixels
+//#include "Headers/getDesignMatrix.h" // gets design matrix from dictionary matrix
+//#include "Headers/fillSensedInfo.h" // fills reconstructed signal with previously sensed pixels
+//#include "Headers/deVectorize.h" // turns rank1 arrays back into rank3 arrays
+//#include "Headers/putPatch3D.h"	// copies a signal block back into the larger 3D signal
 #include "Headers/output3D.h"	// saves output into text files 
-#include "Headers/dctMatrix.h" // needed by dctBasis.h and dctBasis2D.h
-#include "Headers/dctBasis2D.h"	// needed by dctBasis.h
-#include "Headers/dctBasis.h"	// needed by getBasis
-
-
+//#include "Headers/dctMatrix.h" // needed by dctBasis.h and dctBasis2D.h
+//#include "Headers/dctBasis2D.h"	// needed by dctBasis.h
+//#include "Headers/dctBasis.h"	// needed by getBasis
 
 int main()
 {
@@ -70,80 +72,32 @@ int main()
     unsigned int const cascadeSize = endScale - startScale + 1;
     
     /*** Memory allocation ***/
-    signalType ***signal = new signalType**[signalHeight]; // Original signal container 
-    signalType ***corruptedSignal = new signalType**[signalHeight]; // Corrupted signal container
-    bool ***sensedEntries = new bool**[signalHeight]; /* Container for which entries of signal were
-							 sensed (=true) */
-    for (int i = 0; i < signalHeight; ++i) {
-    	signal[i] = new signalType*[signalWidth];
-	corruptedSignal[i] = new signalType*[signalWidth];
-	sensedEntries[i] = new bool*[signalWidth];
-    	for (int j = 0; j < signalWidth; ++j) {
-    	    signal[i][j] = new signalType[signalFrames];
-	    corruptedSignal[i][j] = new signalType[signalFrames];
-	    sensedEntries[i][j] = new bool[signalFrames];
-    	}
-    }    
-    signalType ***signalPatch = new signalType** [blockHeight]; /* container for blocks of distorted
-								   signal */
-    bool ***sensedPatch = new bool**[blockHeight];		/* container for blocks of 
-								   sensedEntries array */
-    for (int i = 0; i < blockHeight; ++i) { 
-	signalPatch[i] = new signalType* [blockWidth];
-	sensedPatch[i] = new bool* [blockWidth];
-	for (int j = 0; j < blockWidth; ++j) {
-	    signalPatch[i][j] = new signalType [blockFrames];
-	    sensedPatch[i][j] = new bool [blockFrames];
-	}
-    }
-    signalType *signalPatchVector = new signalType [blockSize]; /*container for vectorized distorted 
-								  signal block */
-    bool *sensedPatchVector = new bool [blockSize];		/* container for vectorizes
-								   sensedEntries block */
-    bool *initialSensedVector = new bool [blockSize]; 
-    signalType *initialSignalVector = new signalType [blockSize];      
-    basisType *recoveredVector = new basisType[blockSize]; // container for RVM predictions vector
-    basisType ***recoveredPatch = new basisType**[blockHeight]; /* container for RVM predicted 
-								   signal patch */
-    for (int i = 0; i < blockHeight; ++i) {
-	recoveredPatch[i] = new basisType*[blockWidth];
-	for (int j = 0; j < blockWidth; ++j) {
-	    recoveredPatch[i][j] = new basisType[blockFrames];
-	}
-    }    
-    std::vector<basisType***> cascadeRecoveredSignals(cascadeSize);
-    for (int s = 0; s < cascadeSize; ++s) {
-	cascadeRecoveredSignals[s] = new basisType**[signalHeight]; /* container for storing the
-								       complete recovered signal */
-	for (int i = 0; i < signalHeight; ++i) {
-	    cascadeRecoveredSignals[s][i] = new basisType*[signalWidth];
-	    for (int j = 0; j < signalWidth; ++j) {
-		cascadeRecoveredSignals[s][i][j] = new basisType[signalFrames];
-	    }
-	}
-    }
-    std::vector<basisType**> cascadeBasis(cascadeSize);
-    for (int s = 0; s < cascadeSize; ++s) {
-	cascadeBasis[s] = new basisType*[dictionarySize];
-	for (int j = 0; j < dictionarySize; ++j) {
-	    cascadeBasis[s][j] = new basisType[dictionarySize];
-	}
-    }
+    Signal<signalType> signal(signalHeight, signalWidth, signalFrames);
+    Signal<signalType> corruptedSignal(signalHeight, signalWidth, signalFrames);
+    Signal<bool> sensedEntries(signalHeight, signalWidth, signalFrames);
 
+    Signal<signalType> signalPatch(blockHeight, blockWidth, blockFrames);
+    Signal<bool> sensedPatch(blockHeight, blockWidth, blockFrames);
+
+    Signal<signalType> signalPatchVector(blockSize);
+    Signal<bool> sensedPatchVector(blockSize);
+    Signal<bool> initialSensedVector(blockSize);
+    Signal<signalType> initialSignalVector(blockSize);
+    Signal<basisType> recoveredVector(blockSize);
+    Signal<basisType> recoveredPatch(blockHeight, blockWidth, blockFrames);
+    
+    std::vector<Signal<basisType> > cascadeRecoveredSignals
+	(cascadeSize, Signal<basisType>(signalHeight, signalWidth, signalFrames));
+    std::vector<Signal<basisType> > cascadeBasis
+	(cascadeSize, Signal<basisType>(dictionarySize, dictionarySize));
     
     /*** start logic ***/
-    
-    // Input Original signal
-    input3D(signal, inputFile, signalHeight, signalWidth, signalFrames); /* get original input signal
-									    and store in a cube */
-     // Corrupt original signal and get indeces of sensed entries
-    corruptSignal(signal, corruptedSignal, sensedEntries, signalHeight, \
-		  signalWidth, signalFrames, percentage, corrupterSetting);
-    
+    signal.read(inputFile);
+    corruptedSignal = corruptSignal(signal, sensedEntries, corr);
+        
     // Get basis matrices for various scales
     for (int s = 0; s < cascadeSize; ++s) {
-	getBasis(cascadeBasis[s], blockHeight, blockWidth, \
-		 blockFrames, startScale+s, basisMode);
+	cascadeBasis[s] = getBasis(blockHeight, blockWidth,  blockFrames, basisMode, startScale+s);
     }
     
     // Loop over blocks of original signal
@@ -157,91 +111,64 @@ int main()
 			      << numBlocksWidth << "," << numBlocksFrames 
 			      << ")" << std::endl;
 		}
-		getPatch3D(corruptedSignal, signalPatch, blockHeight,\
-			   blockWidth,blockFrames, blockIndexRows,\
-			   blockIndexCols, blockIndexFrames);
-		getPatch3D(sensedEntries, sensedPatch, blockHeight,\
-			   blockWidth, blockFrames, blockIndexRows,\
-			   blockIndexCols, blockIndexFrames);
-		vectorize3D(signalPatch, signalPatchVector,\
-			    blockHeight, blockWidth, blockFrames);
-		vectorize3D(sensedPatch, sensedPatchVector,\
-			    blockHeight, blockWidth, blockFrames);
-		vectorize3D(signalPatch, initialSignalVector,\
-			    blockHeight, blockWidth, blockFrames);
-		vectorize3D(sensedPatch, initialSensedVector,\
-			    blockHeight, blockWidth, blockFrames);
+		signalPatch = corruptedSignal
+		    .getPatch3D(blockIndexRows*blockHeight, blockIndexCols*blockWidth,
+				blockIndexFrames*blockFrames, blockHeight, blockWidth, blockFrames);
+		sensedPatch = sensedEntries
+		    .getPatch3D(blockIndexRows*blockHeight, blockIndexCols*blockWidth,
+				blockIndexFrames*blockFrames, blockHeight, blockWidth, blockFrames);
+		
+		signalPatchVector = vectorize(signalPatch);
+		sensedPatchVector = vectorize(sensedPatch);
+		initialSignalVector = vectorize(signalPatch);
+		initialSensedVector = vectorize(sensedPatch);
 		
 		for (int s = 0; s < cascadeSize; ++s) {		    
-		    int measurements = countSensed(sensedPatchVector, blockSize);
+		    int measurements = countSensed(sensedPatchVector);
 		    
 		    /*** Declare and define RVM variables ***/
-		    basisType *target = new basisType[measurements];   // need basisType for RVM
-		    basisType **designMatrix = new basisType*[measurements];
-		    for (int i = 0; i < measurements; ++i) {
-			designMatrix[i] = new basisType[dictionarySize];
-		    }
-		    getTargets(signalPatchVector, target,\
-			       sensedPatchVector, blockSize, measurements);
-		    getDesignMatrix(cascadeBasis[s], designMatrix,\
-				    sensedPatchVector, dictionarySize, measurements);
+		    Signal<basisType> target(measurements);
+		    Signal<basisType> designMatrix(measurements, dictionarySize);
+		    Signal<basisType> estimatedCoeff(dictionarysize); // init to 0
+		    signal<basisType> errors(dictionarySize);
 		    
-		    basisType *estimatedCoeff = new basisType[dictionarySize];
-		    basisType *errors = new basisType[dictionarySize];
-		    for (int i = 0; i < dictionarySize; ++i) {
-			estimatedCoeff[i] = 0;
-			errors[i] = 0;
-		    }
-		    
+		    target = getTargets(signalPatchVector, sensedPatchVector);
+		    designMatrix = getDesignMatrix(cascadeBasis[s], sensedPatchVector);
+		    		    
 		    /*** Start the RVM ***/
 		    bool useCascade;
-		    if (s < cascadeSize - 1) {
-			useCascade = true;
-		    } else {
-			useCascade = false;
-		    }
+		    if (s < cascadeSize - 1) useCascade = true;
+		    else useCascade = false;
+		    
 		    fast_updates(designMatrix, target, estimatedCoeff,\
 				 measurements, dictionarySize, noiseStD,\
 				 errors, cascadeBasis[s], useCascade,\
 				 deltaML_threshold, printToCOut);
-		    if (printToCOut) {
+		    if (printToCOut)
 			std::cout << "||" << std::endl;
-		    }
-		    multiply2D1D(cascadeBasis[s], estimatedCoeff,\
-				 recoveredVector, blockSize, dictionarySize);
-		    fillSensedInfo(initialSignalVector, recoveredVector,\
-				   initialSensedVector, blockSize);
+		    
+		    recoveredVector = matMult(cascadeBasis[s], estimatedCoeff);
+		    recoveredVector.fill(initialSignalVector, initialSensedVector);
 		    
 		    /*** Save recovered patch ***/
-		    deVectorize(recoveredVector, recoveredPatch,\
-				blockHeight, blockWidth, blockFrames);
-		    putPatch3D(recoveredPatch, cascadeRecoveredSignals[s],\
-			       blockHeight, blockWidth, blockFrames,	\
-			       blockIndexRows, blockIndexCols, blockIndexFrames);
+		    recoveredPatch = reshape(recoveredVector, blockHeight, 
+					     blockWidth, blockFrames);
 		    
+		    cascadeRecoveredSignals[s]
+			.putPatch(recoveredPatch, blockIndexRows*blockHeight,
+				  blockIndexCols*blockWidth, blockIndexFrame*blockFrames);
+							
 		    /*** Prepare for next part of cascade ***/
 		    if (useCascade) {
 			for (int i = 0; i < blockSize; ++i) { 
-			    if (errors[i] != 0) { // Get new mask 
-				sensedPatchVector[i] = true;
-			    } else {
-				sensedPatchVector[i] = false;
-			    }
+			    if (errors(i) != 0) sensedPatchVector(i) = true; // get new mask
+			    else sensedPatchVector(i) = false;
+			    
 			    // Recovered becomes new signal Patch to get targets for next stage
-			    signalPatchVector[i] = recoveredVector[i]; 
+			    signalPatchVector(i) = recoveredVector(i); 
 			}
 
 		    }
-
-		    /*** Clean-up loop ***/		    
-		    for (int i = 0; i < measurements; ++i) {
-			delete[] designMatrix[i];
-		    }
-		    delete[] designMatrix;
-		    delete[] target;
-		
-		    delete[] errors;
-		    delete[] estimatedCoeff;		
 		}				    
 	    }
 	}
@@ -256,58 +183,6 @@ int main()
 	output3Dsignals(cascadeRecoveredSignals[s], label.str(),\
 			actualSimulation);
     }
-
-
-	
-    /*** Clean-up ***/
-    for (int s = 0; s < cascadeSize; ++s) {
-	for (int i = 0; i < signalHeight; ++i) {
-	    for (int j = 0; j < signalWidth; ++j) {
-		delete[] cascadeRecoveredSignals[s][i][j];
-	    }
-	    delete[] cascadeRecoveredSignals[s][i];
-	}
-	delete[] cascadeRecoveredSignals[s];
-    }
-    for (int i = 0; i < blockHeight; ++i) {
-	for (int j = 0; j < blockWidth; ++j) {
-	    delete[] recoveredPatch[i][j];
-	}
-	delete[] recoveredPatch[i];
-    }
-    delete[] recoveredPatch;
-    delete[] recoveredVector;
-    delete[] sensedPatchVector;
-    delete[] signalPatchVector;
-    for (int i = 0; i < blockHeight; ++i) {
-	for (int j = 0; j < blockWidth; ++j) {
-	    delete[] sensedPatch[i][j];
-	    delete[] signalPatch[i][j];
-	}
-	delete[] sensedPatch[i];
-	delete[] signalPatch[i];
-    }
-    delete[] sensedPatch;
-    delete[] signalPatch;
-    for (int s = 0; s < cascadeSize; ++s) {
-	for (int i = 0; i < blockSize; ++i) {
-	    delete[] cascadeBasis[s][i];
-	}
-	delete[] cascadeBasis[s];
-    }
-    for (int i = 0; i < signalHeight; ++i) {
-	for (int j = 0; j < signalWidth; ++j) {
-	    delete[] sensedEntries[i][j];
-	    delete[] corruptedSignal[i][j];
-	    delete[] signal[i][j];
-	}
-	delete[] sensedEntries[i];
-	delete[] corruptedSignal[i];
-	delete[] signal[i];
-    }
-    delete[] sensedEntries;
-    delete[] corruptedSignal;
-    delete[] signal;
 
     return 0;   
 }

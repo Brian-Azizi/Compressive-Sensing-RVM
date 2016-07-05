@@ -35,8 +35,9 @@ bool printToCOut = true;
 int const rngSeed = 42;
 
 /*** Corrupter settings ***/
-corruptionMode const corrupterSetting = uniform;
-double const percentage = 70;
+Corrupter corr;
+corr.setting = Corrupter::uniform;
+corr.perc = 70;
 
 /*** Basis Function settings ***/
 basisFunctionMode const basisMode = dct;

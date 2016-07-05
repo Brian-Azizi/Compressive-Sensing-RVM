@@ -11,7 +11,7 @@ void _LL_generate(T **LL, int scale, int currentScale,\
     
     if (currentScale == scale) {
 	int full_dim1 = w*h;
-	int full_dim2 = smallestW * smallestH / 8;
+	int full_dim2 = smallestW * smallestH / 4;
 	T **tempFull = new T*[full_dim1];
 	for (int i = 0; i < full_dim1; ++i) {
 	    tempFull[i] = new T[full_dim2];
