@@ -118,6 +118,7 @@ public:
     SigDim dim() const { return SigDim(m_height, m_width, m_frames); }
     void reshape(int height, int width, int frames);
     void reshape(const SigDim& dim);
+    Signal<T> operator*(T factor) const;
 };
 
 template <typename T> Signal<T>::Signal(int height, int width, int frames)
@@ -158,8 +159,7 @@ template <typename T> Signal<T>::Signal(const Signal<T>& arg)
     : m_height(arg.m_height), m_width(arg.m_width), m_frames(arg.m_frames),
       m_data(new T[arg.m_height*arg.m_width*arg.m_frames]) 
 {
-    for (int i = 0; i < m_height*m_width*m_frames; ++i) m_data[i] = arg.m_data[i];
-    check();
+    for (int i = 0; i < m_height*m_width*m_frames; ++i) m_data[i] = arg.m_data[i]; 
 }
 
 template <typename T> template<typename V>
@@ -169,7 +169,7 @@ Signal<T>::Signal(const Signal<V>& arg)
 {
     for (int i = 0; i < m_height*m_width*m_frames; ++i) 
 	m_data[i] = static_cast<T>(arg.data()[i]);
-    check();
+
 }
 
 
@@ -183,7 +183,6 @@ template <typename T> Signal<T>& Signal<T>::operator=(const Signal<T>& arg) {
     m_height = arg.m_height;
     m_width = arg.m_width;
     m_frames = arg.m_frames;
-    check();
     return *this;
 }
 
@@ -377,4 +376,20 @@ template<class T>
 void Signal<T>::reshape(const SigDim& dim)
 {
     return reshape(dim.height(),dim.width(),dim.frames());
+}
+
+template <typename T>
+Signal<T> Signal<T>::operator*(T factor) const
+{
+    Signal<T> ret(this->dim());
+    int sz = this->size();
+    for (int i = 0; i < sz; ++i) ret.data()[i] = factor * this->data()[i];
+    return ret;
+}
+
+// not a member function
+template <typename T, typename V>
+Signal<V> operator*(V factor, const Signal<T>& A)
+{
+    return A.operator*(factor);
 }

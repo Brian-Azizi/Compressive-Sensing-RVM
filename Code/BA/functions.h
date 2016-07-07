@@ -515,3 +515,66 @@ Signal<double> read(const std::string& inputFile, int numFrames = 1)
 
     return ret;
 }
+
+double norm(const Signal<double> A)
+{
+    if (A.width() != 1 || A.frames() != 1) error("can only take norm of a vector");
+
+    double p = 0;    
+    int length = A.height();
+    for (int i = 0; i < length; ++i) p += A(i)*A(i);
+	
+    return std::sqrt(p);
+}
+
+double dot(const Signal<double> a, const Signal<double> b)
+{
+    if (a.width() != 1 || a.frames() != 1 || b.width() != 1 || b.frames() != 1
+	|| a.height() != b.height()) error("arguments must be vectors of the same length");
+    double ret = 0;
+    int length = a.height();
+    for (int i = 0; i < length; ++i) ret += a(i)*b(i);
+
+    return ret;
+}
+
+
+Signal<double> cholesky(const Signal<double>& A)
+{
+    if (A.frames() != 1 || A.height() != A.width()) error("input must be square matrix");
+    int N = A.height();
+
+    Signal<double> chol(N,N);
+    for (int i = 0; i < N; ++i) {
+	chol(i,i) = A(i,i);
+	for (int k = 0; k < i; ++k) chol(i,i) -= chol(k,i)*chol(k,i);
+	chol(i,i) = std::sqrt(chol(i,i));
+
+	for (int j = i+1; j < N; ++j) {
+	    chol(i,j) = A(i,j);
+	    for (int k = 0; k < i; ++k) chol(i,j) -= chol(k,i)*chol(k,i);
+	    chol(i,j) /= chol(i,i);
+	}
+    }
+    
+    return chol;
+}
+
+Signal<double> inversed(const Signal<double>& A)
+{
+   if (A.frames() != 1 || A.height() != A.width()) error("input must be square matrix");
+   int N = A.height();
+
+   Signal<double> inv(N,N);
+   for (int j = 0; j < N; ++j) {
+       inv(j,j) = 1.0/A(j,j);
+       
+       for (int i = 0; i < j; ++i)
+	   for (int k = 0; k < j; ++k) 
+	       inv(i,j) += inv(i,k)*A(k,j);
+       for (int k = 0; k < j; ++k)
+	   inv(k,j) /= -A(j,j);
+   }
+
+   return inv;
+}

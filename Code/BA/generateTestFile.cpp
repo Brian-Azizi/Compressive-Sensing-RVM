@@ -4,12 +4,12 @@
 
 int main() 
 {
-    int height = 8;
-    int width = 8;
-    int frames = 16;
+    int height = 3;
+    int width = 3;
+    int frames = 1;
     
     std::stringstream ss;
-    ss << "test-" << height << "-" << width << "-" << frames << ".txt"; 
+    ss << "test_" << height << "-" << width << "-" << frames << ".txt"; 
         
     std::ofstream outFile(ss.str().c_str());
     for (int k = 0; k < frames; ++k) {

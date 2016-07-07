@@ -5,8 +5,8 @@ width = 512;
 frames = 1;
 
 input = strcat(name,'_',num2str(height),'-',num2str(width),'-',num2str(frames));
-blockDim = '16-16-1';
-corrPerc = '30%';
+blockDim = '8-8-1';
+corrPerc = '70%';
 corrMode = 'uniform'; 
 basisMode = 'dct';
 topScale = 1;
@@ -23,8 +23,13 @@ frameRate = 30;
 origFile = strcat('/local/data/public/ba308/InputFiles/',input,'.txt');
 corruptFile = strcat('/local/data/public/ba308/Simulations/',input,'/',blockDim,...
     '_',corrPerc,'_',corrMode,'_',basisMode, '_corrupted_',input,'.txt');
+maskFile = strcat('/local/data/public/ba308/Simulations/',input,'/',blockDim,...
+    '_',corrPerc,'_',corrMode,'_',basisMode, '_mask_',input,'.txt');
+
+
 original = txt2rawBW(origFile, height, width, frames);
 corrupt = txt2rawBW(corruptFile, height, width, frames);
+mask = txt2rawBW(maskFile, height, width, frames);
 
 surpressOutput = false;
 
@@ -37,12 +42,18 @@ if frames == 1
     figure('name',corruptFile);
     imshow(corrupt, [0 255]);
 %     title(corruptFile);
+
+    figure('name',maskFile);
+    imshow(mask);
 else
     oh = implay(uint8(original), frameRate);
     set(oh.Parent,'name',origFile);
     
     ch = implay(uint8((corrupt)), frameRate);
     set(ch.Parent,'name',corruptFile);
+    
+    mh = implay(mask, frameRate);
+    set(mh.Parent,'name',maskFile);
 end
 end
 
@@ -70,7 +81,7 @@ for si = 1:length(cascades)
     end
 end
 
-testBlock2
+%testBlock2
 
 analyzePix
 

@@ -15,41 +15,18 @@
 
 #include "classes.h"		// class definitions
 #include "functions.h"		// function definitions
-
+#include "rvm.h"
 
 // GGP's files
-#include "Headers/utilities.h"	// linear algebra utilities
-//#include "Headers/kronecker.h"	     // To calculate kronecker products
-#include "Headers/init.h"	// Needed for fast_updates
-#include "Headers/full_statistics.h" // Needed for fast_updates
-#include "Headers/fast_updates.h"    // RVM engine
+// #include "Headers/utilities.h"	// linear algebra utilities
+// #include "Headers/init.h"	// Needed for fast_updates
+// #include "Headers/full_statistics.h" // Needed for fast_updates
+// #include "Headers/fast_updates.h"    // RVM engine
 
 // BA's files
-#include "Headers/definitions.h" // Needed by settings file
 #include "settingsFile.h"
 #include "Headers/settingsTester.h" // test that settings file is okay
-//#include "Headers/input3D.h" // gets input data from raw txt file and stores in rank3 array
-//#include "Headers/print3D.h" // outputs rank3 arrays to an output stream
-//#include "Headers/print2D.h" // outputs rank2 arrays to an output stream
-//#include "Headers/print1D.h" // outputs rank1 arrays to an output stream
-//#include "Headers/getPatch3D.h"	// copies a block out of the larger 3D signal
-//#include "Headers/vectorize3D.h" // turns rank3 array (block) into a rank1 array
-//#include "Headers/getBasis.h"	 // Interface for basis functions
-//#include "Headers/_LL_generate2D.h" // Needed for haarBasis2D
-//#include "Headers/haarBasis2D.h"    // Needed for haarBasis
-//#include "Headers/_LLL_generate.h"  // Needed for haarBasis
-//#include "Headers/haarBasis.h"	    // Needed for getBasis
-//#include "Headers/corruptSignal.h" // applies corruption to signal block
-//#include "Headers/countSensed.h" // counts uncorrupted pixels in signal block
-//#include "Headers/getTargets.h"	// gets target vector from sensed signal pixels
-//#include "Headers/getDesignMatrix.h" // gets design matrix from dictionary matrix
-//#include "Headers/fillSensedInfo.h" // fills reconstructed signal with previously sensed pixels
-//#include "Headers/deVectorize.h" // turns rank1 arrays back into rank3 arrays
-//#include "Headers/putPatch3D.h"	// copies a signal block back into the larger 3D signal
-#include "Headers/output3D.h"	// saves output into text files 
-//#include "Headers/dctMatrix.h" // needed by dctBasis.h and dctBasis2D.h
-//#include "Headers/dctBasis2D.h"	// needed by dctBasis.h
-//#include "Headers/dctBasis.h"	// needed by getBasis
+//#include "Headers/output3D.h"	// saves output into text files 
 
 int main()
 {
@@ -112,10 +89,10 @@ int main()
 			      << ")" << std::endl;
 		}
 		signalPatch = corruptedSignal
-		    .getPatch3D(blockIndexRows*blockHeight, blockIndexCols*blockWidth,
+		    .getPatch(blockIndexRows*blockHeight, blockIndexCols*blockWidth,
 				blockIndexFrames*blockFrames, blockHeight, blockWidth, blockFrames);
 		sensedPatch = sensedEntries
-		    .getPatch3D(blockIndexRows*blockHeight, blockIndexCols*blockWidth,
+		    .getPatch(blockIndexRows*blockHeight, blockIndexCols*blockWidth,
 				blockIndexFrames*blockFrames, blockHeight, blockWidth, blockFrames);
 		
 		signalPatchVector = vectorize(signalPatch);
@@ -127,26 +104,26 @@ int main()
 		    int measurements = countSensed(sensedPatchVector);
 		    
 		    /*** Declare and define RVM variables ***/
-		    Signal<basisType> target(measurements);
+		    Signal<basisType> targets(measurements);
 		    Signal<basisType> designMatrix(measurements, dictionarySize);
-		    Signal<basisType> estimatedCoeff(dictionarysize); // init to 0
-		    signal<basisType> errors(dictionarySize);
+		    Signal<basisType> estimatedCoeff(dictionarySize); // init to 0
+		    Signal<basisType> errors(dictionarySize);
 		    
-		    target = getTargets(signalPatchVector, sensedPatchVector);
+		    targets = getTargets(signalPatchVector, sensedPatchVector);
 		    designMatrix = getDesignMatrix(cascadeBasis[s], sensedPatchVector);
-		    		    
+
 		    /*** Start the RVM ***/
 		    bool useCascade;
 		    if (s < cascadeSize - 1) useCascade = true;
 		    else useCascade = false;
 		    
-		    fast_updates(designMatrix, target, estimatedCoeff,\
-				 measurements, dictionarySize, noiseStD,\
-				 errors, cascadeBasis[s], useCascade,\
-				 deltaML_threshold, printToCOut);
-		    if (printToCOut)
-			std::cout << "||" << std::endl;
-		    
+		    RVM<double> rvm;
+		    rvm.setSigma(noiseStD);
+		    rvm.setDeltaML(deltaML_threshold);
+		    rvm.train_fastUpdates(designMatrix, targets);
+		    estimatedCoeff = rvm.coefficients();
+		    // std::cout << estimatedCoeff;
+		    // assert(false);
 		    recoveredVector = matMult(cascadeBasis[s], estimatedCoeff);
 		    recoveredVector.fill(initialSignalVector, initialSensedVector);
 		    
@@ -156,7 +133,7 @@ int main()
 		    
 		    cascadeRecoveredSignals[s]
 			.putPatch(recoveredPatch, blockIndexRows*blockHeight,
-				  blockIndexCols*blockWidth, blockIndexFrame*blockFrames);
+				  blockIndexCols*blockWidth, blockIndexFrames*blockFrames);
 							
 		    /*** Prepare for next part of cascade ***/
 		    if (useCascade) {
@@ -175,14 +152,21 @@ int main()
     }
 
     /*** Output ***/
-    output3Dsignals(sensedEntries, "mask", actualSimulation);
-    output3Dsignals(corruptedSignal, "corrupted", actualSimulation);
+    std::ofstream corrOut("corrupted.out");
+    corrOut << corruptedSignal;
+    
+    // output3Dsignals(sensedEntries, "mask", actualSimulation);
+    // output3Dsignals(corruptedSignal, "corrupted", actualSimulation);
     for (int s = 0; s < cascadeSize; ++s) {
-	std::stringstream label;
-	label << "recovered_" << s+1 << "_of_" << endScale;
-	output3Dsignals(cascadeRecoveredSignals[s], label.str(),\
-			actualSimulation);
+    	std::stringstream label;
+    	label << "recovered_" << s+1 << "_of_" << endScale << ".out";
+	//    	output3Dsignals(cascadeRecoveredSignals[s], label.str(), \
+    	//		actualSimulation);
+	std::ofstream recOut(label.str().c_str());
+	recOut << cascadeRecoveredSignals[s];
+	recOut.close();
     }
-
+    
+    
     return 0;   
 }
