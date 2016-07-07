@@ -249,6 +249,7 @@ int main()
 
     /*** Output ***/
     output3Dsignals(corruptedSignal, "corrupted", actualSimulation);
+    output3Dsignals(sensedEntries, "mask", actualSimulation);
     for (int s = 0; s < cascadeSize; ++s) {
 	std::stringstream label;
 	label << "recovered_" << s+1 << "_of_" << endScale;

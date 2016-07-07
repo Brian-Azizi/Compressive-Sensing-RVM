@@ -1,12 +1,12 @@
 % settings
 name = 'lenna';
-height = 512;
-width = 512;
+height = 128;
+width = 128;
 frames = 1;
 
 input = strcat(name,'_',num2str(height),'-',num2str(width),'-',num2str(frames));
-blockDim = '16-16-1';
-corrPerc = '30%';
+blockDim = '8-8-1';
+corrPerc = '20%';
 corrMode = 'uniform'; 
 basisMode = 'dct';
 topScale = 1;
