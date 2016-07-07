@@ -7,7 +7,8 @@
 //std::string const inputFileStem = "soccer_288-352-300.txt";
 //std::string const inputFileStem = "stefan_288-352-80.txt";
 //std::string const inputFileStem = "waterfall_128-128-64.txt";
-std::string const inputFileStem = "lenna_512-512-1.txt";
+//std::string const inputFileStem = "lenna_512-512-1.txt";
+std::string const inputFileStem = "lenna_128-128-1.txt";
 
 //std::string const inputFileStem = "test_4-8-2.txt";
 //std::string const inputFileStem = "test_8-8-8.txt";
@@ -19,12 +20,12 @@ bool const actualSimulation = true; // set to false to prepend outfile names wit
 typedef unsigned int signalType; 
 typedef double basisType;
 
-unsigned int const signalHeight = 512; // unsigned ints: be careful with wrap-arounds!
-unsigned int const signalWidth = 512;
+unsigned int const signalHeight = 128; // unsigned ints: be careful with wrap-arounds!
+unsigned int const signalWidth = 128;
 unsigned int const signalFrames = 1;
 
-unsigned int const blockHeight = 16;
-unsigned int const blockWidth = 16;
+unsigned int const blockHeight = 8;
+unsigned int const blockWidth = 8;
 unsigned int const blockFrames = 1;
 
 /*** print progress to standard output? ***/
@@ -35,7 +36,7 @@ int const rngSeed = time(NULL);
 
 /*** Corrupter settings ***/
 corruptionMode const corrupterSetting = uniform;
-double const percentage = 30;
+double const percentage = 20;
 
 /*** Basis Function settings ***/
 basisFunctionMode const basisMode = dct;
