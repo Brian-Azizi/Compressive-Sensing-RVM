@@ -13,68 +13,66 @@
 #include <sys/stat.h>
 #include <vector>
 
-#include "classes.h"		// class definitions
-#include "functions.h"		// function definitions
-#include "rvm.h"
+#include "Signal.hpp"
+#include "rvm.hpp"
+#include "settingsFile.hpp"
 
-// GGP's files
-// #include "Headers/utilities.h"	// linear algebra utilities
-// #include "Headers/init.h"	// Needed for fast_updates
-// #include "Headers/full_statistics.h" // Needed for fast_updates
-// #include "Headers/fast_updates.h"    // RVM engine
 
-// BA's files
-#include "settingsFile.h"
-#include "Headers/settingsTester.h" // test that settings file is okay
-//#include "Headers/output3D.h"	// saves output into text files 
+
+//#include "Headers/settingsTester.h" // test that settings file is okay
 
 int main()
 {
-    /* Test if Settings make sense and define constants.
-       Note: Does not test if input txt file is valid! */
-    testSettings();
     
     /*** RNG Settings ***/
-    std::srand(rngSeed);
+    std::srand(rngSeed);    
+
+    /* Input Original Signal */
+    Signal<signalType> signal = readSignal(inputFile);
+    Signal<signalType> block(blockDim);
+
+    // /* Test if Settings make sense and define constants.
+    //    Note: Does not test if input txt file is valid! */
+    // testSettings();
+
     
     /*** Program constants ***/
-    unsigned int const numBlocksHeight = signalHeight / blockHeight;
-    unsigned int const numBlocksWidth = signalWidth / blockWidth;
-    unsigned int const numBlocksFrames = signalFrames / blockFrames;
-    
-    unsigned int const signalSize = signalHeight*signalWidth*signalFrames;
-    unsigned int const blockSize = blockHeight*blockWidth*blockFrames;
-    unsigned int const dictionarySize = blockSize;
+    unsigned int const numBlocksHeight = signal.height() / blockDim.height();
+    unsigned int const numBlocksWidth = signal.width() / blockDim.width();
+    unsigned int const numBlocksFrames = signal.frames() / blockDim.frames();
+    unsigned int const blockHeight = blockDim.height();
+    unsigned int const blockWidth = blockDim.width();
+    unsigned int const blockFrames = blockDim.frames();
+
+    unsigned int const signalSize = signal.size();
+    unsigned int const dictionarySize = blockDim.size(), blockSize = blockDim.size();
 
     unsigned int const cascadeSize = endScale - startScale + 1;
     
     /*** Memory allocation ***/
-    Signal<signalType> signal(signalHeight, signalWidth, signalFrames);
-    Signal<signalType> corruptedSignal(signalHeight, signalWidth, signalFrames);
-    Signal<bool> sensedEntries(signalHeight, signalWidth, signalFrames);
-
-    Signal<signalType> signalPatch(blockHeight, blockWidth, blockFrames);
-    Signal<bool> sensedPatch(blockHeight, blockWidth, blockFrames);
+    Signal<signalType> corruptedSignal(signal.dim());
+    Signal<bool> sensedEntries(signal.dim());
+    Signal<signalType> signalPatch(blockDim);
+    Signal<bool> sensedPatch(blockDim);
 
     Signal<signalType> signalPatchVector(blockSize);
     Signal<bool> sensedPatchVector(blockSize);
     Signal<bool> initialSensedVector(blockSize);
     Signal<signalType> initialSignalVector(blockSize);
     Signal<basisType> recoveredVector(blockSize);
-    Signal<basisType> recoveredPatch(blockHeight, blockWidth, blockFrames);
+    Signal<basisType> recoveredPatch(blockDim);
     
     std::vector<Signal<basisType> > cascadeRecoveredSignals
-	(cascadeSize, Signal<basisType>(signalHeight, signalWidth, signalFrames));
+	(cascadeSize, Signal<basisType>(signal.dim()));
     std::vector<Signal<basisType> > cascadeBasis
 	(cascadeSize, Signal<basisType>(dictionarySize, dictionarySize));
     
     /*** start logic ***/
-    signal.read(inputFile);
     corruptedSignal = corruptSignal(signal, sensedEntries, corr);
         
     // Get basis matrices for various scales
     for (int s = 0; s < cascadeSize; ++s) {
-	cascadeBasis[s] = getBasis(blockHeight, blockWidth,  blockFrames, basisMode, startScale+s);
+	cascadeBasis[s] = getBasis(blockDim, basisMode, startScale+s);
     }
     
     // Loop over blocks of original signal
@@ -89,8 +87,8 @@ int main()
 			      << ")" << std::endl;
 		}
 		signalPatch = corruptedSignal
-		    .getPatch(blockIndexRows*blockHeight, blockIndexCols*blockWidth,
-				blockIndexFrames*blockFrames, blockHeight, blockWidth, blockFrames);
+		    .getPatch(blockIndexRows*blockDim.height(), blockIndexCols*blockDim.width(),
+			      blockIndexFrames*blockDim.frames(), blockHeight, blockWidth, blockFrames);
 		sensedPatch = sensedEntries
 		    .getPatch(blockIndexRows*blockHeight, blockIndexCols*blockWidth,
 				blockIndexFrames*blockFrames, blockHeight, blockWidth, blockFrames);
@@ -122,8 +120,6 @@ int main()
 		    rvm.setDeltaML(deltaML_threshold);
 		    rvm.train_fastUpdates(designMatrix, targets);
 		    estimatedCoeff = rvm.coefficients();
-		    // std::cout << estimatedCoeff;
-		    // assert(false);
 		    recoveredVector = matMult(cascadeBasis[s], estimatedCoeff);
 		    recoveredVector.fill(initialSignalVector, initialSensedVector);
 		    
@@ -144,7 +140,6 @@ int main()
 			    // Recovered becomes new signal Patch to get targets for next stage
 			    signalPatchVector(i) = recoveredVector(i); 
 			}
-
 		    }
 		}				    
 	    }

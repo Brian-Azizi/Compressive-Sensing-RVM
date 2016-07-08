@@ -4,9 +4,9 @@
 
 int main() 
 {
-    int height = 3;
-    int width = 3;
-    int frames = 1;
+    int height = 4;
+    int width = 8;
+    int frames = 3;
     
     std::stringstream ss;
     ss << "test_" << height << "-" << width << "-" << frames << ".txt"; 
@@ -19,6 +19,7 @@ int main()
 	    }
 	    outFile << std::endl;
 	}
+	outFile << std::endl;
     }
 
     outFile.close();

@@ -1,4 +1,364 @@
+#ifndef GUARD_SIGNAL_TPP
+#define GUARD_SIGNAL_TPP
+
+#include <fstream>
+#include <iostream>
+#include <sstream>
 #include <cmath>
+#include <cstdlib>
+#include <stdexcept>
+
+
+/*** Error helper functions ***/
+void error(const std::string& s) {
+    throw std::runtime_error(s);
+}
+void error(const std::string& s1, const std::string& s2) {
+    error(s1 + s2);
+}
+void error(const std::string& s1, int i) {
+    std::ostringstream os;
+    os << s1 << ": " << i;
+    error(os.str());
+}
+
+
+/*** Corrupter members ***/
+Corrupter::Corrupter(double p, corruptionMode m) {
+    setPercentage(p);
+    m_setting = m;
+}
+Corrupter::Corrupter(corruptionMode m, double p) {
+    setPercentage(p);
+    m_setting = m;
+}
+Corrupter::Corrupter() {
+    setPercentage(0);
+    m_setting = Corrupter::uniform;
+}
+std::string Corrupter::settingString() const { 
+    return modeToString(m_setting);
+}
+void Corrupter::setPercentage(double perc) {
+    if (perc < 0 || perc > 100) error("percentage must be in range [0,100]");
+    m_perc = perc;
+}
+std::string modeToString(const Corrupter::corruptionMode& mode) {
+    static const std::string settingsString[] = {"uniform", "timeRays", "verticalFlicker", "horizontalFlicker", "missingFrames", "verticalLines", "horizontalLines"};
+    return settingsString[mode];
+}
+
+/*** basisMode members ***/
+
+std::string basisFunctionStrings[] = {"haar", "dct"};
+
+/*** SigDim members ***/
+std::ostream& operator<<(std::ostream& os, const SigDim& dim) {
+    os << dim.height() << " " << dim.width() << " " << dim.frames();
+    return os;
+}
+
+
+/*** Signal members ***/
+
+template <typename T> Signal<T>::Signal(int height, int width, int frames)
+    : m_height(height), m_width(width), m_frames(frames),
+      m_data(new T[height*width*frames]) 
+{
+    check();
+    for (int i = 0; i < height*width*frames; ++i) m_data[i] = 0;
+}
+template <typename T> Signal<T>::Signal(int height, int width)
+    : m_height(height), m_width(width), m_frames(1),
+      m_data(new T[height*width])
+{
+    check();
+    for (int i = 0; i < height*width; ++i) m_data[i] = 0;
+}
+template <typename T> Signal<T>::Signal(int height)
+    : m_height(height), m_width(1), m_frames(1),
+      m_data(new T[height])
+{
+    check();
+    for (int i = 0; i < height; ++i) m_data[i] = 0;
+}
+template <typename T> Signal<T>::Signal() 
+    : m_height(0), m_width(0), m_frames(0),
+      m_data(0) 
+{
+}
+template <typename T> Signal<T>::Signal(const SigDim& dim)
+    : m_height(dim.height()), m_width(dim.width()), m_frames(dim.frames()),
+      m_data(new T[dim.size()])
+{
+    check();
+    int sz = dim.size();
+    for (int i = 0; i < sz; ++i) m_data[i] = 0;
+}
+
+template <typename T> Signal<T>::Signal(const Signal<T>& arg)
+    : m_height(arg.m_height), m_width(arg.m_width), m_frames(arg.m_frames),
+      m_data(new T[arg.m_height*arg.m_width*arg.m_frames]) 
+{
+    for (int i = 0; i < m_height*m_width*m_frames; ++i) m_data[i] = arg.m_data[i]; 
+}
+template <typename T> template<typename V>
+Signal<T>::Signal(const Signal<V>& arg)
+    : m_height(arg.height()), m_width(arg.width()), m_frames(arg.frames()),
+      m_data(new T[arg.height()*arg.width()*arg.frames()]) 
+{
+    for (int i = 0; i < m_height*m_width*m_frames; ++i) 
+	m_data[i] = static_cast<T>(arg.data()[i]);
+}
+template <typename T> Signal<T>& Signal<T>::operator=(const Signal<T>& arg) {
+    int sz = arg.size();
+    T* p = new T[sz];
+    for (int i = 0; i < sz; ++i) p[i] = arg.m_data[i];
+    delete[] m_data;  
+    m_data = p;
+    m_height = arg.m_height;
+    m_width = arg.m_width;
+    m_frames = arg.m_frames;
+    return *this;
+}
+
+template<class T> T& Signal<T>::operator() (int i, int j, int k)
+{
+    return m_data[i*m_width + j + k*m_height*m_width]; 
+}
+template<class T> T Signal<T>::operator() (int i, int j, int k) const
+{
+    return m_data[i*m_width + j + k*m_height*m_width]; 
+}
+template<class T> T& Signal<T>::operator() (int i, int j) 
+{
+    if (m_frames != 1) error("index unspecified");
+    return this->operator()(i, j, 0);
+}
+template<class T> T Signal<T>::operator() (int i, int j) const 
+{
+    if (m_frames != 1) error("index unspecified");
+    return this->operator()(i, j, 0);
+}
+template<class T> T& Signal<T>::operator() (int i) 
+{
+    if (m_width != 1 || m_frames != 1) error("unspecified index");
+    return this->operator()(i,0,0);
+}
+template<class T> T Signal<T>::operator() (int i) const 
+{
+    if (m_width != 1 || m_frames != 1) error("unspecified index");
+    return this->operator()(i,0,0);
+}
+
+template <typename T> void Signal<T>::check() {
+    if (m_height < 1 || m_width < 1 || m_frames < 1)
+	error("Bad Signal: ", "non-positive dimensions");
+    if (m_data == 0) 
+	error("Bad Signal: ", "no data");
+    return;
+}
+
+template <typename T> void Signal<T>::read(const std::string& inputFile) {
+    std::ifstream in(inputFile.c_str());
+    if (!in) error("can't open input file ", inputFile);
+    
+    T number; 
+    int idx = 0;
+    
+    while (in >> number) {
+	m_data[idx] = number;
+	++idx;
+    }
+    if (idx != this->size()) error("size of Signal does not match size of input file ", inputFile);
+    in.close();
+    
+    return;
+}
+
+template <typename T>
+void Signal<T>::putPatch(const Signal<T>& arg, int row, int col, int slice)
+{
+    if (row < 0 || col < 0 || slice < 0) error("negative indeces");
+    if (row + arg.height() > m_height||
+	col + arg.width() > m_width ||
+	slice + arg.frames() > m_frames) error("patch does not fit inside signal");
+   
+    int h = arg.height(), w = arg.width(), f = arg.frames();
+    for (int k = 0; k < f; ++k)
+	for (int i = 0; i < h; ++i)
+	    for (int j = 0; j < w; ++j)
+		this->operator()(row+i, col+j, slice+k) = arg(i,j,k);
+    return;
+}
+
+template <typename T>
+void Signal<T>::putPatch(const Signal<T>& arg, int row, int col)
+{
+    if (m_frames != 1) error("unspecified index");
+    return this->putPatch(arg, row, col, 0);
+}
+
+template <typename T>
+void Signal<T>::putPatch(const Signal<T>& arg, int row)
+{
+    if (m_width != 1) error("unspecified index");
+    return this->putPatch(arg, row, 0);
+}
+
+
+template <typename T>
+Signal<T> Signal<T>::getPatch(int hIdx, int wIdx, int fIdx,
+			      int pH, int pW, int pF) const
+{
+    if (hIdx < 0 || wIdx < 0 || fIdx < 0) error("negative indeces");
+    if (hIdx + pH > m_height ||
+	wIdx + pW > m_width ||
+	fIdx + pF > m_frames) error("out-of-range access");
+
+    Signal<T> patch(pH, pW, pF);
+    for(int k = 0; k < pF; ++k) {
+	for (int i = 0; i < pH; ++i) {
+	    for (int j = 0; j < pW; ++j) {
+		patch(i,j,k) = this->operator()(hIdx + i, 
+						wIdx + j, fIdx + k);
+	    }
+	}
+    }
+    
+    return patch;
+} 
+
+template <typename T>
+Signal<T> Signal<T>::getPatch(int hIdx, int wIdx, int pH, int pW) const 
+{
+    if (m_frames != 1) error("missing arguments for dimension 3");
+    return getPatch(hIdx, wIdx, 0, pH, pW, 1);
+}
+
+template <typename T>
+Signal<T> Signal<T>::getPatch(int hIdx, int pH) const
+{
+    if (m_width != 1) error("missing arguments for dimension 2");
+    return getPatch(hIdx, 0, pH, 1);
+}
+
+template <class T>
+void Signal<T>::fill(Signal<T> filler, Signal<bool> mask)
+{
+    // check dimensions match:
+    if (m_height != filler.height()
+	|| m_width != filler.width()
+	|| m_frames != filler.frames() ) error("filler dimensions don't match");
+    if (m_height != mask.height()
+	|| m_width != mask.width()
+	|| m_frames != mask.frames() ) error("mask dimensions don't match");
+    
+    int sz = this->size();
+    for (int i = 0; i < sz; ++i)
+	if (mask.data()[i])
+	    m_data[i] = filler.data()[i];
+
+    return;
+}
+
+template <class T>
+void Signal<T>::fill(Signal<T> filler)
+{
+    // check dimensions match:
+    if (m_height != filler.height()
+	|| m_width != filler.width()
+	|| m_frames != filler.frames() ) error("filler dimensions don't match");
+    
+    int sz = this->size();
+    for (int i = 0; i < sz; ++i)
+	    m_data[i] = filler.data()[i];
+
+    return;
+}
+
+template <class T> 
+void Signal<T>::fill(T num)
+{
+    int sz = this->size();
+    for (int i = 0; i < sz; ++i) m_data[i] = num;
+    return;
+}
+
+template <class T>
+void Signal<T>::reshape(int h, int w, int f = 1)
+{
+    if(this->size() != h*w*f) error("number of elements must not change");
+    
+    m_height = h;
+    m_width = w;
+    m_frames = f;
+    
+    check();
+    return;
+}
+
+template<class T>
+void Signal<T>::reshape(const SigDim& dim)
+{
+    return reshape(dim.height(),dim.width(),dim.frames());
+}
+
+template <typename T>
+Signal<T> Signal<T>::operator*(T factor) const
+{
+    Signal<T> ret(this->dim());
+    int sz = this->size();
+    for (int i = 0; i < sz; ++i) ret.data()[i] = factor * this->data()[i];
+    return ret;
+}
+
+/*** Signal helpers ***/
+template <typename T, typename V>
+Signal<V> operator*(V factor, const Signal<T>& A)
+{
+    return A.operator*(factor);
+}
+
+template <typename T>
+Signal<T> vectorize(const Signal<T>& arg)
+{
+    Signal<T> vec(arg.size());
+    for (int i = 0; i < arg.size(); ++i) 
+	vec.data()[i] = arg.data()[i];
+    
+    return vec;
+}
+
+template <typename T>
+Signal<T> transpose(const Signal<T>& arg)
+{
+    if (arg.frames() != 1) error("can only take transpose of 2D signal");
+    
+    Signal<T> ret(arg.width(), arg.height());
+    for (int i = 0; i < arg.height(); ++i)
+	for (int j = 0; j < arg.width(); ++j)
+	    ret(j,i) = arg(i,j);
+
+    return ret;
+}
+
+template <typename T> std::ostream& operator<<(std::ostream& os, const Signal<T>& s) 
+{
+    int h = s.height();
+    int w = s.width();
+    int f = s.frames();
+    for (int k = 0; k < f; ++k) {
+	for (int i = 0; i < h; ++i) {
+	    for (int j = 0; j < w; ++j) {
+		os << s(i,j,k) << " ";
+	    }
+	    os << "\n";
+	}
+	os << "\n";
+    }   
+    return os;
+}
 
 template <typename T> 
 Signal<T> corruptSignal(const Signal<T>& orig, Signal<bool>& sensed, const Corrupter& corr)
@@ -19,7 +379,7 @@ Signal<T> corruptSignal(const Signal<T>& orig, Signal<bool>& sensed, const Corru
 	for (int j = 0; j < w; ++j) {
 	    for (int k = 0; k < f; ++k) {
 		randNum = ((double) rand()) / RAND_MAX; //between 0 and 1
-		if (randNum < corr.perc/100) filterBlock(i,j,k) = false;
+		if (randNum < corr.percentage()/100) filterBlock(i,j,k) = false;
 		else filterBlock(i,j,k) = true;
 	    }
 	}
@@ -28,7 +388,7 @@ Signal<T> corruptSignal(const Signal<T>& orig, Signal<bool>& sensed, const Corru
     for (int k = 0; k < f; ++k) {
 	for (int i = 0; i < h; ++i) {
 	    for (int j = 0; j < w; ++j) {
-		switch (corr.setting) {
+		switch (corr.setting()) {
 		case Corrupter::uniform:
 		    sensed(i,j,k) = filterBlock(i,j,k);
 		    break;
@@ -386,7 +746,7 @@ Signal<double> dctBasis(int h, int w, int f)
 }
 
 
-Signal<double> getBasis(int height, int width, int frames, basisFunctionMode basisMode, int scale = 1)
+Signal<double> getBasis(int height, int width, int frames, basisFunctionMode basisMode, int scale)
 {
     Signal<double> ret(height*width*frames, height*width*frames);
     switch (basisMode) {
@@ -397,6 +757,11 @@ Signal<double> getBasis(int height, int width, int frames, basisFunctionMode bas
 	ret = dctBasis(height, width, frames);
 	return ret;
     }
+}
+
+Signal<double> getBasis(SigDim dim, basisFunctionMode basisMode, int scale)
+{
+    return getBasis(dim.height(), dim.width(), dim.frames(), basisMode, scale);
 }
 
 int countSensed(const Signal<bool>& sensed)
@@ -448,7 +813,7 @@ Signal<T> getDesignMatrix(const Signal<T>& orig,
 }
 
 template<typename T>
-Signal<T> reshape(Signal<T> orig, int h, int w, int f = 1) 
+Signal<T> reshape(Signal<T> orig, int h, int w, int f) 
 {
     int sz = h*w*f;
     if (orig.size() != sz) error("number of elements must not change");
@@ -464,7 +829,7 @@ Signal<T> reshape(Signal<T> orig, SigDim dim)
     return reshape(orig, dim.height(), dim.width(), dim.frames());
 }
 
-Signal<double> read(const std::string& inputFile, int numFrames = 1)
+Signal<double> read(const std::string& inputFile, int numFrames)
 {
     if (numFrames < 1) error("numFrames must be positive");
     std::ifstream in(inputFile.c_str());
@@ -578,3 +943,107 @@ Signal<double> inversed(const Signal<double>& A)
 
    return inv;
 }
+
+Signal<double> readSignal(const std::string& inputFile) // reads a signal from a file. Assumes frames are seperated by empty lines
+{
+    std::ifstream in(inputFile.c_str());
+    if(!in) error("couldn't open file ", inputFile);
+    
+    std::string line;
+    double entry;
+    
+    int rows = 0;
+    int cols = 0;
+    int frames = 0;
+    int prevCols = 0; // for checking if all rows have same #cols
+    int prevFramesCols = 0; // for checking if all frames have same width
+    int prevRows = 0;		// for checking all frames have same #rows
+    bool firstRow = true;
+    bool firstFrame = true;
+    bool lastLineEmpty = true;
+
+    while(std::getline(in, line)) {
+       	if (line.empty()) {
+	    if (!lastLineEmpty) { // we've finished a frame
+		if (!firstFrame) {
+		    if (prevRows != rows) error("frames do not have consistent height in file ", inputFile);
+		    if (prevFramesCols != cols) error("frames do not have consistent width in file ", inputFile);
+		} else firstFrame = false;
+		prevRows = rows;
+		prevFramesCols = cols;		
+	    }
+	    lastLineEmpty = true;
+	    continue;
+	} else if (lastLineEmpty) { // we've hit a frames
+	    frames++;
+	    rows = 0;
+	    firstRow = true;
+	    lastLineEmpty = false;
+	}
+	++rows;
+	std::istringstream os(line);
+	cols = 0;
+	while(os >> entry) {
+	    ++cols;
+	}
+	    
+	// check that frame has consistent width
+	if (firstRow) firstRow = false;
+	else {
+	    if (cols != prevCols) 
+		error("rows must have same number of entries in file ", inputFile);
+	}
+	prevCols = cols;	
+    }
+    std::cout << rows << "  "<< cols << "  " << frames << "\n";
+
+    Signal<double> ret(rows, cols, frames);
+    in.clear();
+    in.seekg(0, std::ios::beg);
+
+    int idx = 0;
+    while(in >> entry) {
+    	ret.data()[idx] = entry;
+    	++idx;
+    }
+
+    return ret;
+}
+
+
+template<class T>		// not finished yet
+void outputSignal(const Signal<T>& S, std::string label)
+{
+    std::stringstream ss;
+    
+        /*** save in /local/data/public/ ***/
+    ss << "/local/data/public/";
+    
+    /*** save in ba308 directory if it exists ***/
+    struct stat sb;
+    if (stat("/local/data/public/ba308/", &sb) == 0 && S_ISDIR(sb.st_mode)) {
+	ss << "ba308/";
+    }
+    
+    /*** save in ResultsDump directory if it exists ***/    
+    if (stat("/local/data/public/ba308/ResultsDump", &sb) == 0 && S_ISDIR(sb.st_mode)) {
+	ss << "ResultsDump/";
+    }
+
+    // ss << blockHeight << "-" << blockWidth << "-" << blockFrames << "_";   
+    // ss << percentage << "%_" << settingStrings[corrupterSetting];
+    // ss << "_" << basisFunctionStrings[basisMode];
+    // ss << "_" << label << "_" << inputFileStem;
+    
+    //    ss << label << ".txt";
+    
+    // std::string sigFile = ss.str();
+
+    // std::ofstream sigOut(sigFile.c_str());
+    // print3D(sigOut, sig, signalHeight, signalWidth, signalFrames);
+    // sigOut.close();
+
+    return;
+}
+
+#endif
