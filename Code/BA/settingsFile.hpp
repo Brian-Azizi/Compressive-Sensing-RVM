@@ -18,10 +18,7 @@
 
 std::string const inputFile = "lenna.txt";
 
-typedef unsigned int signalType; 
-typedef double basisType;
-
-const SigDim blockDim(8,8,1);
+const Dim blockDim(8,8,1);
 
 /*** print progress to standard output? ***/
 bool printToCOut = true;
@@ -33,7 +30,7 @@ int const rngSeed = time(NULL);
 Corrupter corr(20, Corrupter::uniform);
 
 /*** Basis Function settings ***/
-basisFunctionMode const basisMode = dct;
+SignalBasis::mode const basisMode = SignalBasis::dct;
 
 int const endScale = 1;	     	// For DCT keep Scale at 1
 

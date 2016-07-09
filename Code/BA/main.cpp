@@ -13,23 +13,29 @@
 #include <sys/stat.h>
 #include <vector>
 
+#include "Settings.hpp"
+#include "SignalBasis.hpp"
+#include "Corrupter.hpp"
 #include "Signal.hpp"
-#include "rvm.hpp"
+#include "RVM.hpp"
 #include "settingsFile.hpp"
 
+typedef unsigned int signalType; 
+typedef double basisType;
 
 
 //#include "Headers/settingsTester.h" // test that settings file is okay
 
-int main()
+int main(int argc, char* argv[])
 {
+    // if (argc < 2) error("No input file specified");
+    // if (argc > 2) error("To many input arguments");
     
-    /*** RNG Settings ***/
     std::srand(rngSeed);    
 
     /* Input Original Signal */
     Signal<signalType> signal = readSignal(inputFile);
-    Signal<signalType> block(blockDim);
+    Signal<signalType> block(blockDim.height(), blockDim.width(), blockDim.frames());
 
     // /* Test if Settings make sense and define constants.
     //    Note: Does not test if input txt file is valid! */

@@ -8,55 +8,10 @@
 #include <cstdlib>
 #include <stdexcept>
 
-
-/*** Error helper functions ***/
-void error(const std::string& s) {
-    throw std::runtime_error(s);
-}
-void error(const std::string& s1, const std::string& s2) {
-    error(s1 + s2);
-}
-void error(const std::string& s1, int i) {
-    std::ostringstream os;
-    os << s1 << ": " << i;
-    error(os.str());
-}
-
-
-/*** Corrupter members ***/
-Corrupter::Corrupter(double p, corruptionMode m) {
-    setPercentage(p);
-    m_setting = m;
-}
-Corrupter::Corrupter(corruptionMode m, double p) {
-    setPercentage(p);
-    m_setting = m;
-}
-Corrupter::Corrupter() {
-    setPercentage(0);
-    m_setting = Corrupter::uniform;
-}
-std::string Corrupter::settingString() const { 
-    return modeToString(m_setting);
-}
-void Corrupter::setPercentage(double perc) {
-    if (perc < 0 || perc > 100) error("percentage must be in range [0,100]");
-    m_perc = perc;
-}
-std::string modeToString(const Corrupter::corruptionMode& mode) {
-    static const std::string settingsString[] = {"uniform", "timeRays", "verticalFlicker", "horizontalFlicker", "missingFrames", "verticalLines", "horizontalLines"};
-    return settingsString[mode];
-}
-
-/*** basisMode members ***/
-
-std::string basisFunctionStrings[] = {"haar", "dct"};
-
-/*** SigDim members ***/
-std::ostream& operator<<(std::ostream& os, const SigDim& dim) {
-    os << dim.height() << " " << dim.width() << " " << dim.frames();
-    return os;
-}
+#include "Errors.hpp"
+#include "Corrupter.hpp"
+#include "SignalBasis.hpp"
+#include "Dim.hpp"
 
 
 /*** Signal members ***/
@@ -87,7 +42,7 @@ template <typename T> Signal<T>::Signal()
       m_data(0) 
 {
 }
-template <typename T> Signal<T>::Signal(const SigDim& dim)
+template <typename T> Signal<T>::Signal(const Dim& dim)
     : m_height(dim.height()), m_width(dim.width()), m_frames(dim.frames()),
       m_data(new T[dim.size()])
 {
@@ -299,7 +254,7 @@ void Signal<T>::reshape(int h, int w, int f = 1)
 }
 
 template<class T>
-void Signal<T>::reshape(const SigDim& dim)
+void Signal<T>::reshape(const Dim& dim)
 {
     return reshape(dim.height(),dim.width(),dim.frames());
 }
@@ -746,20 +701,20 @@ Signal<double> dctBasis(int h, int w, int f)
 }
 
 
-Signal<double> getBasis(int height, int width, int frames, basisFunctionMode basisMode, int scale)
+Signal<double> getBasis(int height, int width, int frames, SignalBasis::mode basisMode, int scale)
 {
     Signal<double> ret(height*width*frames, height*width*frames);
     switch (basisMode) {
-    case haar:
+    case SignalBasis::haar:
 	ret = haarBasis(height, width, frames, scale);
 	return ret;
-    case dct:
+    case SignalBasis::dct:
 	ret = dctBasis(height, width, frames);
 	return ret;
     }
 }
 
-Signal<double> getBasis(SigDim dim, basisFunctionMode basisMode, int scale)
+Signal<double> getBasis(Dim dim, SignalBasis::mode basisMode, int scale)
 {
     return getBasis(dim.height(), dim.width(), dim.frames(), basisMode, scale);
 }
@@ -824,7 +779,7 @@ Signal<T> reshape(Signal<T> orig, int h, int w, int f)
 }
 
 template<typename T>
-Signal<T> reshape(Signal<T> orig, SigDim dim) 
+Signal<T> reshape(Signal<T> orig, Dim dim) 
 {
     return reshape(orig, dim.height(), dim.width(), dim.frames());
 }
