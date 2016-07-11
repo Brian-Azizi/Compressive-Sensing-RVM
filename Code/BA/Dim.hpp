@@ -2,6 +2,7 @@
 #define GUARD_DIM_HPP
 
 #include <ostream>
+#include <string>
 
 /***Class for dimensions of signals ***/
 class Dim {
@@ -24,7 +25,7 @@ private:
 
 // helper functions
 std::ostream& operator<<(std::ostream& os, const Dim& dim);
-
+Dim dim_from_Signal_file(const std::string& fileName);
 
 // include implementation file
 #include "Dim.tpp"

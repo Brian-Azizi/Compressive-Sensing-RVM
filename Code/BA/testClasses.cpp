@@ -1,15 +1,17 @@
 #include <iostream>
 
-#include "Errors.hpp"
-#include "Corrupter.hpp"
-#include "SignalBasis.hpp"
-#include "Dim.hpp"
-#include "Signal.hpp"
+#include "SignalSettings.hpp"
 
-int main() {
-    Signal<double> A(2,2);
-    Signal<double> B(A.dim());
-    B.reshape(Dim(1,1,4));
-    std::cout << B;
 
+int main(int argc, char* argv[])
+{
+    if (argc < 2) error("No input file specified");
+    if (argc > 2) error("To many input arguments");
+ 
+    const std::string cfgFile = argv[1];
+
+    SignalSettings cfg("setting1.cfg");
+
+    std::srand(cfg.rngSeed);    
+    std::cout << cfg;
 }

@@ -1,6 +1,7 @@
 #ifndef GUARD_ERRORS_TPP
 #define GUARD_ERRORS_TPP
 
+#include <cstdlib>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -17,5 +18,14 @@ void error(const std::string& s1, int i) {
     os << s1 << ": " << i;
     error(os.str());
 }
+void exitWithError(const std::string& error)
+{
+    std::cout << error;
+    //std::cin.ignore();
+    std::cin.get();
+
+    exit(EXIT_FAILURE);
+}
+
 
 #endif

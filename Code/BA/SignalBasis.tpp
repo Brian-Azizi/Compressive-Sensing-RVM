@@ -66,10 +66,10 @@ SignalBasis::mode strToBasisMode(const std::string& ss)
 
 std::ostream& operator<<(std::ostream& os, const SignalBasis& bas)
 {
-    os << "Signal Basis Mode:\t " << bas.settingString() << std::endl;
+    os << "Signal Basis Mode:\t" << bas.settingString() << std::endl;
     
     if (bas.setting() != SignalBasis::dct)
-	os << "Scale:\t\t\t " << bas.scale() << "\n" << std::flush;
+	os << "Scale:\t\t\t" << bas.scale() << "\n" << std::flush;
 
     return os;
 }

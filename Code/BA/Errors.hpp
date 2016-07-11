@@ -7,7 +7,7 @@
 void error(const std::string&);
 void error(const std::string&, const std::string&);
 void error(const std::string&, int);
-
+void exitWithError(const std::string& error);
 
 // Implementation File
 #include "Errors.tpp"

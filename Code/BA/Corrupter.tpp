@@ -67,8 +67,8 @@ Corrupter::mode strToCorrMode(const std::string& ss)
 
 std::ostream& operator<<(std::ostream& os, const Corrupter& corr)
 {
-    os << "Corruption Mode:\t " << corr.settingString()
-       << "\nCorruption Percentage:\t " << corr.percentage() << "%\n" << std::flush;
+    os << "Corruption Mode:\t" << corr.settingString()
+       << "\nCorruption Percentage:\t" << corr.percentage() << "%\n" << std::flush;
     return os;
 }
 

@@ -13,18 +13,16 @@
 #include <sys/stat.h>
 #include <vector>
 
-#include "Settings.hpp"
+#include "SignalSettings.hpp"
 #include "SignalBasis.hpp"
 #include "Corrupter.hpp"
 #include "Signal.hpp"
 #include "RVM.hpp"
-#include "settingsFile.hpp"
+//#include "settingsFile.hpp"
 
 typedef unsigned int signalType; 
 typedef double basisType;
 
-
-//#include "Headers/settingsTester.h" // test that settings file is okay
 
 int main(int argc, char* argv[])
 {

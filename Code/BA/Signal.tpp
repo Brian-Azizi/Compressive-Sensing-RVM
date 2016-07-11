@@ -950,7 +950,6 @@ Signal<double> readSignal(const std::string& inputFile) // reads a signal from a
 	}
 	prevCols = cols;	
     }
-    std::cout << rows << "  "<< cols << "  " << frames << "\n";
 
     Signal<double> ret(rows, cols, frames);
     in.clear();
@@ -964,7 +963,6 @@ Signal<double> readSignal(const std::string& inputFile) // reads a signal from a
 
     return ret;
 }
-
 
 template<class T>		// not finished yet
 void outputSignal(const Signal<T>& S, std::string label)
