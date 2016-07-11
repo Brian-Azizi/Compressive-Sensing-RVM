@@ -2,6 +2,7 @@
 #define GUARD_DIM_TPP
 
 #include <ostream>
+#include <fstream>
 #include <string>
 
 #include "Errors.hpp"
@@ -18,6 +19,16 @@ Dim::Dim(int height, int width, int frames)
 void Dim::check() const
 {
     if (h < 1 || w < 1 || f < 1) error("non-positive dimensions");
+}
+
+bool Dim::operator==(const Dim& arg) const
+{
+    return (h == arg.h && w == arg.w && f == arg.f);
+}
+
+bool Dim::operator!=(const Dim& arg) const
+{
+    return !(*this == arg);
 }
 
 // helper functions
@@ -82,7 +93,5 @@ Dim dim_from_Signal_file(const std::string& inputFile) // get dimensions from an
 
     return ret;
 }
-
-
 
 #endif

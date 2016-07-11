@@ -1,42 +1,43 @@
-template <typename T> class RVM 
-{
+class RVM {
 private:
-    double m_sigma;		// std deviation
+    double m_stdDev;		// std deviation
     double m_deltaML;
     bool m_printProgress;
     const static double zeroFactor = 1.0e-12;
-    Signal<T> m_coeff;
-    Signal<T> m_errors;
+    Signal<double> m_mu;
+    Signal<double> m_Sigma;
+    Signal<double> m_errors;
 public:
     RVM() 
-	: m_sigma(1), m_deltaML(1),
+	: m_stdDev(1), m_deltaML(1),
 	m_printProgress(true) { };
-    double sigma() const { return m_sigma; }
+    double stdDev() const { return m_stdDev; }
     double deltaML() const { return m_deltaML; }
     bool doWePrint() const { return m_printProgress; }
-    Signal<T> coefficients() const { return m_coeff; }
-    Signal<T> errors() const { return m_errors; }
-    void setSigma(double sigma);
+    Signal<double> mu() const { return m_mu; }
+    Signal<double> Sigma() const { return m_Sigma; }
+    Signal<double> errors() const { return m_errors; }
+    void setStdDev(double stdDev);
     void setDeltaML(double deltaML);
-    void setPrintProgress(bool print) {m_printProgress = print;}
-    void train_fastUpdates(Signal<T> basis, const Signal<T>& targets);
+    void setPrintProgress(bool print) { m_printProgress = print;}
+    void train_fastUpdates(Signal<double> designMatrix, const Signal<double>& targets);    
 };
 
-template<class T>
-void RVM<T>::setSigma(double sigma) 
+void fullStatistics(const Signal<double>& basis, const Signal<double>& phi, int includedBasis, const Signal<double> targets, const Signal<int> indecesUsed, const Signal<bool> insModel, const Signal<double>& alphas, double beta, Signal<double>& mean, Signal<double>& covariance, Signal<double>& S_in, Signal<double>& Q_in, Signal<double>& S_out, Signal<double> Q_out, Signal<double>& relevanceFactors, const Signal<double>& basisPhi, Signal<double>& betaBasisPhi, Signal<double>& basisTargets);
+
+void RVM::setStdDev(double stdDev) 
 {
-    if (sigma < zeroFactor) error("sigma must be positive");
-    m_sigma = sigma;
+    if (stdDev < zeroFactor) error("sigma must be positive");
+    m_stdDev = stdDev;
 }
-template<class T> 
-void RVM<T>::setDeltaML(double deltaML)
+
+void RVM::setDeltaML(double deltaML)
 {
     if (deltaML < zeroFactor) error("threshold for the change in ML must be positive");
     m_deltaML = deltaML;
 }
 
-template<class T>
-void RVM<T>::train_fastUpdates(Signal<T> basis, const Signal<T>& targets)
+void RVM::train_fastUpdates(Signal<double> basis, const Signal<double>& targets)
 {
     // note: we normalize basis during training, but we restore the original before returning
     // check inputs make sense;
@@ -48,8 +49,8 @@ void RVM<T>::train_fastUpdates(Signal<T> basis, const Signal<T>& targets)
     if (targets.height() != n_rows) error("basis and targets must have the same number of rows");
     
     // initialize coeffs
-    m_coeff = Signal<T>(n_cols);
-    const double beta = 1/(m_sigma*m_sigma);
+    m_mu = Signal<double>(n_cols);
+    const double beta = 1/(m_stdDev*m_stdDev);
 
     // normalize each basis function to unit length and get the scaling for each basis
     Signal<double> scaling(n_cols);
@@ -213,7 +214,7 @@ void RVM<T>::train_fastUpdates(Signal<T> basis, const Signal<T>& targets)
 
     for (int i = 0; i < n_cols; ++i)
 	if (insModel(i))
-	    m_coeff(i) = mean(whereIs(i))/scaling(i);
+	    m_mu(i) = mean(whereIs(i))/scaling(i);
        
 }
 

@@ -7,6 +7,7 @@
 #include "Errors.hpp"
 #include "Corrupter.hpp"
 #include "SignalBasis.hpp"
+#include "SignalSettings.hpp"
 
 /*** Signal class ***/
 template <typename T> class Signal{
@@ -56,11 +57,15 @@ public:
     Signal<T> getPatch(int startRow, int startCol, int patchHeight, int patchWidth) const;
     Signal<T> getPatch(int startRow, int patchHeight) const;
 
+    Signal<T> getSlice(int startRow, int endRow, int startCol, int endCol, int startFrame, int endFrame) const;
+    Signal<T> getSlice(int startRow, int endRow, int startCol, int endCol) const;
+    Signal<T> getSlice(int startRow, int endRow) const;
+
     // replace sub blocks (slicing for input)
     void putPatch(const Signal<T>& arg, int startingRow, int startingCol, int startingSlice);
     void putPatch(const Signal<T>& arg, int startingRow, int startingCol);
     void putPatch(const Signal<T>& arg, int startingRow);
-
+    
     // reshape signal
     void reshape(int height, int width, int frames);
     void reshape(const Dim& dim);
@@ -82,7 +87,9 @@ template <typename T, typename V> Signal<V> operator*(V factor, const Signal<T>&
 template <typename T> Signal<T> vectorize(const Signal<T>& arg);
 template <typename T> Signal<T> transpose(const Signal<T>& arg);
 template <typename T> std::ostream& operator<<(std::ostream& os, const Signal<T>& s);
+
 template <typename T> Signal<T> corruptSignal(const Signal<T>& orig, Signal<bool>& sensed, const Corrupter& corr);
+template <typename T> Signal<T> corruptSignal(const Signal<T>& orig, const Signal<bool>& mask);
 Signal<double> haarPhiMatrixTranspose(int rows);
 Signal<double> haarPsiMatrixTranspose(int rows);
 template<typename T> Signal<T> kronecker(const Signal<T>& A, const Signal<T>& B);
@@ -107,7 +114,7 @@ double dot(const Signal<double> a, const Signal<double> b);
 Signal<double> cholesky(const Signal<double>& A);
 Signal<double> inversed(const Signal<double>& A);
 Signal<double> readSignal(const std::string& inputFile); // reads a signal from a file. Assumes frames are seperated by empty lines
-template<class T> void outputSignal(const Signal<T>& S, std::string label); // not finished yet
+template<class T> void outputSignal(const Signal<T>& S, const std::string& label, const SignalSettings& cfg);
 
 
 // Implementation

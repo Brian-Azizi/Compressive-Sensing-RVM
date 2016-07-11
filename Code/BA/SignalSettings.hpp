@@ -12,16 +12,20 @@
 
 struct SignalSettings {
     std::string inputFile;    
+    std::string maskFile;
+    bool simulateCorruption;
     int rngSeed;
 
     Corrupter corr;
-    SignalBasis sigBasis;
+    SignalBasis::mode basisMode;
+    int endScale;
     Dim blockDim;
     Dim signalDim;
     bool printProgress;
-    double StdDev;
+    double stdDev;
     double deltaML_threshold;
-
+    std::string outputDirectory;
+    
     SignalSettings(const std::string& settingsFile);
     ConfigFile configFile() const { return cfg; }
     void check();

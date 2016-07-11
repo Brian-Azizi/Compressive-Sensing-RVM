@@ -12,7 +12,7 @@
 #include "Corrupter.hpp"
 #include "SignalBasis.hpp"
 #include "Dim.hpp"
-
+#include "SignalSettings.hpp"
 
 /*** Signal members ***/
 
@@ -198,6 +198,30 @@ Signal<T> Signal<T>::getPatch(int hIdx, int pH) const
     return getPatch(hIdx, 0, pH, 1);
 }
 
+template <typename T>
+Signal<T> Signal<T>::getSlice(int startRow, int endRow, int startCol, int endCol, int startFrame, int endFrame) const
+{
+    int patchHeight = endRow - startRow;
+    int patchWidth = endCol - startCol;
+    int patchFrames = endFrame - startFrame;
+    return getPatch(startRow, startCol, startFrame, patchHeight, patchWidth, patchFrames);
+}
+
+template <typename T>
+Signal<T> Signal<T>::getSlice(int startRow, int endRow, int startCol, int endCol) const
+{
+    int patchHeight = endRow - startRow;
+    int patchWidth = endCol - startCol;    
+    return getPatch(startRow, startCol, patchHeight, patchWidth);    
+}
+
+template <typename T>
+Signal<T> Signal<T>::getSlice(int startRow, int endRow) const
+{
+    int patchHeight = endRow - startRow;
+    return getPatch(startRow, patchHeight);
+}
+
 template <class T>
 void Signal<T>::fill(Signal<T> filler, Signal<bool> mask)
 {
@@ -375,6 +399,18 @@ Signal<T> corruptSignal(const Signal<T>& orig, Signal<bool>& sensed, const Corru
 
     return corrSignal;
 }
+
+template<class T>
+Signal<T> corruptSignal(const Signal<T>& orig, const Signal<bool>& mask)
+{
+    if (orig.dim() != mask.dim()) error("orig and mask must have the same dimensions");
+
+    Signal<T> ret(orig.dim());
+    for (int i = 0; i < orig.size(); ++i) ret.data()[i] = mask.data()[i];
+
+    return ret;
+}
+
 
 Signal<double> haarPhiMatrixTranspose(int rows)
 {
@@ -964,37 +1000,35 @@ Signal<double> readSignal(const std::string& inputFile) // reads a signal from a
     return ret;
 }
 
-template<class T>		// not finished yet
-void outputSignal(const Signal<T>& S, std::string label)
+template<class T>		
+void outputSignal(const Signal<T>& S, const std::string& label, const SignalSettings& cfg)
 {
     std::stringstream ss;
-    
-        /*** save in /local/data/public/ ***/
-    ss << "/local/data/public/";
-    
-    /*** save in ba308 directory if it exists ***/
-    struct stat sb;
-    if (stat("/local/data/public/ba308/", &sb) == 0 && S_ISDIR(sb.st_mode)) {
-	ss << "ba308/";
-    }
-    
-    /*** save in ResultsDump directory if it exists ***/    
-    if (stat("/local/data/public/ba308/ResultsDump", &sb) == 0 && S_ISDIR(sb.st_mode)) {
-	ss << "ResultsDump/";
-    }
+    std::stringstream outputName;
 
-    // ss << blockHeight << "-" << blockWidth << "-" << blockFrames << "_";   
-    // ss << percentage << "%_" << settingStrings[corrupterSetting];
-    // ss << "_" << basisFunctionStrings[basisMode];
-    // ss << "_" << label << "_" << inputFileStem;
-    
-    //    ss << label << ".txt";
-    
-    // std::string sigFile = ss.str();
+    std::string inputName = cfg.inputFile;
+    inputName.erase(0, inputName.find_last_of('/')+1);
 
-    // std::ofstream sigOut(sigFile.c_str());
-    // print3D(sigOut, sig, signalHeight, signalWidth, signalFrames);
-    // sigOut.close();
+    outputName << cfg.blockDim.height() << "-" 
+	       << cfg.blockDim.width() << "-" << cfg.blockDim.frames() << "_"
+	       << cfg.corr.percentage() << "%_" << cfg.corr.settingString() << "_"
+	       << modeToString(cfg.basisMode) << "_" 
+	       << label << "_" << inputName;
+    ss << cfg.outputDirectory << outputName.str();
+
+    std::ofstream out;
+    out.open(ss.str().c_str());
+    if(!out) {
+	if (cfg.printProgress)
+	    std::cerr << "Warning: could not open output file '" + ss.str() + "'!"
+		      << "\nAttempting output in local directory...";
+	out.open(outputName.str().c_str());
+	if (!out) error("could not open output file '" + outputName.str());
+	else 
+	    if (cfg.printProgress) std::cerr << "OK!\n";
+    }
+    out << S;
+    out.close();
 
     return;
 }

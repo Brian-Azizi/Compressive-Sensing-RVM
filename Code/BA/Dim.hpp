@@ -17,6 +17,9 @@ public:
     int frames() const { return f; }
     int size() const { return h*w*f; }
 
+    // some relational operators
+    bool operator==(const Dim&) const;
+    bool operator!=(const Dim&) const;
     // check validity
     void check() const;
 private:

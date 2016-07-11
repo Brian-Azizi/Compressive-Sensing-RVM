@@ -29,10 +29,10 @@ public:
 		
 	return returnVal;
     }
-
-    // specialize for strings
 };
 
+
+// specialize for strings
 template<>
 std::string Convert::string_to_T(std::string const &val)
 {

@@ -5,8 +5,8 @@
 int main() 
 {
     int height = 4;
-    int width = 8;
-    int frames = 3;
+    int width = 4;
+    int frames = 4;
     
     std::stringstream ss;
     ss << "test_" << height << "-" << width << "-" << frames << ".txt"; 

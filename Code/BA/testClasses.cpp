@@ -1,7 +1,7 @@
 #include <iostream>
 
 #include "SignalSettings.hpp"
-
+#include "Signal.hpp"
 
 int main(int argc, char* argv[])
 {
@@ -11,7 +11,7 @@ int main(int argc, char* argv[])
     const std::string cfgFile = argv[1];
 
     SignalSettings cfg("setting1.cfg");
-
-    std::srand(cfg.rngSeed);    
+    Signal<double> sig = readSignal(cfg.inputFile);
+    
     std::cout << cfg;
 }
