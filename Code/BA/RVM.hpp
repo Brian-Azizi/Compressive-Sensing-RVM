@@ -1,3 +1,6 @@
+#ifndef GUARD_RVM_HPP
+#define GUARD_RVM_HPP
+
 class RVM {
 private:
     double m_stdDev;		// std deviation
@@ -20,7 +23,7 @@ public:
     void setStdDev(double stdDev);
     void setDeltaML(double deltaML);
     void setPrintProgress(bool print) { m_printProgress = print;}
-    void train_fastUpdates(Signal<double> designMatrix, const Signal<double>& targets);    
+    void train_fastUpdates(Signal<double> designMatrix, const Signal<double>& targets, bool useCascade, const Signal<double>& PSI);
 };
 
 void fullStatistics(const Signal<double>& basis, const Signal<double>& phi, int includedBasis, const Signal<double> targets, const Signal<int> indecesUsed, const Signal<bool> insModel, const Signal<double>& alphas, double beta, Signal<double>& mean, Signal<double>& covariance, Signal<double>& S_in, Signal<double>& Q_in, Signal<double>& S_out, Signal<double> Q_out, Signal<double>& relevanceFactors, const Signal<double>& basisPhi, Signal<double>& betaBasisPhi, Signal<double>& basisTargets);
@@ -37,7 +40,7 @@ void RVM::setDeltaML(double deltaML)
     m_deltaML = deltaML;
 }
 
-void RVM::train_fastUpdates(Signal<double> basis, const Signal<double>& targets)
+void RVM::train_fastUpdates(Signal<double> basis, const Signal<double>& targets, bool useCascade, const Signal<double>& PSI)
 {
     // note: we normalize basis during training, but we restore the original before returning
     // check inputs make sense;
@@ -215,6 +218,32 @@ void RVM::train_fastUpdates(Signal<double> basis, const Signal<double>& targets)
     for (int i = 0; i < n_cols; ++i)
 	if (insModel(i))
 	    m_mu(i) = mean(whereIs(i))/scaling(i);
+    
+    if (useCascade) {
+	m_Sigma = Signal<double>(n_cols, n_cols);
+	m_errors = Signal<double>(n_cols);
+	Signal<double> tempSigma(n_cols, n_cols);
+	
+	for (int i = 0; i < n_cols; ++i)
+	    for (int j = 0; j < n_cols; ++j)
+		if (insModel(i))
+		    tempSigma(i,j) = covariance(whereIs(i),j);
+		
+	for (int i = 0; i < n_cols; ++i) 
+	    for (int j = 0; j < n_cols; ++j) 
+		if (insModel(i)) 
+		    m_Sigma(i,j) = tempSigma(i,whereIs(j));
+	
+	for (int p = 0; p < n_cols; ++p) {
+	    Signal<double> pointRow = PSI.getPatch(p, 0, 1, n_cols);
+	    Signal<double> tempRow = matMult(pointRow, m_Sigma);
+	    Signal<double> erTemp = matMult(tempRow, transpose(pointRow));
+	    m_errors(p) = erTemp(0);
+	}
+    }
+    
+
+    
        
 }
 
@@ -272,5 +301,7 @@ void fullStatistics(const Signal<double>& basis, const Signal<double>& phi, int 
 	    covariance(i,j) = tempCova(i,j);
 	}
     }
-
+    
 }
+
+#endif

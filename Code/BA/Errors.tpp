@@ -7,6 +7,9 @@
 #include <string>
 
 /*** Error helper functions ***/
+void error() {
+    throw std::runtime_error("");
+}
 void error(const std::string& s) {
     throw std::runtime_error(s);
 }

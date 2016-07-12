@@ -639,6 +639,9 @@ Signal<double> generateLLL(int scale, int currentScale, int h, int w, int f,
 
 Signal<double> haarBasis(int h, int w, int f, int scale)
 {
+    if (f == 1) 
+	return haarBasis2D(h, w, scale);
+
     Signal<double> rPhiT(h, h/2);	// filters
     Signal<double> rPsiT(h, h/2);
     Signal<double> cPhiT(w, w/2);

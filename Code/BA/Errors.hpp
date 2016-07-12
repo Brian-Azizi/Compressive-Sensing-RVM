@@ -4,6 +4,7 @@
 #include <string>
 
 /*** Error helper functions ***/
+void error();
 void error(const std::string&);
 void error(const std::string&, const std::string&);
 void error(const std::string&, int);

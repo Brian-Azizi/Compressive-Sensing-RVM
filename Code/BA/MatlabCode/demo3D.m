@@ -1,15 +1,15 @@
 % settings
 name = 'lenna';
-height = 512;
-width = 512;
+height = 128;
+width = 128;
 frames = 1;
 
 input = strcat(name,'_',num2str(height),'-',num2str(width),'-',num2str(frames));
 blockDim = '8-8-1';
-corrPerc = '70%';
+corrPerc = '20%';
 corrMode = 'uniform'; 
-basisMode = 'dct';
-topScale = 1;
+basisMode = 'haar';
+topScale = 2;
 
 numFiles = (512/16)*(512/16)*(1/1);
 

@@ -59,7 +59,8 @@ int main(int argc, char* argv[])
     // Get basis matrices for various scales
     for (int scale = 0; scale < cfg.endScale; ++scale)
     	cascadeBasis[scale] = getBasis(block.dim(), cfg.basisMode, scale+1);
-        
+
+
     // Loop over blocks of original signal
     unsigned int const numBlocksHeight = signal.height() / block.height();
     unsigned int const numBlocksWidth = signal.width() / block.width();
@@ -109,7 +110,7 @@ int main(int argc, char* argv[])
     		    RVM rvm;
     		    rvm.setStdDev(cfg.stdDev);
     		    rvm.setDeltaML(cfg.deltaML_threshold);
-    		    rvm.train_fastUpdates(designMatrix, targets);
+    		    rvm.train_fastUpdates(designMatrix, targets, useCascade, cascadeBasis[scale]);
     		    estimatedCoeff = rvm.mu();
     		    recoveredVector = matMult(cascadeBasis[scale], estimatedCoeff);
     		    recoveredVector.fill(initialSignalVector, initialSensedVector);
@@ -123,6 +124,7 @@ int main(int argc, char* argv[])
 							
     		    /*** Prepare for next part of cascade ***/
     		    if (useCascade) {
+			errors = rvm.errors();
     			for (int i = 0; i < block.size(); ++i) { 
     			    if (errors(i) != 0) sensedPatchVector(i) = true; // get new mask
     			    else sensedPatchVector(i) = false;
