@@ -8,6 +8,7 @@ void print3D(std::ostream& out, T const*const*const*const signal, int signalHeig
 	    }
 	    out << std::endl;
 	}
+	out << std::endl;
     }
 
     return;

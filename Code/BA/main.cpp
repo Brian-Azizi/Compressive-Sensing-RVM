@@ -210,6 +210,10 @@ int main()
 		    if (printToCOut) {
 			std::cout << "||" << std::endl;
 		    }
+		    std::stringstream coco;
+		    coco << "coeff_"<< s;
+		    std::ofstream coc(coco.str().c_str());
+		    print1D(coc,estimatedCoeff,blockSize);
 		    multiply2D1D(cascadeBasis[s], estimatedCoeff,\
 				 recoveredVector, blockSize, dictionarySize);
 		    fillSensedInfo(initialSignalVector, recoveredVector,\

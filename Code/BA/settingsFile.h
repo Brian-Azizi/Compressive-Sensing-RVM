@@ -45,8 +45,8 @@ corruptionMode const corrupterSetting = uniform;
 double const percentage = 30;
 
 /*** Basis Function settings ***/
-basisFunctionMode const basisMode = haar;
-int const endScale = 2;	     	// For DCT keep Scale at 1
+basisFunctionMode const basisMode = dct;
+int const endScale = 1;	     	// For DCT keep Scale at 1
 
 /*** RVM settings ***/
 double const noiseStD = 1;
