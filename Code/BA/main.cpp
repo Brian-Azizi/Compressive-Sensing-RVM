@@ -1,6 +1,7 @@
 #define _Use_MATH_DEFINES
 
 #include <cstdlib>
+#include <cassert>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -10,6 +11,7 @@
 #include "SignalBasis.hpp"
 #include "Corrupter.hpp"
 #include "Signal.hpp"
+//#include "oldRVM.hpp"
 #include "RVM.hpp"
 
 typedef unsigned int signalType; // Specify C++ type of input signal
@@ -107,12 +109,11 @@ int main(int argc, char* argv[])
     		    if (scale+1 < cfg.endScale) useCascade = true;
     		    else useCascade = false;
 		    
-    		    RVM rvm;
-    		    rvm.setStdDev(cfg.stdDev);
-    		    rvm.setDeltaML(cfg.deltaML_threshold);
-    		    rvm.train_fastUpdates(designMatrix, targets, useCascade, cascadeBasis[scale]);
-    		    estimatedCoeff = rvm.mu();
-    		    recoveredVector = matMult(cascadeBasis[scale], estimatedCoeff);
+    		    RVM rvm(cfg.stdDev, cfg.deltaML_threshold, cfg.printProgress);
+		    rvm.train(designMatrix, targets);		    
+		    estimatedCoeff = rvm.mu();
+
+		    recoveredVector = rvm.predict(cascadeBasis[scale]);		    
     		    recoveredVector.fill(initialSignalVector, initialSensedVector);
 
     		    /*** Save recovered patch ***/
@@ -123,8 +124,8 @@ int main(int argc, char* argv[])
 				  blockIndexCols*block.width(), blockIndexFrames*block.frames());
 							
     		    /*** Prepare for next part of cascade ***/
-    		    if (useCascade) {
-			errors = rvm.errors();
+    		    if (useCascade) {			
+			errors = rvm.predictionErrors(cascadeBasis[scale]);
     			for (int i = 0; i < block.size(); ++i) { 
     			    if (errors(i) != 0) sensedPatchVector(i) = true; // get new mask
     			    else sensedPatchVector(i) = false;
@@ -143,7 +144,7 @@ int main(int argc, char* argv[])
     outputSignal(sensedEntries, "mask", cfg);
     for (int scale = 0; scale < cfg.endScale; ++scale) {
     	std::stringstream label;
-    	label << "recovered_" << scale+1 << "_of_" << cfg.endScale;
+    	label << "recovered_" << scale+1 << "_of_" << cfg.endScale;		
 	outputSignal(cascadeRecoveredSignals[scale], label.str(), cfg); 
     }
     

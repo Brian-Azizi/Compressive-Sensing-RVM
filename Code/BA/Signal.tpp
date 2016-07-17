@@ -13,6 +13,7 @@
 #include "SignalBasis.hpp"
 #include "Dim.hpp"
 #include "SignalSettings.hpp"
+#include "LapackFunctions.hpp"
 
 /*** Signal members ***/
 
@@ -292,6 +293,15 @@ Signal<T> Signal<T>::operator*(T factor) const
     return ret;
 }
 
+template<class T>
+Signal<T> Signal<T>::operator-() const
+{
+    Signal<T> ret(this->dim());
+    int sz = this->size();
+    for (int i = 0; i < sz; ++i) ret.data()[i] = - this->data()[i];
+    return ret;
+}
+
 /*** Signal helpers ***/
 template <typename T, typename V>
 Signal<V> operator*(V factor, const Signal<T>& A)
@@ -334,7 +344,7 @@ template <typename T> std::ostream& operator<<(std::ostream& os, const Signal<T>
 	    }
 	    os << "\n";
 	}
-	os << "\n";
+	if(k!=f-1) os << "\n";
     }   
     return os;
 }
@@ -406,7 +416,9 @@ Signal<T> corruptSignal(const Signal<T>& orig, const Signal<bool>& mask)
     if (orig.dim() != mask.dim()) error("orig and mask must have the same dimensions");
 
     Signal<T> ret(orig.dim());
-    for (int i = 0; i < orig.size(); ++i) ret.data()[i] = mask.data()[i];
+    for (int i = 0; i < orig.size(); ++i) 
+	if(mask.data()[i])
+	    ret.data()[i] = orig.data()[i]; // else 0
 
     return ret;
 }
@@ -472,6 +484,20 @@ Signal<T> matMult(const Signal<T>& A, const Signal<T>& B)
 	for (int j = 0; j < B.width(); ++j)
 	    for (int k = 0; k < A.width(); ++k)
 		ret(i,j) += A(i,k) * B(k,j);
+
+    return ret;
+}
+
+template<typename T>
+Signal<T> add(const Signal<T>& A, const Signal<T>& B)
+{
+    if (A.dim() != B.dim()) 
+	error("ADD: Signals must have the same dimensions");
+    
+    Signal<T> ret(A.dim());
+    int sz = A.size();
+    for (int i = 0; i < sz; ++i)
+	ret.data()[i] = A.data()[i] + B.data()[i];
 
     return ret;
 }
@@ -1034,6 +1060,22 @@ void outputSignal(const Signal<T>& S, const std::string& label, const SignalSett
     out.close();
 
     return;
+}
+
+// returns inverse of an NxN matrix A
+// uses Lapack
+Signal<double> inverse(const Signal<double>& A)
+{
+    int N = A.height();
+    if (A.dim() != Dim(N,N,1)) error("input has invalid dimensions");
+
+    Signal<double> invA = A;
+    
+    int errorCode;
+    lapackInverse(invA.data(), N, errorCode);
+    if(errorCode != 0) error("Inverse: matrix inversion failed! Error code", errorCode);
+
+    return invA;
 }
 
 #endif

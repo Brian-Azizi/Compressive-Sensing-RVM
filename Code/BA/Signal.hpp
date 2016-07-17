@@ -72,7 +72,10 @@ public:
     
     // post multiply by scalar
     Signal<T> operator*(T factor) const;
-
+    
+    // unary minus
+    Signal<T> operator-() const;
+    
     // check validity of member data
     void check();
 
@@ -94,6 +97,7 @@ Signal<double> haarPhiMatrixTranspose(int rows);
 Signal<double> haarPsiMatrixTranspose(int rows);
 template<typename T> Signal<T> kronecker(const Signal<T>& A, const Signal<T>& B);
 template<typename T> Signal<T> matMult(const Signal<T>& A, const Signal<T>& B);
+template<typename T> Signal<T> add(const Signal<T>& A, const Signal<T>& B);
 Signal<double> generateLL(int scale, int currentScale, int h, int w, Signal<double> rPreFactor, Signal<double> cPreFactor);
 Signal<double> haarBasis2D(int h, int w, int scale);
 Signal<double> generateLLL(int scale, int currentScale, int h, int w, int f, Signal<double> rPreFactor, Signal<double> cPreFactor, Signal<double> sPreFactor);
@@ -115,6 +119,7 @@ Signal<double> cholesky(const Signal<double>& A);
 Signal<double> inversed(const Signal<double>& A);
 Signal<double> readSignal(const std::string& inputFile); // reads a signal from a file. Assumes frames are seperated by empty lines
 template<class T> void outputSignal(const Signal<T>& S, const std::string& label, const SignalSettings& cfg);
+Signal<double> inverse(const Signal<double>& A);
 
 
 // Implementation
