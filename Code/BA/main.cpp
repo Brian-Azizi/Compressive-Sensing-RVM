@@ -200,6 +200,9 @@ int main()
 		    } else {
 			useCascade = false;
 		    }
+
+		    useCascade = true;
+
 		    fast_updates(designMatrix, target, estimatedCoeff,\
 				 measurements, dictionarySize, noiseStD,\
 				 errors, cascadeBasis[s], useCascade,\
@@ -218,7 +221,12 @@ int main()
 		    putPatch3D(recoveredPatch, cascadeRecoveredSignals[s],\
 			       blockHeight, blockWidth, blockFrames,	\
 			       blockIndexRows, blockIndexCols, blockIndexFrames);
-		    
+
+		    std::stringstream ll;
+		    ll << "errors_" << s;
+		    std::ofstream err(ll.str().c_str());
+		    print1D(err,errors,blockSize);
+
 		    /*** Prepare for next part of cascade ***/
 		    if (useCascade) {
 			for (int i = 0; i < blockSize; ++i) { 
