@@ -99,7 +99,7 @@ int main(int argc, char* argv[])
     		    Signal<double> targets(measurements);
     		    Signal<double> designMatrix(measurements, block.size());
     		    Signal<double> estimatedCoeff(block.size()); // init to 0
-    		    Signal<double> errors(block.size());
+		    Signal<double> errors(block.size());
 
     		    targets = getTargets(signalPatchVector, sensedPatchVector);
     		    designMatrix = getDesignMatrix(cascadeBasis[scale], sensedPatchVector);
@@ -114,6 +114,7 @@ int main(int argc, char* argv[])
 		    estimatedCoeff = rvm.mu();
 
 		    recoveredVector = rvm.predict(cascadeBasis[scale]);		    
+		    //recoveredVector.fill(signalPatchVector, sensedPatchVector);
     		    recoveredVector.fill(initialSignalVector, initialSensedVector);
 
     		    /*** Save recovered patch ***/
@@ -122,9 +123,9 @@ int main(int argc, char* argv[])
     		    cascadeRecoveredSignals[scale]
     			.putPatch(recoveredPatch, blockIndexRows*block.height(),
 				  blockIndexCols*block.width(), blockIndexFrames*block.frames());
-							
+		    
     		    /*** Prepare for next part of cascade ***/
-    		    if (useCascade) {			
+    		    if (true||useCascade) {			
 			errors = rvm.predictionErrors(cascadeBasis[scale]);
     			for (int i = 0; i < block.size(); ++i) { 
     			    if (errors(i) != 0) sensedPatchVector(i) = true; // get new mask
@@ -134,6 +135,13 @@ int main(int argc, char* argv[])
     			    signalPatchVector(i) = recoveredVector(i); 
     			}
     		    }
+		    std::stringstream ll;
+		    ll << scale;
+		    outputSignal(errors,"errors" + ll.str(), cfg);
+		    std::stringstream cc;
+		    cc << scale;
+		    outputSignal(estimatedCoeff,"coeff" + cc.str(), cfg);
+
     		}				    
     	    }
     	}

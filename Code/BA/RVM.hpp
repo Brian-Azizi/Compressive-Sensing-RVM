@@ -160,9 +160,9 @@ int RVM::idxMaxProjection(const Signal<double>& designMatrix, const Signal<doubl
 
 	if(denom < 0) error("RVM: there is an error in Signal::dot");
 	if(denom < zeroFactor) {
-	    if(m_print) std::cerr << "RVM: Basis function " << j << " has zero length\n";
-	    projection = 1;
-	    //	    projection = 0;
+	    //if(m_print) std::cerr << "RVM: Basis function " << j << " has zero length\n";
+	    //projection = 1;
+	    projection = 0;
 	} else
 	    projection = (num*num)/denom;
 		
@@ -458,11 +458,16 @@ void RVM::train(const Signal<double>& designMatrix, const Signal<double>& target
     Signal<double> phi(N);	// holds basis function currently being considered 
     bool lastIteration = false;
     double maxDML = m_DUMMY;
+    int count = 0;
     while(!lastIteration) {	
+	++ count;
+	if(m_print && count % 10 == 0) std::cout << ".";
 	/*** 4) Selection: Calculate relevance, alphas and delta ML for all bases and pick argmax delta ml ***/
 	int currentIdx = selectBasisFunction(maxDML); // index of next basis function to update, get change in ML
-	for (int i = 0; i < N; ++i) phi(i) = designMatrix(i, currentIdx); // get basis function;	
-
+	if (currentIdx < 0)			      // no more basis functions to update
+	    break;
+	
+	//	for (int i = 0; i < N; ++i) phi(i) = designMatrix(i, currentIdx); // get basis function;	
 
 	/*** 9) Adjust basis set and Update Sigma, Mu, S and Q ***/	
 	if (thetas(currentIdx) > 0 && !inModel(currentIdx)) // add
@@ -480,6 +485,7 @@ void RVM::train(const Signal<double>& designMatrix, const Signal<double>& target
 	if (maxDML < m_threshold)
 	    lastIteration = true;
     }
+    if(m_print) std::cout << std::endl;
     m_trainingFinished = true;
 }
 
@@ -521,25 +527,25 @@ Signal<double> RVM::predictionErrors(const Signal<double>& points) const
     
     Signal<double> temp(m_K); 	// Sigma * phi, but only for current basis set
     for (int n = 0; n < N; ++n) {
-	int idx = 0;
-	for (int i = 0; i < m_M; ++i) {
-	    if(inModel(i)) {
-		double tempSum = 0;
-		for (int j = 0; j < m_M; ++j)
-		    if(inModel(j)) tempSum += m_Sigma(i,j)*points(n,j);
-		temp(idx) = tempSum;
-		++idx;
-	    }
-	}
-	idx = 0;
-	double tempSum = 0;
-	for (int i = 0; i < m_M; ++i) {	
-	    if (inModel(i)) {
-		tempSum += points(n,i)*temp(idx);
-		++idx;
-	    }
-	}
-	errors(n) = tempSum;	
+    	int idx = 0;
+    	for (int i = 0; i < m_M; ++i) {
+    	    if(inModel(i)) {
+    		double tempSum = 0;
+    		for (int j = 0; j < m_M; ++j)
+    		    if(inModel(j)) tempSum += m_Sigma(i,j)*points(n,j);
+    		temp(idx) = tempSum;
+    		++idx;
+    	    }
+    	}
+    	idx = 0;
+    	double tempSum = 0;
+    	for (int i = 0; i < m_M; ++i) {	
+    	    if (inModel(i)) {
+    		tempSum += points(n,i)*temp(idx);
+    		++idx;
+    	    }
+    	}
+    	errors(n) = tempSum;	
     }
 
     return errors;			    

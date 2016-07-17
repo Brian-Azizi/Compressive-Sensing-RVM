@@ -512,7 +512,7 @@ Signal<double> generateLL(int scale, int currentScale, int h, int w,
     int const smallestH = h/dimDivider;
     int const smallestW = w/dimDivider;
     
-    Signal<double> LL(h*w, h*w/4);
+    Signal<double> LL(h*w, smallH*smallW);
 
     if (currentScale == scale) {
 	LL = kronecker(cPreFactor, rPreFactor);
@@ -594,7 +594,7 @@ Signal<double> generateLLL(int scale, int currentScale, int h, int w, int f,
     int const smallestW = w/dimDivider;
     int const smallestF = f/dimDivider;
     
-    Signal<double> LLL(h*w*f, h*w*f/8);
+    Signal<double> LLL(h*w*f, smallH*smallW*smallF);
 
     if (currentScale == scale) {
 	int CR_dim1 = w*h, CR_dim2 = smallestW*smallestH /4;
@@ -603,6 +603,7 @@ Signal<double> generateLLL(int scale, int currentScale, int h, int w, int f,
 	Signal<double> tempCR(CR_dim1, CR_dim2);
 	tempCR = kronecker(cPreFactor, rPreFactor);
 	LLL = kronecker(sPreFactor, tempCR);
+
 	return LLL;
     }
 
@@ -654,8 +655,10 @@ Signal<double> generateLLL(int scale, int currentScale, int h, int w, int f,
 	tempFull = kronecker(sPre_Psi, tempCR);
 	LLL.putPatch(tempFull, 0, 7*full_dim2);
 
+	
 	new_LLL = generateLLL(scale, currentScale+1, h, w, f, rPre_Phi, cPre_Phi, sPre_Phi);
 	LLL.putPatch(new_LLL, 0, 0);
+
 	return LLL;
     }
 
