@@ -728,8 +728,8 @@ Signal<double> dctMatrix(int dim)
     Signal<double> dct(dim, dim);
     for (int p = 0; p < dim; ++p) {
 	for (int q = 0; q < dim; ++q) {
-	    if (p == 0) dct(p,q) = 1/std::sqrt(M);
-	    else dct(p,q) = std::sqrt(2/M)*std::cos(M_PI*(2*q+1)*p/(2*M));
+	    if (p == 0) dct(p,q) = 1.0/std::sqrt(M);
+	    else dct(p,q) = std::sqrt(2.0/M)*std::cos(M_PI*(2.0*q+1)*p/(2.0*M));
 	}
     }
     return dct;
@@ -753,18 +753,18 @@ Signal<double> dctBasis(int h, int w, int f)
 	return dctBasis2D(h, w);
     
     int dictionarySize = h*w*f;
-    Signal<double> basis(dictionarySize, dictionarySize);
+    //    Signal<double> basis(dictionarySize, dictionarySize);
 
     Signal<double> rowDCT = dctMatrix(h);
     Signal<double> colDCT = dctMatrix(w);
     Signal<double> sliceDCT = dctMatrix(f);
     
-    Signal<double> tmp(h*w, h*w);
-    Signal<double> basisTran(dictionarySize, dictionarySize);    
-    tmp = kronecker(colDCT, rowDCT);
-    basisTran = kronecker(sliceDCT, tmp);
+    // Signal<double> tmp(h*w, h*w);
+    // Signal<double> basisTran(dictionarySize, dictionarySize);    
+    Signal<double> tmp = kronecker(colDCT, rowDCT);
+    Signal<double> basisTran = kronecker(sliceDCT, tmp);
     
-    basis = transpose(basisTran);
+    Signal<double> basis = transpose(basisTran);
     return basis;
 }
 

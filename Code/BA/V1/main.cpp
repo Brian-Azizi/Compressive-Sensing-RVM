@@ -47,10 +47,12 @@
 #include "Headers/dctBasis2D.h"	// needed by dctBasis.h
 #include "Headers/dctBasis.h"	// needed by getBasis
 
-
+#include "Timer.hpp"
 
 int main()
 {
+    uint64 startTime = GetTimeMs64(); // start timer
+    
     /* Test if Settings make sense and define constants.
        Note: Does not test if input txt file is valid! */
     testSettings();
@@ -145,7 +147,11 @@ int main()
 	getBasis(cascadeBasis[s], blockHeight, blockWidth, \
 		 blockFrames, startScale+s, basisMode);
     }
-    
+
+    uint64 bigLoopTime = 0;
+    uint64 loopSetupTime = 0;
+    int itt = 0;
+
     // Loop over blocks of original signal
     for (int blockIndexRows = 0; blockIndexRows < numBlocksHeight; ++blockIndexRows) {
 	for (int blockIndexCols = 0; blockIndexCols < numBlocksWidth; ++blockIndexCols) {
@@ -157,12 +163,15 @@ int main()
 			      << numBlocksWidth << "," << numBlocksFrames 
 			      << ")" << std::endl;
 		}
+		uint64 startLoopTime = GetTimeMs64();
+
 		getPatch3D(corruptedSignal, signalPatch, blockHeight,\
 			   blockWidth,blockFrames, blockIndexRows,\
 			   blockIndexCols, blockIndexFrames);
 		getPatch3D(sensedEntries, sensedPatch, blockHeight,\
 			   blockWidth, blockFrames, blockIndexRows,\
 			   blockIndexCols, blockIndexFrames);
+
 		vectorize3D(signalPatch, signalPatchVector,\
 			    blockHeight, blockWidth, blockFrames);
 		vectorize3D(sensedPatch, sensedPatchVector,\
@@ -171,7 +180,7 @@ int main()
 			    blockHeight, blockWidth, blockFrames);
 		vectorize3D(sensedPatch, initialSensedVector,\
 			    blockHeight, blockWidth, blockFrames);
-		
+
 		for (int s = 0; s < cascadeSize; ++s) {		    
 		    int measurements = countSensed(sensedPatchVector, blockSize);
 		    
@@ -200,18 +209,16 @@ int main()
 		    } else {
 			useCascade = false;
 		    }
-
+		    uint64 startSetupTime = GetTimeMs64();		
 		    fast_updates(designMatrix, target, estimatedCoeff,\
 				 measurements, dictionarySize, noiseStD,\
 				 errors, cascadeBasis[s], useCascade,\
 				 deltaML_threshold, printToCOut);
+		    loopSetupTime += (GetTimeMs64() - startSetupTime);
 		    if (printToCOut) {
 			std::cout << "||" << std::endl;
 		    }
-		    std::stringstream coco;
-		    coco << "coeff_"<< s;
-		    std::ofstream coc(coco.str().c_str());
-		    print1D(coc,estimatedCoeff,blockSize);
+
 		    multiply2D1D(cascadeBasis[s], estimatedCoeff,\
 				 recoveredVector, blockSize, dictionarySize);
 		    fillSensedInfo(initialSignalVector, recoveredVector,\
@@ -223,11 +230,6 @@ int main()
 		    putPatch3D(recoveredPatch, cascadeRecoveredSignals[s],\
 			       blockHeight, blockWidth, blockFrames,	\
 			       blockIndexRows, blockIndexCols, blockIndexFrames);
-
-		    std::stringstream ll;
-		    ll << "errors_" << s;
-		    std::ofstream err(ll.str().c_str());
-		    print1D(err,errors,blockSize);
 
 		    /*** Prepare for next part of cascade ***/
 		    if (useCascade) {
@@ -252,6 +254,8 @@ int main()
 		
 		    delete[] errors;
 		    delete[] estimatedCoeff;		
+		    bigLoopTime += (GetTimeMs64() - startLoopTime);
+		    ++itt;
 		}				    
 	    }
 	}
@@ -319,5 +323,8 @@ int main()
     delete[] corruptedSignal;
     delete[] signal;
 
+    if(printToCOut) std::cout << "Total Execution time: " << GetTimeMs64() - startTime << " ms.\n";
+    if (printToCOut) std::cout << "Average loop time: " << bigLoopTime/(double)itt << " ms." << std::endl;
+    if (printToCOut) std::cout << "Average loop setup time: " << loopSetupTime/(double)itt << " ms." << std::endl;
     return 0;   
 }

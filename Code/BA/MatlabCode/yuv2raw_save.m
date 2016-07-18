@@ -48,6 +48,9 @@ function raw = yuv2raw_save(fileIn, heightIn, widthIn, format, ...
                 fprintf(fidG,'\n');
                 fprintf(fidB,'\n');
             end
+            fprintf(fidR,'\n');
+            fprintf(fidG,'\n');
+            fprintf(fidB,'\n');
         end
         fclose(fidR);
         fclose(fidG);

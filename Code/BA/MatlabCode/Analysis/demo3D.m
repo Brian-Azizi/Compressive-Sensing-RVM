@@ -1,15 +1,17 @@
+% includes: analyzePix, txt2rawBW, 
+
 % settings
-name = 'lenna';
+name = 'foreman';
 height = 128;
 width = 128;
-frames = 1;
+frames = 64;
 
 input = strcat(name,'_',num2str(height),'-',num2str(width),'-',num2str(frames));
-blockDim = '8-8-1';
-corrPerc = '20%';
+blockDim = '4-4-4';
+corrPerc = '30%';
 corrMode = 'uniform'; 
 basisMode = 'haar';
-topScale = 2;
+topScale = 1;
 
 numFiles = (512/16)*(512/16)*(1/1);
 

@@ -11,13 +11,16 @@
 #include "SignalBasis.hpp"
 #include "Corrupter.hpp"
 #include "Signal.hpp"
-//#include "oldRVM.hpp"
 #include "RVM.hpp"
+
+#include "Timer.hpp"
 
 typedef unsigned int signalType; // Specify C++ type of input signal
 
 int main(int argc, char* argv[])
 {
+    uint64 startTime = GetTimeMs64(); // start timer
+
     if (argc < 2) error("No input file specified");
     if (argc > 2) error("To many input arguments");
     SignalSettings cfg(argv[1]);
@@ -61,13 +64,16 @@ int main(int argc, char* argv[])
     // Get basis matrices for various scales
     for (int scale = 0; scale < cfg.endScale; ++scale)
     	cascadeBasis[scale] = getBasis(block.dim(), cfg.basisMode, scale+1);
-
-
+    
     // Loop over blocks of original signal
     unsigned int const numBlocksHeight = signal.height() / block.height();
     unsigned int const numBlocksWidth = signal.width() / block.width();
     unsigned int const numBlocksFrames = signal.frames() / block.frames();
 
+    uint64 bigLoopTime = 0;
+    uint64 loopSetupTime = 0;
+    int itt = 0;
+    
     for (int blockIndexRows = 0; blockIndexRows < numBlocksHeight; ++blockIndexRows) {
     	for (int blockIndexCols = 0; blockIndexCols < numBlocksWidth; ++blockIndexCols) {
     	    for (int blockIndexFrames = 0; blockIndexFrames < numBlocksFrames; ++blockIndexFrames) {
@@ -78,7 +84,9 @@ int main(int argc, char* argv[])
     			      << numBlocksWidth << "," << numBlocksFrames 
     			      << ")" << std::endl;
     		}
-
+		
+		uint64 startLoopTime = GetTimeMs64();
+		
     		signalPatch = corruptedSignal
     		    .getPatch(blockIndexRows*block.height(), blockIndexCols*block.width(),
     			      blockIndexFrames*block.frames(), block.height(), block.width(), block.frames());
@@ -86,35 +94,31 @@ int main(int argc, char* argv[])
     		    .getPatch(blockIndexRows*block.height(), blockIndexCols*block.width(),
 			      blockIndexFrames*block.frames(), block.height(), block.width(), block.frames());
 
+		
     		signalPatchVector = vectorize(signalPatch);
     		sensedPatchVector = vectorize(sensedPatch);
     		initialSignalVector = vectorize(signalPatch);
     		initialSensedVector = vectorize(sensedPatch);
-
+		
     		for (int scale = 0; scale < cfg.endScale; ++scale) {		    
     		    int measurements = countSensed(sensedPatchVector);
 		    if (measurements == 0) continue;
 
     		    /*** Declare and define RVM variables ***/
-    		    Signal<double> targets(measurements);
-    		    Signal<double> designMatrix(measurements, block.size());
-    		    Signal<double> estimatedCoeff(block.size()); // init to 0
-		    Signal<double> errors(block.size());
-
-    		    targets = getTargets(signalPatchVector, sensedPatchVector);
-    		    designMatrix = getDesignMatrix(cascadeBasis[scale], sensedPatchVector);
+    		    Signal<double> targets = getTargets(signalPatchVector, sensedPatchVector);
+    		    Signal<double> designMatrix = getDesignMatrix(cascadeBasis[scale], sensedPatchVector);
 
     		    /*** Start the RVM ***/
     		    bool useCascade;
     		    if (scale+1 < cfg.endScale) useCascade = true;
     		    else useCascade = false;
-		    
+		
+		    uint64 startSetupTime = GetTimeMs64();    
     		    RVM rvm(cfg.stdDev, cfg.deltaML_threshold, cfg.printProgress);
 		    rvm.train(designMatrix, targets);		    
-		    estimatedCoeff = rvm.mu();
+		    loopSetupTime += (GetTimeMs64() - startSetupTime);
 
 		    recoveredVector = rvm.predict(cascadeBasis[scale]);		    
-		    //recoveredVector.fill(signalPatchVector, sensedPatchVector);
     		    recoveredVector.fill(initialSignalVector, initialSensedVector);
 
     		    /*** Save recovered patch ***/
@@ -125,8 +129,8 @@ int main(int argc, char* argv[])
 				  blockIndexCols*block.width(), blockIndexFrames*block.frames());
 		    
     		    /*** Prepare for next part of cascade ***/
-    		    if (true||useCascade) {			
-			errors = rvm.predictionErrors(cascadeBasis[scale]);
+    		    if (useCascade) {			
+			Signal<double> errors = rvm.predictionErrors(cascadeBasis[scale]);
     			for (int i = 0; i < block.size(); ++i) { 
     			    if (errors(i) != 0) sensedPatchVector(i) = true; // get new mask
     			    else sensedPatchVector(i) = false;
@@ -135,13 +139,8 @@ int main(int argc, char* argv[])
     			    signalPatchVector(i) = recoveredVector(i); 
     			}
     		    }
-		    std::stringstream ll;
-		    ll << scale;
-		    outputSignal(errors,"errors" + ll.str(), cfg);
-		    std::stringstream cc;
-		    cc << scale;
-		    outputSignal(estimatedCoeff,"coeff" + cc.str(), cfg);
-
+		    bigLoopTime += (GetTimeMs64() - startLoopTime);
+		    ++itt;
     		}				    
     	    }
     	}
@@ -155,6 +154,8 @@ int main(int argc, char* argv[])
     	label << "recovered_" << scale+1 << "_of_" << cfg.endScale;		
 	outputSignal(cascadeRecoveredSignals[scale], label.str(), cfg); 
     }
-    
+    if (cfg.printProgress) std::cout << "Total execution time: " << GetTimeMs64() - startTime << " ms." << std::endl;
+    if (cfg.printProgress) std::cout << "Average loop time: " << bigLoopTime/(double)itt << " ms." << std::endl;
+    if (cfg.printProgress) std::cout << "Average loop setup time: " << loopSetupTime/(double)itt << " ms." << std::endl;
     return 0;   
 }

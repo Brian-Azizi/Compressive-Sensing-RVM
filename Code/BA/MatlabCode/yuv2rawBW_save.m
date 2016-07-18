@@ -37,6 +37,7 @@ function raw = yuv2rawBW_save(fileIn, heightIn, widthIn, format, ...
                 end
                 fprintf(fid,'\n');
             end
+            fprintf(fid,'\n');
         end
         fclose(fid);
         close(h);
