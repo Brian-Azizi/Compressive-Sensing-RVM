@@ -201,8 +201,6 @@ int main()
 			useCascade = false;
 		    }
 
-		    useCascade = true;
-
 		    fast_updates(designMatrix, target, estimatedCoeff,\
 				 measurements, dictionarySize, noiseStD,\
 				 errors, cascadeBasis[s], useCascade,\
