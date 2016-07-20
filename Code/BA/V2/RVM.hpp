@@ -7,6 +7,7 @@
 #include "Signal.hpp"
 #include "Errors.hpp"
 
+#include "fast_updates.hpp"
 
 class RVM {
 private:
@@ -19,11 +20,13 @@ private:
     
     // RVM internals
     bool m_trainingFinished;
+    bool m_fastUpdatesFinished;
 
     int m_M;		 // M = total number of functions in basis set
     int m_K;	 // number of basis functions currently in model
 
     Signal<double> m_mu;	// posterior mean  (length M vector). if inModel(i) == false, then m_mu(i) == 0
+    Signal<double> m_fastMu;
     Signal<double> m_Sigma;	// posterior covariance  (MxM psd matrix). if inModel(i) == false, then Sigma(i,:) == Sigma(:,i) == 0
     
     Signal<double> S_out;	// Sparsity and quality pre-values (eqn (22) in [tipping & faul 2001])
@@ -58,15 +61,21 @@ public:
     
     // points is NxM matrix where M is #basis functions and N is #points for which to predict. output is Nx1 vector of model predictions for points
     Signal<double> predict(const Signal<double>& points) const; 
+    //    Signal<double> fastPredict(const Signal<double> points) const;
 
     // points is NxM matrix where M is #basis functions and N is #points for which to predict. output is Nx1 vector of errors in corresponding model predictions
     Signal<double> predictionErrors(const Signal<double>& points) const;    
+    //    Signal<double> fastPredictionErrors(const Signal<double>& points) const;
 
     // return mean of posterior
     Signal<double> mu() const;	  
+    Signal<double> fastMu() const;
 
     // return covariance of posterior    
     Signal<double> Sigma() const; 
+
+    // use GGP's function
+    void fastUpdates(Signal<double>& designMatrix, Signal<double>& targets, bool useCascade, Signal<double>& points, Signal<double>& errors);
 };
 
 RVM::RVM(double stdDev, double threshold, bool print, bool onlyAdd)
@@ -86,11 +95,20 @@ Signal<double> RVM::mu() const {
 
     Signal<double> ret = m_mu;
 
-    // replace dummies by zeros    
+    //replace dummies by zeros    
     for (int j = 0; j < m_M; ++j)
 	if (!inModel(j)) ret(j) = 0;
 
     return ret;
+}
+
+Signal<double> RVM::fastMu() const {
+    if (!m_fastUpdatesFinished) {
+	if (m_print) std::cerr << "RVM: Cannot access fast mu before calling fastUpdates to train the model" << std::endl;
+	return Signal<double>();
+    }
+    
+    return m_fastMu;
 }
 
 Signal<double> RVM::Sigma() const {
@@ -215,8 +233,8 @@ void RVM::computeFullStatistics(const Signal<double>& designMatrix, const Signal
 
     // order in these temporary variables is consistent with order in full variables.
     // This is NOT consistent with the order of 'currentSet'
-    Signal<double> mu(K);	// part of mean corresponding to current basis set
-    Signal<double> Sig(K,K);	// ditto for covariance
+    //    Signal<double> mu(K);	// part of mean corresponding to current basis set
+    //    Signal<double> Sig(K,K);	// ditto for covariance
     Signal<double> Phi(N,K);	// current basis set
     int bidx = 0;		// index in current basis set, bidx = 0,1,...,K-1
     for (int j = 0; j < M; ++j)
@@ -239,14 +257,14 @@ void RVM::computeFullStatistics(const Signal<double>& designMatrix, const Signal
     
     
     /*** Sigma and mu (eqn 6) ***/
-    Signal<double> invSigma(K,K);
-    invSigma = matMult(transpose(Phi),Phi) * beta;    
+    //    Signal<double> invSigma(K,K);
+    Signal<double> invSigma = matMult(transpose(Phi),Phi) * beta;    
     for (bidx = 0; bidx < K; ++bidx) {
 	aidx = sortedIdx(bidx);
 	invSigma(bidx,bidx) += alphas(aidx);
     }
-    Sig = inverse(invSigma);
-    mu = matMult(Sig,matMult(transpose(Phi),targets)) * beta;
+    Signal<double> Sig = inverse(invSigma);
+    Signal<double> mu = matMult(Sig,matMult(transpose(Phi),targets)) * beta;
 
     /*** S_out, Q_out (eqn 24, 25) ***/
     Signal<double> innerFactor = matMult(Phi,matMult(Sig, transpose(Phi))) * beta * beta ; // NxN matrix: B.Phi.Sigma.Phi^T.B  from eqn 24
@@ -431,6 +449,7 @@ void RVM::addNewBasisFunction(int currentIdx, const Signal<double>& designMatrix
 
 void RVM::train(const Signal<double>& designMatrix, const Signal<double>& targets)
 {   
+    uint64 trainTimeS = GetTimeMs64();
     /*** 0) Initialize member data ***/
     int N = designMatrix.height();
     int M = designMatrix.width();
@@ -447,18 +466,21 @@ void RVM::train(const Signal<double>& designMatrix, const Signal<double>& target
 
     // QQ: Do I need to normalize the basis functions?
 
+
     /*** 1+2) Initialise with a single basis vector and set alpha: pick the one with the largest normalised projection onto the target vector ***/
     getFirstBasisFunction(designMatrix, targets);    
-
+    uint64 statsTimeS = GetTimeMs64();
     /*** 3) Compute the intial full statistics (mu, Sigma, s, q, S, Q, thetas) ***/
     computeFullStatistics(designMatrix, targets);
-
+    statsTime += GetTimeMs64() - statsTimeS;
+    statsIdx++;
 
     /**** Start the main loop ****/
-    Signal<double> phi(N);	// holds basis function currently being considered 
+    //    Signal<double> phi(N);	// holds basis function currently being considered 
     bool lastIteration = false;
     double maxDML = m_DUMMY;
     int count = 0;
+    uint64 whileTimeS = GetTimeMs64();
     while(!lastIteration) {	
 	++ count;
 	if(m_print && count % 10 == 0) std::cout << ".";
@@ -485,8 +507,13 @@ void RVM::train(const Signal<double>& designMatrix, const Signal<double>& target
 	if (maxDML < m_threshold)
 	    lastIteration = true;
     }
+	whileTime += GetTimeMs64() - whileTimeS;
+	whileIdx++;
+
     if(m_print) std::cout << std::endl;
     m_trainingFinished = true;
+    trainTime += GetTimeMs64() - trainTimeS;
+    trainIdx ++;
 }
 
 Signal<double> RVM::predict(const Signal<double>& points) const
@@ -550,5 +577,35 @@ Signal<double> RVM::predictionErrors(const Signal<double>& points) const
 
     return errors;			    
 }
+
+void RVM::fastUpdates(Signal<double>& designMatrix, Signal<double>& targets, bool useCascade, Signal<double>& points, Signal<double>& errors)
+{
+    int N = designMatrix.height();
+    int M = designMatrix.width();
+    m_fastMu = Signal<double>(M);
+
+    double** dM = new double*[N];
+    for (int i = 0; i < N; ++i) dM[i] = new double[M];
+    for (int i = 0; i < N; ++i)
+	for (int j = 0; j < M; ++j) 
+	    dM[i][j] = designMatrix(i,j);
+    
+    double** PSI = new double*[M];
+    for (int i = 0; i < M; ++i) PSI[i] = new double[M];
+    for (int i = 0; i < M; ++i)
+	for (int j = 0; j < M; ++j)
+	    PSI[i][j] = points(i,j);
+
+    fast_updates(dM, targets.data(), m_fastMu.data(), N,M, m_stdDev, errors.data(), PSI, useCascade, m_threshold, m_print);
+
+    m_fastUpdatesFinished = true;
+
+    for (int i = 0; i < M; ++i) delete[] PSI[i];
+    delete[] PSI;
+    for (int i = 0; i < N; ++i) delete[] dM[i];
+    delete[] dM;
+}
+
+
 
 #endif // GUARD_RVM_HPP

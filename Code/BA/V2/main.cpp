@@ -7,13 +7,20 @@
 #include <string>
 #include <vector>
 
+#include "Timer.hpp"
+uint64 whileTime = 0;
+int whileIdx = 0;
+uint64 trainTime = 0;
+int trainIdx = 0;
+uint64 statsTime = 0;
+int statsIdx = 0;
+
 #include "SignalSettings.hpp"
 #include "SignalBasis.hpp"
 #include "Corrupter.hpp"
 #include "Signal.hpp"
 #include "RVM.hpp"
 
-#include "Timer.hpp"
 
 typedef unsigned int signalType; // Specify C++ type of input signal
 
@@ -107,6 +114,7 @@ int main(int argc, char* argv[])
     		    /*** Declare and define RVM variables ***/
     		    Signal<double> targets = getTargets(signalPatchVector, sensedPatchVector);
     		    Signal<double> designMatrix = getDesignMatrix(cascadeBasis[scale], sensedPatchVector);
+		    Signal<double> errors(block.size()); // for fastUpdates
 
     		    /*** Start the RVM ***/
     		    bool useCascade;
@@ -115,11 +123,15 @@ int main(int argc, char* argv[])
 		
 		    uint64 startSetupTime = GetTimeMs64();    
     		    RVM rvm(cfg.stdDev, cfg.deltaML_threshold, cfg.printProgress);
-		    rvm.train(designMatrix, targets);		    
+
+		    rvm.fastUpdates(designMatrix, targets, useCascade, cascadeBasis[scale], errors); // for fastUpdates
+		    //rvm.train(designMatrix, targets);		    
 		    loopSetupTime += (GetTimeMs64() - startSetupTime);
 
-		    recoveredVector = rvm.predict(cascadeBasis[scale]);		    
-    		    recoveredVector.fill(initialSignalVector, initialSensedVector);
+		    //recoveredVector = rvm.predict(cascadeBasis[scale]);		    
+		    
+		    recoveredVector = matMult(cascadeBasis[scale], rvm.fastMu());		    
+		    recoveredVector.fill(initialSignalVector, initialSensedVector);
 
     		    /*** Save recovered patch ***/
     		    recoveredPatch = reshape(recoveredVector, block.height(), block.width(), block.frames());
@@ -130,7 +142,7 @@ int main(int argc, char* argv[])
 		    
     		    /*** Prepare for next part of cascade ***/
     		    if (useCascade) {			
-			Signal<double> errors = rvm.predictionErrors(cascadeBasis[scale]);
+			//Signal<double> errors = rvm.predictionErrors(cascadeBasis[scale]);
     			for (int i = 0; i < block.size(); ++i) { 
     			    if (errors(i) != 0) sensedPatchVector(i) = true; // get new mask
     			    else sensedPatchVector(i) = false;
@@ -156,6 +168,11 @@ int main(int argc, char* argv[])
     }
     if (cfg.printProgress) std::cout << "Total execution time: " << GetTimeMs64() - startTime << " ms." << std::endl;
     if (cfg.printProgress) std::cout << "Average loop time: " << bigLoopTime/(double)itt << " ms." << std::endl;
-    if (cfg.printProgress) std::cout << "Average loop setup time: " << loopSetupTime/(double)itt << " ms." << std::endl;
+    if (cfg.printProgress) std::cout << "Average  RVM train time: " << loopSetupTime/(double)itt << " ms." << std::endl;
+    if (cfg.printProgress) std::cout << "Average train time: " << trainTime/(double)trainIdx << " ms." << std::endl;
+    if (cfg.printProgress) std::cout << "Average stats time: " << statsTime/(double)statsIdx << " ms." << std::endl;
+    if (cfg.printProgress) std::cout << "Average while loop time: " << whileTime/(double)whileIdx << " ms." << std::endl;
+
+    
     return 0;   
 }
