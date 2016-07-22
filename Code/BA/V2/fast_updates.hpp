@@ -10,17 +10,10 @@
 template<class T>
 void fast_updates(T **BASIS, T *targets, T *coefficients, int N, int M, double noiseStd, T *errors, T **PSI, bool calc, double change_in_ML_threshold, bool printToCOut)
 {
-    if (printToCOut) {
-        std::cout << "RVM: \t" << std::flush;
-    }
-    //define constants to guide the execution of the RVM
-    
-    
+    //define constants to guide the execution of the RVM   
     double zeroFactor = 1.0e-12; 	//used to control the numerical error in Q^2 - S , less than this number we set it to zero
     
-    
     /*variable declarations to book-keeping the statistics of the RVM.*/
-    
     double alpha, beta = 0;
     double *gamma = new double[M];
     for (int rows=0;rows<M;rows++)
@@ -33,7 +26,6 @@ void fast_updates(T **BASIS, T *targets, T *coefficients, int N, int M, double n
     
     initialize(BASIS, targets, scaling, alpha, beta, noiseStd, phi_column, in_model, N, M);
     
-    //std::cout << "	End of initialization!" << std::endl;
     
     /*declare variables to be used throughout*/
     
@@ -354,7 +346,8 @@ void fast_updates(T **BASIS, T *targets, T *coefficients, int N, int M, double n
     
     
     //		noiseStd = 1 /beta;     //Commented out by BA - believed to be a bug.
-    
+
+    if(printToCOut) std::cout << std::endl;
     whileTime += GetTimeMs64() - whileTimeS;
     whileIdx++;
     //perform this if we are interested in the error bars of the estimation for the cascade
