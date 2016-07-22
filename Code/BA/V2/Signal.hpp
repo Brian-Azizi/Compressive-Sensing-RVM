@@ -15,12 +15,12 @@ private:
     T* m_data;
     int m_height, m_width, m_frames;
 public:
-    // constructers
-    Signal(int height, int width, int frames);
-    Signal(int height, int width);
-    Signal(int height);
+    // constructers (if init is true, initialize to zero.
+    Signal(int height, int width, int frames, bool init=true);
+    Signal(int height, int width, bool init=true);
+    Signal(int height, bool init=true);
     Signal();
-    Signal(const Dim& dim);
+    Signal(const Dim& dim, bool init=true);
 
     // copy constructers
     Signal(const Signal&);
@@ -36,7 +36,7 @@ public:
     int frames() const { return m_frames; }
     int size() const { return m_height*m_width*m_frames; }
     Dim dim() const { return Dim(m_height, m_width, m_frames); }
-    const T* const data() const{ return m_data; }
+    T* const data() const{ return m_data; } // Warning: allows access to raw data even if Signal was declared const!
 
     // access to member data
     T* data() {	return m_data; }
@@ -48,8 +48,8 @@ public:
     T operator() (int i) const;
 
     // fill Signal with data
-    void fill(Signal<T> filler, Signal<bool> mask);
-    void fill(Signal<T> filler);
+    void fill(const Signal<T>& filler, const Signal<bool>& mask);
+    void fill(const Signal<T>& filler);
     void fill(T filler);
     
     // return sub blocks (slicing for output)
@@ -77,7 +77,7 @@ public:
     Signal<T> operator-() const;
     
     // check validity of member data
-    void check();
+    void check() const;
 
     // replace data with input data read from a file (use the helper function readSignal instead)
     void read(const std::string& fileName);
@@ -96,7 +96,7 @@ template <typename T> Signal<T> corruptSignal(const Signal<T>& orig, const Signa
 Signal<double> haarPhiMatrixTranspose(int rows);
 Signal<double> haarPsiMatrixTranspose(int rows);
 template<typename T> Signal<T> kronecker(const Signal<T>& A, const Signal<T>& B);
-template<typename T> Signal<T> matMult(const Signal<T>& A, const Signal<T>& B);
+template<typename T> Signal<T> matMult(const Signal<T>& A, const Signal<T>& B, double alpha = 1); // returns alpha*(A*B)
 template<typename T> Signal<T> add(const Signal<T>& A, const Signal<T>& B);
 Signal<double> generateLL(int scale, int currentScale, int h, int w, Signal<double> rPreFactor, Signal<double> cPreFactor);
 Signal<double> haarBasis2D(int h, int w, int scale);
@@ -113,8 +113,8 @@ template <typename T> Signal<T> getDesignMatrix(const Signal<T>& orig, const Sig
 template <typename T> Signal<T> reshape(Signal<T> orig, int h, int w, int f = 1);
 template <typename T> Signal<T> reshape(Signal<T> orig, Dim dim);
 Signal<double> read(const std::string& inputFile, int numFrames = 1);
-double norm(const Signal<double> A);
-double dot(const Signal<double> a, const Signal<double> b);
+double norm(const Signal<double>& A);
+double dot(const Signal<double>& a, const Signal<double>& b);
 Signal<double> cholesky(const Signal<double>& A);
 Signal<double> inversed(const Signal<double>& A);
 Signal<double> readSignal(const std::string& inputFile); // reads a signal from a file. Assumes frames are seperated by empty lines

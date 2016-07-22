@@ -17,39 +17,44 @@
 
 /*** Signal members ***/
 
-template <typename T> Signal<T>::Signal(int height, int width, int frames)
+template <typename T> Signal<T>::Signal(int height, int width, int frames, bool init)
     : m_height(height), m_width(width), m_frames(frames),
       m_data(new T[height*width*frames]) 
 {
     check();
-    for (int i = 0; i < height*width*frames; ++i) m_data[i] = 0;
+    if(init)
+	for (int i = 0; i < height*width*frames; ++i) m_data[i] = 0;
 }
-template <typename T> Signal<T>::Signal(int height, int width)
+template <typename T> Signal<T>::Signal(int height, int width, bool init)
     : m_height(height), m_width(width), m_frames(1),
       m_data(new T[height*width])
 {
     check();
-    for (int i = 0; i < height*width; ++i) m_data[i] = 0;
+    if(init)
+	for (int i = 0; i < height*width; ++i) m_data[i] = 0;
 }
-template <typename T> Signal<T>::Signal(int height)
+template <typename T> Signal<T>::Signal(int height, bool init)
     : m_height(height), m_width(1), m_frames(1),
       m_data(new T[height])
 {
     check();
-    for (int i = 0; i < height; ++i) m_data[i] = 0;
+    if(init)
+	for (int i = 0; i < height; ++i) m_data[i] = 0;
 }
 template <typename T> Signal<T>::Signal() 
     : m_height(0), m_width(0), m_frames(0),
       m_data(0) 
 {
 }
-template <typename T> Signal<T>::Signal(const Dim& dim)
+template <typename T> Signal<T>::Signal(const Dim& dim, bool init)
     : m_height(dim.height()), m_width(dim.width()), m_frames(dim.frames()),
       m_data(new T[dim.size()])
 {
     check();
-    int sz = dim.size();
-    for (int i = 0; i < sz; ++i) m_data[i] = 0;
+    if(init) {
+	int sz = dim.size();
+	for (int i = 0; i < sz; ++i) m_data[i] = 0;
+    }
 }
 
 template <typename T> Signal<T>::Signal(const Signal<T>& arg)
@@ -107,7 +112,8 @@ template<class T> T Signal<T>::operator() (int i) const
     return this->operator()(i,0,0);
 }
 
-template <typename T> void Signal<T>::check() {
+template <typename T> void Signal<T>::check() const
+{
     if (m_height < 1 || m_width < 1 || m_frames < 1)
 	error("Bad Signal: ", "non-positive dimensions");
     if (m_data == 0) 
@@ -172,7 +178,7 @@ Signal<T> Signal<T>::getPatch(int hIdx, int wIdx, int fIdx,
 	wIdx + pW > m_width ||
 	fIdx + pF > m_frames) error("out-of-range access");
 
-    Signal<T> patch(pH, pW, pF);
+    Signal<T> patch(pH, pW, pF, false);
     for(int k = 0; k < pF; ++k) {
 	for (int i = 0; i < pH; ++i) {
 	    for (int j = 0; j < pW; ++j) {
@@ -224,7 +230,7 @@ Signal<T> Signal<T>::getSlice(int startRow, int endRow) const
 }
 
 template <class T>
-void Signal<T>::fill(Signal<T> filler, Signal<bool> mask)
+void Signal<T>::fill(const Signal<T>& filler, const Signal<bool>& mask)
 {
     // check dimensions match:
     if (m_height != filler.height()
@@ -243,7 +249,7 @@ void Signal<T>::fill(Signal<T> filler, Signal<bool> mask)
 }
 
 template <class T>
-void Signal<T>::fill(Signal<T> filler)
+void Signal<T>::fill(const Signal<T>& filler)
 {
     // check dimensions match:
     if (m_height != filler.height()
@@ -287,7 +293,7 @@ void Signal<T>::reshape(const Dim& dim)
 template <typename T>
 Signal<T> Signal<T>::operator*(T factor) const
 {
-    Signal<T> ret(this->dim());
+    Signal<T> ret(this->dim(),false);
     int sz = this->size();
     for (int i = 0; i < sz; ++i) ret.data()[i] = factor * this->data()[i];
     return ret;
@@ -296,7 +302,7 @@ Signal<T> Signal<T>::operator*(T factor) const
 template<class T>
 Signal<T> Signal<T>::operator-() const
 {
-    Signal<T> ret(this->dim());
+    Signal<T> ret(this->dim(),false);
     int sz = this->size();
     for (int i = 0; i < sz; ++i) ret.data()[i] = - this->data()[i];
     return ret;
@@ -312,7 +318,7 @@ Signal<V> operator*(V factor, const Signal<T>& A)
 template <typename T>
 Signal<T> vectorize(const Signal<T>& arg)
 {
-    Signal<T> vec(arg.size());
+    Signal<T> vec(arg.size(),false);
     for (int i = 0; i < arg.size(); ++i) 
 	vec.data()[i] = arg.data()[i];
     
@@ -324,7 +330,7 @@ Signal<T> transpose(const Signal<T>& arg)
 {
     if (arg.frames() != 1) error("can only take transpose of 2D signal");
     
-    Signal<T> ret(arg.width(), arg.height());
+    Signal<T> ret(arg.width(), arg.height(),false);
     for (int i = 0; i < arg.height(); ++i)
 	for (int j = 0; j < arg.width(); ++j)
 	    ret(j,i) = arg(i,j);
@@ -415,7 +421,7 @@ Signal<T> corruptSignal(const Signal<T>& orig, const Signal<bool>& mask)
 {
     if (orig.dim() != mask.dim()) error("orig and mask must have the same dimensions");
 
-    Signal<T> ret(orig.dim());
+    Signal<T> ret(orig.dim());	// initialized to zero
     for (int i = 0; i < orig.size(); ++i) 
 	if(mask.data()[i])
 	    ret.data()[i] = orig.data()[i]; // else 0
@@ -473,17 +479,20 @@ Signal<T> kronecker(const Signal<T>& A, const Signal<T>& B)
 }
 
 template<typename T>
-Signal<T> matMult(const Signal<T>& A, const Signal<T>& B)
+Signal<T> matMult(const Signal<T>& A, const Signal<T>& B, double alpha) // does NOT modify A and B. const would be incompatible with blas call
 {
     if (A.frames() != 1 || B.frames() != 1) 
 	error("multiplication not defined for 3D signals");
     if (A.width() != B.height())
 	error("inner matrix dimensions must agree");
-    Signal<T> ret(A.height(), B.width());
-    for (int i = 0; i < A.height(); ++i)
-	for (int j = 0; j < B.width(); ++j)
-	    for (int k = 0; k < A.width(); ++k)
-		ret(i,j) += A(i,k) * B(k,j);
+    Signal<T> ret(A.height(), B.width(),false);
+    blasMatrixMultiplication(A.height(), A.width(), A.data(), B.height(), B.width(),
+			     B.data(), ret.height(), ret.width(), ret.data(), alpha);
+    
+    // for (int i = 0; i < A.height(); ++i)
+    // 	for (int j = 0; j < B.width(); ++j)
+    // 	    for (int k = 0; k < A.width(); ++k)
+    // 		ret(i,j) += A(i,k) * B(k,j);
 
     return ret;
 }
@@ -494,7 +503,7 @@ Signal<T> add(const Signal<T>& A, const Signal<T>& B)
     if (A.dim() != B.dim()) 
 	error("ADD: Signals must have the same dimensions");
     
-    Signal<T> ret(A.dim());
+    Signal<T> ret(A.dim(),false);
     int sz = A.size();
     for (int i = 0; i < sz; ++i)
 	ret.data()[i] = A.data()[i] + B.data()[i];
@@ -841,7 +850,7 @@ Signal<T> reshape(Signal<T> orig, int h, int w, int f)
     int sz = h*w*f;
     if (orig.size() != sz) error("number of elements must not change");
 
-    Signal<T> ret(h, w, f);
+    Signal<T> ret(h, w, f, false);
     for (int i = 0; i < sz; ++i) ret.data()[i] = orig.data()[i];
     return ret;
 }
@@ -891,7 +900,7 @@ Signal<double> read(const std::string& inputFile, int numFrames)
     
     rows /= numFrames;
 
-    Signal<double> ret(rows,cols, numFrames);
+    Signal<double> ret(rows,cols, numFrames,false);
     in.clear();
     in.seekg(0, std::ios::beg);
 
@@ -904,7 +913,7 @@ Signal<double> read(const std::string& inputFile, int numFrames)
     return ret;
 }
 
-double norm(const Signal<double> A)
+double norm(const Signal<double>& A)
 {
     if (A.width() != 1 || A.frames() != 1) error("can only take norm of a vector");
 
@@ -915,13 +924,13 @@ double norm(const Signal<double> A)
     return std::sqrt(p);
 }
 
-double dot(const Signal<double> a, const Signal<double> b)
+double dot(const Signal<double>& a, const Signal<double>& b)
 {
     if (a.width() != 1 || a.frames() != 1 || b.width() != 1 || b.frames() != 1
 	|| a.height() != b.height()) error("arguments must be vectors of the same length");
-    double ret = 0;
-    int length = a.height();
-    for (int i = 0; i < length; ++i) ret += a(i)*b(i);
+    double ret = blasDot(a.height(), a.data(), b.height(), b.data());
+    // int length = a.height();
+    // for (int i = 0; i < length; ++i) ret += a(i)*b(i);
 
     return ret;
 }
@@ -1019,7 +1028,7 @@ Signal<double> readSignal(const std::string& inputFile) // reads a signal from a
 	prevCols = cols;	
     }
 
-    Signal<double> ret(rows, cols, frames);
+    Signal<double> ret(rows, cols, frames,false);
     in.clear();
     in.seekg(0, std::ios::beg);
 
@@ -1076,7 +1085,7 @@ Signal<double> inverse(const Signal<double>& A)
     
     int errorCode;
     lapackInverse(invA.data(), N, errorCode);
-    if(errorCode != 0) error("Inverse: matrix inversion failed! Error code", errorCode);
+    //if(errorCode != 0) error("Inverse: matrix inversion failed! Error code", errorCode);
 
     return invA;
 }

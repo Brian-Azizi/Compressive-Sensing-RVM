@@ -49,6 +49,7 @@ private:
     void getFirstBasisFunction(const Signal<double>& designMatrix, const Signal<double>& targets);
     int idxMaxProjection(const Signal<double>& designMatrix, const Signal<double>& targets) const;
     void computeFullStatistics(const Signal<double>& designMatrix, const Signal<double>& targets);
+    void firstFullStatistics(const Signal<double>& designMatrix, const Signal<double>& targets);
     int selectBasisFunction(double& max_deltaML);
     void addNewBasisFunction(int index, const Signal<double>& designMatrix);
     void reestimateBasisFunction(int index, const Signal<double>& designMatrix);
@@ -144,7 +145,7 @@ void RVM::reserveMembers(int M)
     inModel = Signal<bool>(M);
     currentSet = Signal<int>(M);
     whereIs = Signal<int>(M);
-	
+    
     m_mu.fill(m_DUMMY);
     m_Sigma.fill(m_DUMMY);
     S_out.fill(m_DUMMY);
@@ -221,9 +222,10 @@ void RVM::getFirstBasisFunction(const Signal<double>& designMatrix, const Signal
     alphas(firstIdx) = alpha;
 }
 
-// computes internal statistics using full formulas. Assumes alpha is up-to-date
+/*** computes the internal statistics (mu, Sigma, S, Q, s, q, thetas) using full formulae.
+Assumes (alphas, inModel, whereIs, currentSet) are up-to-date  ***/
 void RVM::computeFullStatistics(const Signal<double>& designMatrix, const Signal<double>& targets)
-{
+{ 
     const int K = m_K;		// current size of basis set
     const int N = designMatrix.height();
     const int M = designMatrix.width();
@@ -235,7 +237,7 @@ void RVM::computeFullStatistics(const Signal<double>& designMatrix, const Signal
     // This is NOT consistent with the order of 'currentSet'
     //    Signal<double> mu(K);	// part of mean corresponding to current basis set
     //    Signal<double> Sig(K,K);	// ditto for covariance
-    Signal<double> Phi(N,K);	// current basis set
+    Signal<double> Phi(N,K,false);	// current basis set
     int bidx = 0;		// index in current basis set, bidx = 0,1,...,K-1
     for (int j = 0; j < M; ++j)
 	if (inModel(j)) {
@@ -246,7 +248,7 @@ void RVM::computeFullStatistics(const Signal<double>& designMatrix, const Signal
     if (bidx != K) error("RVM: internal error in computing full statistics. K!=size of current basis set");
 
     // get indeces of functions in current basis set in increasing order
-    Signal<double> sortedIdx(K);    
+    Signal<double> sortedIdx(K,false);    
     int aidx = 0;		// index in complete basis set, aidx = 0,1,...,M-1
     for (bidx = 0; bidx < K; ++bidx) {
 	while(!inModel(aidx)) ++aidx;
@@ -255,24 +257,37 @@ void RVM::computeFullStatistics(const Signal<double>& designMatrix, const Signal
 	if(aidx > M) error("RVM: index of basis set went out of range");
     }
     
-    
     /*** Sigma and mu (eqn 6) ***/
     //    Signal<double> invSigma(K,K);
-    Signal<double> invSigma = matMult(transpose(Phi),Phi) * beta;    
+    //    Signal<double> invSigma = matMult(transpose(Phi),Phi) * beta;    
+    Signal<double> PhiT = transpose(Phi);
+    Signal<double> invSigma = matMult(PhiT,Phi,beta);
     for (bidx = 0; bidx < K; ++bidx) {
 	aidx = sortedIdx(bidx);
 	invSigma(bidx,bidx) += alphas(aidx);
     }
-    Signal<double> Sig = inverse(invSigma);
-    Signal<double> mu = matMult(Sig,matMult(transpose(Phi),targets)) * beta;
 
+    Signal<double> Sig = inverse(invSigma);
+    //Signal<double> PhiT_targets = matMult(PhiT, targets);
+    //Signal<double> mu = matMult(Sig,PhiT_targets,beta);
+    Signal<double> mu = matMult(Sig,matMult(PhiT, targets),beta);
+    //Signal<double> mu = matMult(Sig,matMult(transpose(Phi),targets)) * beta;
+    
     /*** S_out, Q_out (eqn 24, 25) ***/
-    Signal<double> innerFactor = matMult(Phi,matMult(Sig, transpose(Phi))) * beta * beta ; // NxN matrix: B.Phi.Sigma.Phi^T.B  from eqn 24
-    Signal<double> phi(N);	// column of design matrix
+    //Signal<double> innerFactor = matMult(Phi,matMult(Sig, transpose(Phi))) * (beta * beta) ; // NxN matrix: B.Phi.Sigma.Phi^T.B  from eqn 24
+    Signal<double> innerFactor = matMult(Phi,matMult(Sig, PhiT),beta*beta);
+    Signal<double> phi(N,false);	// column of design matrix
+    
+    Signal<double> tempIfPhi = matMult(innerFactor,designMatrix);
+
+    Signal<double> tempIfT = matMult(innerFactor, targets);
+    Signal<double> tempCol(N,false);
+
     for (int j = 0; j < M; ++j) {
 	for (int i = 0; i < N; ++i) phi(i) = designMatrix(i,j); // get jth column
-	S_out(j) = beta*dot(phi,phi) - dot(phi, matMult(innerFactor, phi));
-	Q_out(j) = beta*dot(phi,targets) - dot(phi, matMult(innerFactor, targets));
+	for (int i = 0; i < N; ++i) tempCol(i) = tempIfPhi(i,j); // get jth column
+	S_out(j) = beta*dot(phi,phi) - dot(phi, tempCol);
+	Q_out(j) = beta*dot(phi,targets) - dot(phi, tempIfT);	
     }
 
     /*** S_in, Q_in (eqn 23) and thetas***/
@@ -298,10 +313,61 @@ void RVM::computeFullStatistics(const Signal<double>& designMatrix, const Signal
 	    m_Sigma(aidx,aidx2) = Sig(bidx,bidx2);
 	}
     }
-    
-    
+
     return;
 }
+
+/*** Same as computeFullStatistics, but assumes we have only a single basis function in the model
+     (i.e. works only if m_K == 1). It uses scalars rather than compound classes. ***/
+void RVM::firstFullStatistics(const Signal<double>& designMatrix, const Signal<double>& targets) 
+{
+    const int K = m_K;		// current size of basis set
+    const int N = designMatrix.height();
+    const int M = designMatrix.width();
+    if (K != 1) error("RVM: firstFullStatistics can only be called if there is a single basis function in the model");
+
+    const double beta = 1.0/(m_stdDev*m_stdDev);   
+    
+    Signal<double> Phi(N,false);	// current basis set
+    int aidx = currentSet(0);		// index of current basis function
+
+    for (int i = 0; i < N; ++i)
+	Phi(i) = designMatrix(i,aidx); 
+
+    double PhiTargets = dot(Phi,targets);
+    double phiBphi = dot(Phi,Phi) * beta;
+    double invSigma = phiBphi + alphas(aidx);
+
+    double Sig = 1.0/invSigma;
+    double mu = PhiTargets * (Sig * beta);
+
+    /*** S_out, Q_out (eqn 24, 25) ***/
+    Signal<double> temp = matMult(transpose(Phi),designMatrix,beta);
+    Signal<double> phi(N,false);
+
+    for (int j = 0; j < M; ++j) {
+	for (int i = 0; i < N; ++i) phi(i) = designMatrix(i,j); // get jth column
+	double num = temp(0,j)*Sig;
+	S_out(j) = beta*dot(phi,phi) - num*temp(0,j);
+	Q_out(j) = beta*dot(phi,targets) - num*PhiTargets;
+
+	if (j == aidx) {
+	    double denom = alphas(j) - S_out(j);
+	    S_in(j) = alphas(j)*S_out(j) / denom;
+	    Q_in(j) = alphas(j)*Q_out(j) / denom;
+	} else {
+	    S_in(j) = S_out(j);
+	    Q_in(j) = Q_out(j);
+	}
+
+	thetas(j) = Q_in(j)*Q_in(j) - S_in(j);
+    }
+
+    /*** save mu and Sig in internal state ***/    
+    m_mu(aidx) = mu;
+    m_Sigma(aidx,aidx) = Sig;
+}
+
 
 // assumes relevance factors, S, Q are up to date
 int RVM::selectBasisFunction(double& maxDML)
@@ -447,18 +513,35 @@ void RVM::addNewBasisFunction(int currentIdx, const Signal<double>& designMatrix
     
 }
 
+    // uint64 focusTime1S = GetTimeMs64();
+    // focusTime1 += GetTimeMs64() - focusTime1S;
+    // focusIdx1++;
+    // uint64 focusTime2S = GetTimeMs64();
+    // focusTime2 += GetTimeMs64() - focusTime2S;
+    // focusIdx2++;
+    // uint64 focusTime3S = GetTimeMs64();
+    // focusTime3 += GetTimeMs64() - focusTime3S;
+    // focusIdx3++;
+    // uint64 focusTime4S = GetTimeMs64();
+    // focusTime4 += GetTimeMs64() - focusTime4S;
+    // focusIdx4++;    
+    
+
+/*** Trains the RVM model given a NxM designMatrix, and an Nx1 vector of targets using the fast update formulae
+     by [Tipping & Faul (2003)]. Currently only considers addition of basis functions. We stop the algorithm
+     if the increase in marginal likelihood is below m_threshold, or if the algorithm decides not to add a
+     basis function for the next iteration (and e.g. chooses to re-estimate or delete instead). ***/     
 void RVM::train(const Signal<double>& designMatrix, const Signal<double>& targets)
 {   
     uint64 trainTimeS = GetTimeMs64();
     /*** 0) Initialize member data ***/
     int N = designMatrix.height();
     int M = designMatrix.width();
-
     
     /*** some tests ***/
     if (designMatrix.frames() != 1) error("RVM: Design Matrix (argument 1) must have third dimension = 1");
     if (targets.height() != N) error("RVM: target vector (arg 2) must have same number of rows as the design matrix (arg 1)");
-    if (targets.dim() != Dim(N,1,1)) error("RVM: targets (arg 2) must be a vector (i.e. dim 2 == dim 3 == 1)");
+    if(targets.dim() != Dim(N,1,1)) error("RVM: targets (arg 2) must be a vector (i.e. dim 2 == dim 3 == 1)");
     
     reserveMembers(M);
     double var = m_stdDev*m_stdDev;
@@ -467,11 +550,17 @@ void RVM::train(const Signal<double>& designMatrix, const Signal<double>& target
     // QQ: Do I need to normalize the basis functions?
 
 
-    /*** 1+2) Initialise with a single basis vector and set alpha: pick the one with the largest normalised projection onto the target vector ***/
+    /*** 1+2) Initialise with a single basis vector and set alpha:
+	 pick the one with the largest normalised projection onto the target vector ***/
     getFirstBasisFunction(designMatrix, targets);    
     uint64 statsTimeS = GetTimeMs64();
-    /*** 3) Compute the intial full statistics (mu, Sigma, s, q, S, Q, thetas) ***/
-    computeFullStatistics(designMatrix, targets);
+
+    /*** 3) Compute the intial full statistics (mu, Sigma, s, q, S, Q, thetas). 
+	 Can call either computeFullStatistics or firstFullStatistics at this point since we currently only
+	 have a single basis function in out model. The output and effect to the state of the RVM should be
+	 identical, though there me be differences in speed. ***/
+    //computeFullStatistics(designMatrix, targets);
+    firstFullStatistics(designMatrix, targets); 
     statsTime += GetTimeMs64() - statsTimeS;
     statsIdx++;
 
@@ -484,6 +573,7 @@ void RVM::train(const Signal<double>& designMatrix, const Signal<double>& target
     while(!lastIteration) {	
 	++ count;
 	if(m_print && count % 10 == 0) std::cout << ".";
+
 	/*** 4) Selection: Calculate relevance, alphas and delta ML for all bases and pick argmax delta ml ***/
 	int currentIdx = selectBasisFunction(maxDML); // index of next basis function to update, get change in ML
 	if (currentIdx < 0)			      // no more basis functions to update
@@ -516,6 +606,9 @@ void RVM::train(const Signal<double>& designMatrix, const Signal<double>& target
     trainIdx ++;
 }
 
+/*** Returns predictions made by the RVM. Cannot be called before we have trained the model. 
+     Input is a PxM matrix (using 2D signals), where P is the number of points and M is the number of basis functions
+     in the dictionary. The output is a Px1 vector containing the predictions ***/
 Signal<double> RVM::predict(const Signal<double>& points) const
 {
     if (!m_trainingFinished) {
@@ -539,6 +632,10 @@ Signal<double> RVM::predict(const Signal<double>& points) const
     return predictions;
 }
 
+/*** Returns the estimated error in the predictions of the RVM. Cannot be called before we have trained the model.
+     Does not actually compute the predictions, only the estimated error. Input is PxM matrix of points (each row is
+     a point, i.e. a vector of coefficients of the basis functions. The basis dictionary is assumed to be the same as 
+     the one used for training. Output is a Px1 vector of prediction errors. ***/
 Signal<double> RVM::predictionErrors(const Signal<double>& points) const
 {
     if (!m_trainingFinished) {
@@ -578,6 +675,10 @@ Signal<double> RVM::predictionErrors(const Signal<double>& points) const
     return errors;			    
 }
 
+
+/*** Calls the fast_updates function written by GGP. Combines training, and error estimation in one functions. 
+     Potentially faster than using RVM::train and RVM::errorPredict. Uses different internal variables. 
+     To access estimated mean, call RVM::fastMu. ***/
 void RVM::fastUpdates(Signal<double>& designMatrix, Signal<double>& targets, bool useCascade, Signal<double>& points, Signal<double>& errors)
 {
     int N = designMatrix.height();

@@ -14,6 +14,14 @@ uint64 trainTime = 0;
 int trainIdx = 0;
 uint64 statsTime = 0;
 int statsIdx = 0;
+uint64 focusTime1 = 0;
+uint64 focusTime2 = 0;
+uint64 focusTime3 = 0;
+uint64 focusTime4 = 0;
+int focusIdx1 = 0;
+int focusIdx2 = 0;
+int focusIdx3 = 0;
+int focusIdx4 = 0;
 
 #include "SignalSettings.hpp"
 #include "SignalBasis.hpp"
@@ -114,7 +122,7 @@ int main(int argc, char* argv[])
     		    /*** Declare and define RVM variables ***/
     		    Signal<double> targets = getTargets(signalPatchVector, sensedPatchVector);
     		    Signal<double> designMatrix = getDesignMatrix(cascadeBasis[scale], sensedPatchVector);
-		    Signal<double> errors(block.size()); // for fastUpdates
+		    //Signal<double> errors(block.size()); // for fastUpdates
 
     		    /*** Start the RVM ***/
     		    bool useCascade;
@@ -124,13 +132,14 @@ int main(int argc, char* argv[])
 		    uint64 startSetupTime = GetTimeMs64();    
     		    RVM rvm(cfg.stdDev, cfg.deltaML_threshold, cfg.printProgress);
 
-		    rvm.fastUpdates(designMatrix, targets, useCascade, cascadeBasis[scale], errors); // for fastUpdates
-		    //rvm.train(designMatrix, targets);		    
+		    rvm.train(designMatrix, targets);		    
+		    //rvm.fastUpdates(designMatrix, targets, useCascade, cascadeBasis[scale], errors); // for fastUpdates
+		    
 		    loopSetupTime += (GetTimeMs64() - startSetupTime);
 
-		    //recoveredVector = rvm.predict(cascadeBasis[scale]);		    
-		    
-		    recoveredVector = matMult(cascadeBasis[scale], rvm.fastMu());		    
+		    recoveredVector = rvm.predict(cascadeBasis[scale]);		    		    
+		    //recoveredVector = matMult(cascadeBasis[scale], rvm.fastMu());		    
+
 		    recoveredVector.fill(initialSignalVector, initialSensedVector);
 
     		    /*** Save recovered patch ***/
@@ -142,7 +151,7 @@ int main(int argc, char* argv[])
 		    
     		    /*** Prepare for next part of cascade ***/
     		    if (useCascade) {			
-			//Signal<double> errors = rvm.predictionErrors(cascadeBasis[scale]);
+			Signal<double> errors = rvm.predictionErrors(cascadeBasis[scale]); // remove for fastupdates
     			for (int i = 0; i < block.size(); ++i) { 
     			    if (errors(i) != 0) sensedPatchVector(i) = true; // get new mask
     			    else sensedPatchVector(i) = false;
@@ -172,6 +181,10 @@ int main(int argc, char* argv[])
     if (cfg.printProgress) std::cout << "Average train time: " << trainTime/(double)trainIdx << " ms." << std::endl;
     if (cfg.printProgress) std::cout << "Average stats time: " << statsTime/(double)statsIdx << " ms." << std::endl;
     if (cfg.printProgress) std::cout << "Average while loop time: " << whileTime/(double)whileIdx << " ms." << std::endl;
+    if (cfg.printProgress) std::cout << "Average focus time 1: " << focusTime1/(double)focusIdx1 << " ms." << std::endl;
+    if (cfg.printProgress) std::cout << "Average focus time 2: " << focusTime2/(double)focusIdx2 << " ms." << std::endl;
+    if (cfg.printProgress) std::cout << "Average focus time 3: " << focusTime3/(double)focusIdx3 << " ms." << std::endl;
+    if (cfg.printProgress) std::cout << "Average focus time 4: " << focusTime4/(double)focusIdx4 << " ms." << std::endl;
 
     
     return 0;   

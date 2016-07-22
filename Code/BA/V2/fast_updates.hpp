@@ -103,8 +103,10 @@ void fast_updates(T **BASIS, T *targets, T *coefficients, int N, int M, double n
     multiply2D1D(BASIS_transpose, targets, BASIS_Targets, M, N);
     
     
+    uint64 statsTimeS = GetTimeMs64();
     full_statistics(BASIS, PHI, included_basis, targets, indeces_used, ins_model, alphas, beta, mean, covariance, S_in, Q_in, S_out, Q_out, relevance_factors, N, M, BASIS_PHI, BETA_BASIS_PHI, BASIS_Targets, gamma);
-    
+    statsTime += GetTimeMs64() - statsTimeS;
+    statsIdx++;
     
     int added_basis = 0;
     int count = 0;
@@ -116,6 +118,7 @@ void fast_updates(T **BASIS, T *targets, T *coefficients, int N, int M, double n
     
     bool last_iteration = false;
 
+    uint64 whileTimeS = GetTimeMs64();
     while (!last_iteration)
 	{
 	    
@@ -352,7 +355,8 @@ void fast_updates(T **BASIS, T *targets, T *coefficients, int N, int M, double n
     
     //		noiseStd = 1 /beta;     //Commented out by BA - believed to be a bug.
     
-    
+    whileTime += GetTimeMs64() - whileTimeS;
+    whileIdx++;
     //perform this if we are interested in the error bars of the estimation for the cascade
     if (calc)
 	{
