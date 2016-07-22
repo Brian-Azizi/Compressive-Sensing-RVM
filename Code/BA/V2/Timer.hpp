@@ -1,3 +1,5 @@
+#ifndef GUARD_TIMER_HPP
+#define GUARD_TIMER_HPP
 #ifdef _WIN32
 #include <Windows.h>
 #else
@@ -45,3 +47,4 @@ uint64 GetTimeMs64()
     return ret;
 #endif
 }
+#endif
