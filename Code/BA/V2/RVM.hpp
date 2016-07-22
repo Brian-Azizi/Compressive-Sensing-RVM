@@ -572,7 +572,7 @@ void RVM::train(const Signal<double>& designMatrix, const Signal<double>& target
     uint64 whileTimeS = GetTimeMs64();
     while(!lastIteration) {	
 	++ count;
-	if(m_print && count % 10 == 0) std::cout << ".";
+	if(m_print && count % 10 == 0) std::cout << "." << std::flush;
 
 	/*** 4) Selection: Calculate relevance, alphas and delta ML for all bases and pick argmax delta ml ***/
 	int currentIdx = selectBasisFunction(maxDML); // index of next basis function to update, get change in ML
@@ -597,9 +597,9 @@ void RVM::train(const Signal<double>& designMatrix, const Signal<double>& target
 	if (maxDML < m_threshold)
 	    lastIteration = true;
     }
-	whileTime += GetTimeMs64() - whileTimeS;
-	whileIdx++;
-
+    whileTime += GetTimeMs64() - whileTimeS;
+    whileIdx++;
+    
     if(m_print) std::cout << std::endl;
     m_trainingFinished = true;
     trainTime += GetTimeMs64() - trainTimeS;

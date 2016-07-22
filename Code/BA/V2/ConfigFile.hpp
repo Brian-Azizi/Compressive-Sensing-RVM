@@ -23,7 +23,7 @@ public:
     ConfigFile(const std::string& fName);
     ConfigFile(const ConfigFile& cfg);
     bool keyExists(const std::string& key) const;
-    template<typename T> T getValueOfKey(const std::string& key, const T& defaultValue = T(), bool printWarning = true);
+    template<typename T> T getValueOfKey(const std::string& key, const T& defaultValue = T(), bool printWarning = false);
 
     std::string file() const { return fName;}
     std::map<std::string, std::string> contents() const { return m_contents; }

@@ -1062,11 +1062,11 @@ void outputSignal(const Signal<T>& S, const std::string& label, const SignalSett
     if(!out) {
 	if (cfg.printProgress)
 	    std::cerr << "Warning: could not open output file '" + ss.str() + "'!"
-		      << "\nAttempting output in local directory...";
+		      << "\nAttempting output in current directory...";
 	out.open(outputName.str().c_str());
 	if (!out) error("could not open output file '" + outputName.str());
 	else 
-	    if (cfg.printProgress) std::cerr << "OK!\n";
+	    if (cfg.printProgress) std::cerr << "OK!\n\n";
     }
     out << S;
     out.close();

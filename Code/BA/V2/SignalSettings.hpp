@@ -29,7 +29,7 @@ struct SignalSettings {
     SignalSettings(const std::string& settingsFile);
     ConfigFile configFile() const { return cfg; }
     void check();
-private:
+
     ConfigFile cfg;
     void initParameters();
 };
