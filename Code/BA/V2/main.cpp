@@ -10,9 +10,11 @@ void errorMessage(const std::string& argv_0)
     std::cerr << "Usage : " << argv_0 << " [settingsFile]\n"
 	      << "Default settings file is '.rvmsettings.cfg'\n"
 	      << "The format is \t\tsetting = val\n"
-	      << "Possible settings:\n"
+	      << "The names of the output files will be saved in the file './rvmOutputFilenames.txt'. This is to allow interfacing with other programs for later analysis\n"
+	      << "\nPossible settings:\n"
 	      << "  inputFile\t\tInput file name. Txt file containing input signal pixel values. Frames are seperated by empty lines. Each frame must have a consistent number of rows and columns, respectively. (No default; must be specified)\n"
 	      << "  outputDirectory\tName of output directory (default: ./)\n"
+	      << "  outputName\t\tA label for the names of the output files. Everything up to final '/' character will be ignored. The default name is a long string containing information on all the settings\n"
 	      << "  blockHeight\t\tHeight of signal blocks (default: 2)\n"
 	      << "  blockWidth\t\tWidth signal blocks (default: 2)\n"
 	      << "  blockFrames\t\tDepth of signal blocks (default: 1)\n"
@@ -56,7 +58,7 @@ int main(int argc, char* argv[])
 	Interpolator interpol(settingsFile);   
 	successfulRead = true;
 	interpol.run();	
-	if (interpol.printProgress()) std::cout << "Total execution time: " << GetTimeMs64() - startTime << " ms." << std::endl;
+	if (interpol.printProgress()) std::cout << "Total execution time: " << GetTimeMs64() - startTime << " ms." << std::endl << std::endl;
     }
     catch (const std::exception& e) {
 	if (!successfulRead) {

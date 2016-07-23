@@ -1,0 +1,6 @@
+original		/local/data/public/ba308/InputFiles/lenna_128-128-1.txt
+corrupted		/local/data/public/ba308/Simulations/lenna_128-128-1/haar_blockDim-8-8-1_uniform-70%_stdDev-1_threshold-1_CORRUPTED_lenna_128-128-1.txt
+mask			/local/data/public/ba308/Simulations/lenna_128-128-1/haar_blockDim-8-8-1_uniform-70%_stdDev-1_threshold-1_MASK_lenna_128-128-1.txt
+recovered_1		/local/data/public/ba308/Simulations/lenna_128-128-1/haar_blockDim-8-8-1_uniform-70%_stdDev-1_threshold-1_RECOVERED_1_OF_3_lenna_128-128-1.txt
+recovered_2		/local/data/public/ba308/Simulations/lenna_128-128-1/haar_blockDim-8-8-1_uniform-70%_stdDev-1_threshold-1_RECOVERED_2_OF_3_lenna_128-128-1.txt
+recovered_3		/local/data/public/ba308/Simulations/lenna_128-128-1/haar_blockDim-8-8-1_uniform-70%_stdDev-1_threshold-1_RECOVERED_3_OF_3_lenna_128-128-1.txt

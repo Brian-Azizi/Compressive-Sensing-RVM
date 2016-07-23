@@ -1,0 +1,242 @@
+%%\documentclass[final,3p,times,twocolumn]{elsarticle}
+\documentclass[final,3p]{report}
+
+\includeonly{cs}
+
+%% Use the option review to obtain double line spacing
+%% \documentclass[preprint,review,12pt]{elsarticle}
+
+%% Use the options 1p,twocolumn; 3p; 3p,twocolumn; 5p; or 5p,twocolumn
+%% for a journal layout:
+%% \documentclass[final,1p,times]{elsarticle}
+%% \documentclass[final,1p,times,twocolumn]{elsarticle}
+%% \documentclass[final,3p,times]{elsarticle}
+%% \documentclass[final,3p,times,twocolumn]{elsarticle}
+%% \documentclass[final,5p,times]{elsarticle}
+%% \documentclass[final,5p,times,twocolumn]{elsarticle}
+
+%% if you use PostScript figures in your article
+%% use the graphics package for simple commands
+%% \usepackage{graphics}
+%% or use the graphicx package for more complicated commands
+%% \usepackage{graphicx}
+%% or use the epsfig package if you prefer to use the old commands
+%% \usepackage{epsfig}
+
+%% The amssymb package provides various useful mathematical symbols
+\usepackage{amssymb}
+%% The amsthm package provides extended theorem environments
+%% \usepackage{amsthm}
+%% The bm package lets you access bold symbols in math mode using the \boldsymbol command (useful to get bold greek letters).
+\usepackage{bm}
+%% The bbm package is contains the indicator function symbol \mathbbm{1}
+\usepackage{bbm}
+%% The amsmath package contains the split environment, letting you split equations into multiple lines.
+%% See "https://www.sharelatex.com/learn/Aligning_equations_with_amsmath " for an explanation.
+\usepackage{amsmath}
+%% The lineno packages adds line numbers. Start line numbering with
+%% \begin{linenumbers}, end it with \end{linenumbers}. Or switch it on
+%% for the whole article with \linenumbers after \end{frontmatter}.
+%% \usepackage{lineno}
+%% The algorithm defines the algorithm floating environment and the algpseudocode package is useful for constructing Pseudo code.
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+%% For creating pictures
+\usepackage{tikz}
+%% For making algorithms float
+\usepackage{float}
+\newfloat{algorithm}{t}{lop}
+%% For creating draft watermark
+%\usepackage{draftwatermark}
+%\SetWatermarkText{DRAFT}
+%\SetWatermarkScale{1}
+\usepackage{pdfpages}
+
+%% Declaring \argmin and \argmax operators:
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+%% Declare trace operator \Tr:
+\DeclareMathOperator*{\Tr}{Tr}
+%% Declare pdf functions
+\DeclareMathOperator*{\Cat}{Cat}
+\DeclareMathOperator*{\Dir}{Dir}
+\DeclareMathOperator*{\DP}{DP}
+\DeclareMathOperator*{\Beta}{Beta}
+\DeclareMathOperator*{\GEM}{GEM}
+\DeclareMathOperator*{\Stick}{Stick}
+\DeclareMathOperator*{\Uniform}{Uniform}
+%% shorthand for \boldsymbol and \overline
+\let\bs\boldsymbol
+\let\ol\overline
+%% command that allows equations to be split across pages
+%\allowdisplaybreaks[3]
+
+%% natbib.sty is loaded by default. However, natbib options can be
+%% provided with \biboptions{...} command. Following options are
+%% valid:
+
+%%   round  -  round parentheses are used (default)
+%%   square -  square brackets are used   [option]
+%%   curly  -  curly braces are used      {option}
+%%   angle  -  angle brackets are used    <option>
+%%   semicolon  -  multiple citations separated by semi-colon
+%%   colon  - same as semicolon, an earlier confusion
+%%   comma  -  separated by comma
+%%   numbers-  selects numerical citations
+%%   super  -  numerical citations as superscripts
+%%   sort   -  sorts multiple citations according to order in ref. list
+%%   sort&compress   -  like sort, but also compresses numerical citations
+%%   compress - compresses without sorting
+%%
+%% \biboptions{comma,round}
+
+% \biboptions{}
+
+
+%\journal{MPhil in Scientific Computing}
+
+\begin{document}
+
+%% for elsarticle class
+%\begin{frontmatter}
+
+%% Title, authors and addresses
+
+%% use the tnoteref command within \title for footnotes;
+%% use the tnotetext command for the associated footnote;
+%% use the fnref command within \author or \address for footnotes;
+%% use the fntext command for the associated footnote;
+%% use the corref command within \author for corresponding author footnotes;
+%% use the cortext command for the associated footnote;
+%% use the ead command for the email address,
+%% and the form \ead[url] for the home page:
+%%
+%% \title{Title\tnoteref{label1}}
+%% \tnotetext[label1]{}
+%% \author{Name\corref{cor1}\fnref{label2}}
+%% \ead{email address}
+%% \ead[url]{home page}
+%% \fntext[label2]{}
+%% \cortext[cor1]{}
+%% \address{Address\fnref{label3}}
+%% \fntext[label3]{}
+
+\begin{titlepage}
+\begin{center}
+\includegraphics[width=0.6\textwidth]{cam.png}\\
+
+\vspace*{4cm}
+\Huge\textbf{Compressive Sensing in Video Reconstruction}
+
+\vspace*{1.5cm}
+\LARGE
+\textbf{Brian Azizi}
+\vfill
+
+\normalsize
+A thesis submitted in partial fulfillment of the requirements for\\
+the degree of Master of Philosophy
+
+\vspace{0.8cm}
+
+\normalsize
+Supervised by:\\
+Dr Anita Faul
+
+\vspace{0.2cm}
+Department of Physics\\
+Cavendish Laboratory\\
+JJ Thomson Avenue\\
+CB3 0HE\\
+Cambridge, UK\\
+\vspace{0.4cm}
+\normalsize
+\today
+
+\end{center}
+\end{titlepage}
+
+
+\title{Compressive Sensing in Video Reconstruction}
+
+%% use optional labels to link authors explicitly to addresses:
+%% \author[label1,label2]{<author name>}
+%% \address[label1]{<address>}
+%% \address[label2]{<address>}
+
+\author{Brian Azizi}
+
+%\address{Cavendish Laboratory, Department of Physics, J J Thomson
+ % Avenue, Cambridge. CB3 0HE}
+
+
+\tableofcontents
+
+%\end{frontmatter}
+
+%%
+%% Start line numbering here if you want
+%%
+% \linenumbers
+
+%% main text
+\include{intro}
+
+\include{cs}
+
+\include{dwt}
+
+\include{rvm}
+
+\include{implementation}
+
+\include{results}
+
+\include{conclusion}
+
+
+%\setboolean{@twoside}{false}
+%\includepdf[pages={1},angle=270]{gantt.pdf}
+%\section*{Acknowledgements}
+%Here I acknowledge the assistance of my supervisor, my industrial sponsor,
+%and the effects of caffeine on my ability to produce this report on time.
+
+%% The Appendices part is started with the command \appendix;
+%% appendix sections are then done as normal sections
+%\appendix
+
+%% References
+%%
+%% Following citation commands can be used in the body text:
+%% Usage of \cite is as follows:
+%%   \cite{key}         ==>>  [#]
+%%   \cite[chap. 2]{key} ==>> [#, chap. 2]
+%%
+
+%% References with bibTeX database:
+%\section*{Bibliography}
+\bibliographystyle{elsarticle-num}
+%\bibliographystyle{apa}
+\bibliography{referencesRVM.bib}
+
+%% Authors are advised to submit their bibtex database files. They are
+%% requested to list a bibtex style file in the manuscript if they do
+%% not want to use elsarticle-num.bst.
+
+%% References without bibTeX database:
+
+% \begin{thebibliography}{00}
+
+%% \bibitem must have the following form:
+%%   \bibitem{key}...
+%%
+
+% \bibitem{}
+
+% \end{thebibliography}
+
+
+\end{document}
+
+%%
+%% End of file `rvm.tex'.

@@ -7,10 +7,10 @@ width = 128;
 frames = 64;
 
 input = strcat(name,'_',num2str(height),'-',num2str(width),'-',num2str(frames));
-blockDim = '4-4-4';
+blockDim = '2-2-2';
 corrPerc = '30%';
 corrMode = 'uniform'; 
-basisMode = 'haar';
+basisMode = 'dct';
 topScale = 1;
 
 numFiles = (512/16)*(512/16)*(1/1);

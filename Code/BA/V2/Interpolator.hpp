@@ -2,6 +2,7 @@
 #define GUARD_INTERPOLATOR_HPP
 
 #include <cstdlib>
+#include <fstream>
 #include <iostream>
 #include <vector>
 
@@ -92,18 +93,45 @@ void Interpolator::run()
     itt = 0;
     if (cfg.printProgress) std::cout << "\t*** Start Reconstruction ***\n";
     reconstruct();
+    
+    // Print settings again
+    if (cfg.printProgress) std::cout << cfg;
 
-    // Write the output to disk
-    outputSignal(corruptedSignal, "corrupted", cfg);
-    outputSignal(sensedEntries, "mask", cfg);
+    // Write the output to disk and store the output file names in '.rvmOutputFilenames.txt'
+    if (cfg.printProgress) std::cout<< "\n\t *** Output Files ***";        
+    std::string outNames = "./rvmOutputFilenames.txt";
+    std::ofstream outF(outNames.c_str());
+    if (!outF) { 
+	if (cfg.printProgress) std::cerr << "\nCould not open save names of output files in " << outNames << std::endl;;
+    } else if(cfg.printProgress) std::cout << "\nRelevant file names for interfacing with Matlab have been saved in:\t" << outNames << std::endl;
+    std::string name;
+    
+    // original
+    name = cfg.inputFile;
+    if (outF) outF << "original\t\t" << name << std::endl;
+    if (cfg.printProgress) std::cout << "\nOriginal signal file:\t\t\t" << name;
+
+    // corrupted
+    name = outputSignal(corruptedSignal, "_CORRUPTED", cfg); // writes to disk and returns filename
+    if (outF) outF << "corrupted\t\t" << name << std::endl;
+    if (cfg.printProgress) std::cout << "\nCorrupted signal saved at:\t\t" << name;
+    
+    // mask
+    name = outputSignal(sensedEntries, "_MASK", cfg);
+    if (outF) outF << "mask\t\t\t" << name << std::endl;
+    if (cfg.printProgress) std::cout << "\nSignal mask saved at:\t\t\t" << name;
+    
+    // recovered
     for (int scale = 0; scale < cfg.endScale; ++scale) {
 	std::stringstream label;
-	label << "recovered_" << scale+1 << "_of_" << cfg.endScale;
-	outputSignal(cascadeRecoveredSignals[scale], label.str(), cfg);
+	label << "_RECOVERED_" << scale+1 << "_OF_" << cfg.endScale;
+	name = outputSignal(cascadeRecoveredSignals[scale], label.str(), cfg);
+	if (outF) outF << "recovered_" << scale+1 << "\t\t" << name << std::endl;
+	if(cfg.printProgress) std::cout << "\nRecovered Signal (scale " << scale+1 << ") saved at:\t" << name;
     }
 
     // Output times    
-    if (cfg.printProgress) std::cout << "\n\t *** Measured Time: ***\n";
+    if (cfg.printProgress) std::cout << "\n\n\t *** Measured Time: ***\n";
     if (cfg.printProgress) std::cout << "Average loop time: " << bigLoopTime/(double)itt << " ms." << std::endl;
     if (cfg.printProgress) std::cout << "Average  RVM train time: " << loopSetupTime/(double)itt << " ms." << std::endl;
     if (cfg.printProgress) std::cout << "Average train time: " << trainTime/(double)trainIdx << " ms." << std::endl;

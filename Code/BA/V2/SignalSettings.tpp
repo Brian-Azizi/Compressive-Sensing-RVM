@@ -70,6 +70,9 @@ void SignalSettings::initParameters() {
     if (stat(outputDirectory.c_str(), &sb) != 0 || !S_ISDIR(sb.st_mode))
 	error("Output directory '" + outputDirectory + "' not found");
 
+    /*** Get output name ***/
+    outputName = cfg.getValueOfKey<std::string>("outputName",""); // If no name is given, default will be generated
+
     /*** Get block dimensions ***/
     int blockHeight = cfg.getValueOfKey<int>("blockHeight", 2);
     int blockWidth = cfg.getValueOfKey<int>("blockWidth", 2);
@@ -154,6 +157,8 @@ std::ostream& operator<<(std::ostream& os, const SignalSettings& setting)
 
     os << "\nOutput Directory:\t" << setting.outputDirectory;
     if (!setting.cfg.keyExists("outputDirectory")) os << "\t\t(default)";
+
+    if (setting.cfg.keyExists("outputName")) os << "\nOutput Name:\t\t" << setting.outputName;
     
     if (!setting.cfg.keyExists("blockHeight") || !setting.cfg.keyExists("blockWidth") || !setting.cfg.keyExists("blockFrames")) {
 	os << "\nBlock Height:\t\t" << setting.blockDim.height();

@@ -118,7 +118,7 @@ double dot(const Signal<double>& a, const Signal<double>& b);
 Signal<double> cholesky(const Signal<double>& A);
 Signal<double> inversed(const Signal<double>& A);
 Signal<double> readSignal(const std::string& inputFile); // reads a signal from a file. Assumes frames are seperated by empty lines
-template<class T> void outputSignal(const Signal<T>& S, const std::string& label, const SignalSettings& cfg);
+template<class T> std::string outputSignal(const Signal<T>& S, const std::string& label, const SignalSettings& cfg);
 Signal<double> inverse(const Signal<double>& A);
 
 

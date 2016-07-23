@@ -1042,20 +1042,36 @@ Signal<double> readSignal(const std::string& inputFile) // reads a signal from a
 }
 
 template<class T>		
-void outputSignal(const Signal<T>& S, const std::string& label, const SignalSettings& cfg)
+std::string outputSignal(const Signal<T>& S, const std::string& label, const SignalSettings& cfg)
 {
     std::stringstream ss;
     std::stringstream outputName;
 
     std::string inputName = cfg.inputFile;
     inputName.erase(0, inputName.find_last_of('/')+1);
+    
+    if (cfg.cfg.keyExists("outputName")) {
+	std::string name = cfg.outputName;
+	name.erase(0, name.find_last_of('/')+1);
+	outputName << name << label << ".txt";
+    } else {
+	outputName << modeToString(cfg.basisMode);
+	outputName << "_blockDim-" << cfg.blockDim.height() << "-" 
+		   << cfg.blockDim.width() << "-" << cfg.blockDim.frames() << "_";
+	
+	if (cfg.simulateCorruption) outputName << cfg.corr.settingString() << "-" << cfg.corr.percentage() << "%";
+	else {
+	    std::string maskName = cfg.maskFile;
+	    maskName.erase(0, maskName.find_last_of('/')+1);
+	    outputName << maskName;
+	}
+	outputName << "_stdDev-" << cfg.stdDev << "_threshold-" << cfg.deltaML_threshold;
+	outputName << label << "_" << inputName;
+    }
 
-    outputName << cfg.blockDim.height() << "-" 
-	       << cfg.blockDim.width() << "-" << cfg.blockDim.frames() << "_"
-	       << cfg.corr.percentage() << "%_" << cfg.corr.settingString() << "_"
-	       << modeToString(cfg.basisMode) << "_" 
-	       << label << "_" << inputName;
-    ss << cfg.outputDirectory << outputName.str();
+
+    ss << cfg.outputDirectory << outputName.str();	
+    std::string ret = ss.str();
 
     std::ofstream out;
     out.open(ss.str().c_str());
@@ -1063,6 +1079,7 @@ void outputSignal(const Signal<T>& S, const std::string& label, const SignalSett
 	if (cfg.printProgress)
 	    std::cerr << "Warning: could not open output file '" + ss.str() + "'!"
 		      << "\nAttempting output in current directory...";
+	ret = outputName.str();
 	out.open(outputName.str().c_str());
 	if (!out) error("could not open output file '" + outputName.str());
 	else 
@@ -1071,7 +1088,7 @@ void outputSignal(const Signal<T>& S, const std::string& label, const SignalSett
     out << S;
     out.close();
 
-    return;
+    return ret;		// return name of output file
 }
 
 // returns inverse of an NxN matrix A

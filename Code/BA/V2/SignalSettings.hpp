@@ -13,6 +13,7 @@
 struct SignalSettings {
     std::string inputFile;    
     std::string maskFile;
+    std::string outputName;
     bool simulateCorruption;
     int rngSeed;
 
