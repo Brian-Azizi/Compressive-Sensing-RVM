@@ -51,13 +51,13 @@ private:
     int itt;
     
 public:
-    Interpolator(std::string settingsFile); // construct from settings file name
+    Interpolator(const SignalSettings& settingsFile);//std::string settingsFile); // construct from settings file name
     bool printProgress() const { return m_printProgress; }
     void run();				    // run interpolator
 };
 
-Interpolator::Interpolator(std::string fileName)
-    : cfg(fileName)
+Interpolator::Interpolator(const SignalSettings& settingsFile)//std::string fileName)
+    : cfg(settingsFile) //: cfg(fileName)
 {
     signal = Signal<signalType>(cfg.signalDim, false); // 'false' here means 'do not initialize'
     block = Signal<signalType>(cfg.blockDim, false);        

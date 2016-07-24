@@ -1,11 +1,26 @@
 % *** options ***
-displayOutput = false;
-saveAsMedia = true;
+displayOutput = true;
+saveAsMedia = false;
 frameRate = 30;
-%mediaOutputDirectory = '/local/data/public/ba308/Media/';
-mediaOutputDirectory = '/Users/brianazizi/Data/';
+mediaOutputDirectory = '/local/data/public/ba308/Media/';
+%mediaOutputDirectory = '/Users/brianazizi/Data/';
 
-outputFilenames = './rvmOutputFilenames.txt';
+
+
+% check if matlab is being run in GUI mode or from command line
+if usejava('jvm') && ~feature('ShowFigureWindows')
+    %# use text-based alternative (input)
+    if displayOutput
+        disp('Matlab GUI mode required to display figure.');
+    end
+    displayOutput = false;    
+%else
+    %# use GUI dialogs (questdlg)
+end
+
+cd ..
+addpath Headers
+outputFilenames = 'rvmOutputFilenames.txt';
 fid = fopen(outputFilenames);
 settings = textscan(fid,'%s %s');
 fclose(fid);
@@ -43,15 +58,30 @@ end
 
 if saveAsMedia
     for i = 1:N
+        % trying out something: name of output files is same as input
+        % files but with appropriate extensions (.png or .avi instead
+        % of .txt)            
+        split = strsplit(files{i},'/');
+        fname = split{end};
+        split2 = strsplit(fname,'.');
+        stem = split2{1};
+        for k = 2:length(split2)-1
+            stem = strcat(stem, '.', split2{k});
+        end
+        
+        %
+        %name = strcat(mediaOutputDirectory, var{i}, '.png');        
         if frames == 1            
-            name = strcat(mediaOutputDirectory, var{i}, '.png');
+            name = strcat(mediaOutputDirectory, stem, '.png');
             if strcmp(var{i}, 'mask')                
                 eval(['imwrite(' var{i} ', name);']);
             else
-                eval(['imwrite(uint8(' var{i} '), name);']);                
+                eval(['imwrite(uint8(' var{i} '), name);']);                                
             end            
         else
-            vid = VideoWriter(strcat(mediaOutputDirectory, var{i}), 'Grayscale AVI');
+            name = strcat(mediaOutputDirectory, stem);
+            %vid = VideoWriter(strcat(mediaOutputDirectory, var{i}), 'Grayscale AVI');
+            vid = VideoWriter(name, 'Grayscale AVI');
             vid.FrameRate = frameRate;
             open(vid);
             for j = 1:frames
@@ -64,8 +94,9 @@ if saveAsMedia
             close(vid);
         end
     end
+    disp(['Output saved in directory' mediaOutputDirectory]);
 end
-
+cd Headers
 clear fid file h i outputFilenames settings ans ...
      displayOutput saveAsMedia var files N j vid ...
-     mediaOutputDirectory name 
+     mediaOutputDirectory name split fname split2 stem name

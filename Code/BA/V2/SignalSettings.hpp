@@ -27,6 +27,9 @@ struct SignalSettings {
     double deltaML_threshold;
     std::string outputDirectory;
     
+    bool convertToMedia;
+    double frameRate;
+    
     SignalSettings(const std::string& settingsFile);
     ConfigFile configFile() const { return cfg; }
     void check();
@@ -37,6 +40,7 @@ struct SignalSettings {
 
 std::ostream& operator<<(std::ostream& os, const SignalSettings& cfg);
 
+void helpMessage(const std::string& argv_0);
 
 #include "SignalSettings.tpp"
 

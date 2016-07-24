@@ -35,7 +35,7 @@ void SignalSettings::initParameters() {
     }	
     
     /*** If we don't simulate, we require a mask file. Else, we require options for the corrupter.
-	 Default is to simulate 30% uniform mask ***/
+	 Default is to simulate 30% uniform mask ***/    
     simulateCorruption = cfg.getValueOfKey<bool>("simulateCorruption", true); // default is 'true'
     if (!simulateCorruption) {
 	if(!cfg.keyExists("maskFile")) error("CFG: No mask file specified for corruption");
@@ -104,11 +104,15 @@ void SignalSettings::initParameters() {
     
     /*** Get RNG seed ***/
     if (!cfg.keyExists("rngSeed")) { 	   // default is current time.
-	if (printProgress) std::cerr << "CFG: RNG Seed not specified. Using current time as seed\n";
+	if (printProgress) std::cout << "CFG: RNG Seed not specified. Using current time as seed\n";
 	rngSeed = time(NULL);
     } else {
 	rngSeed = cfg.getValueOfKey<int>("rngSeed", 1); 
     }
+
+    /*** Check if we convert output to media file ***/
+    convertToMedia = cfg.getValueOfKey<bool>("convertToMedia", true); // default is true
+    frameRate = cfg.getValueOfKey<double>("frameRate", 30); // default is 30 fps
 }
 
 void SignalSettings::check()
@@ -141,7 +145,10 @@ void SignalSettings::check()
 		if (printProgress) std::cout << "CFG: block depth == 1 --> Using 2D wavelets" << std::endl;	
 	}
     }
-    if (stdDev <= 0 || deltaML_threshold <= 0) error("RVM parameters (stdDev and deltaML_threshold threshold) need to be positive)");
+    if (stdDev <= 0 || deltaML_threshold <= 0) error("RVM parameters (stdDev and deltaML_threshold threshold) need to be positive");
+
+    // check if fps is positive
+    if (signalDim.frames() != 1 && frameRate <= 0) error("Frame Rate needs to be positive");
 
     /* If all tests pass, then the signal is correctly divided up into block patches.*/
     if(printProgress) std::cout << "CFG: Settings test successful!" << std::endl;
@@ -198,8 +205,45 @@ std::ostream& operator<<(std::ostream& os, const SignalSettings& setting)
     
     os << "\nRNG Seed:\t\t" << setting.rngSeed;
     if (!setting.cfg.keyExists("rngSeed")) os << "\t(default: current time)";
+    os << "\nConverting to media:\t" << (setting.convertToMedia ? "yes" : "no");
+    if (!setting.cfg.keyExists("convertToMedia")) os << "\t\t(default)";
+    if (setting.signalDim.frames() != 1 && setting.convertToMedia) {
+	os << "\nFrame Rate:\t\t" << setting.frameRate;
+	if (!setting.cfg.keyExists("frameRate")) os << "\t\t(default)";
+    }
     os << "\n";
     return os;
 }
+
+void helpMessage(const std::string& argv_0)
+{
+    std::cerr << "Usage : " << argv_0 << " [settingsFile]\n"
+	      << "Default settings file is '.rvmsettings.cfg'\n"
+	      << "The format is \t\tsetting = val\n"
+	      << "The names of the output files will be saved in the file './rvmOutputFilenames.txt'. This is to allow interfacing with other programs for later analysis\n"
+	      << "\nPossible settings:\n"
+	      << "  inputFile\t\tInput file name. Txt file containing input signal pixel values. Frames are seperated by empty lines. Each frame must have a consistent number of rows and columns, respectively. (No default; must be specified)\n"
+	      << "  outputDirectory\tName of output directory (default: ./)\n"
+	      << "  outputName\t\tA label for the names of the output files. Everything up to final '/' character will be ignored. The default name is a long string containing information on all the settings\n"
+	      << "  blockHeight\t\tHeight of signal blocks (default: 2)\n"
+	      << "  blockWidth\t\tWidth signal blocks (default: 2)\n"
+	      << "  blockFrames\t\tDepth of signal blocks (default: 1)\n"
+	      << "  simulateCorruption\tIf 1, simulate corrupted signal, else mask file is used (default: 1)\n"
+	      << "  maskFile\t\tFile name of signal mask. (No default; must be specified if we don't simulate corruption)\n"
+	      << "  corrupterMode\t\tDecimation pattern of simulated mask. Possible values: uniform, timeRays, verticalFlicker, horizontalFlicker, missingFrames, verticalLines, horizontalLines (default: uniform; ignored if we are not simulating corruption)\n"
+	      << "  corrupterPercentage\tProportion of masked measurements (default: 30; ignored if we are not simulating corruption)\n"
+	      << "  basisMode\t\tForm of basis functions used to represent the signal. Possible values: haar, dct (default: dct)\n"
+	      << "  basisEndScale\t\tMaximum scale of basis functions (default: 1; ignored if using dct)\n"
+	      << "  stdDev\t\tStandard deviation of the noise in the RVM (default: 1.0)\n"
+	      << "  deltaML_threshold\tThreshold for change in marginal likelihood in the RVM (default: 1.0)\n"
+	      << "  rngSeed\t\tSeed for random number generator for reproducability (default: set to current time)\n"
+	      << "  printProgress\t\tIf 1, print progress to standard out (default: 1)\n"
+	      << "  convertToMedia\tIf 1, output .txt files will also be converted to media files (.png for images and .avi for videos). Requires MATLAB. (default: 1)\n"
+	      << "  frameRate\t\tFrame rate for output videos (default: 30; ignored if input is an image or if we are not converting to media).\n"
+	      << std::endl;
+	      
+    return;
+}
+
 
 #endif
