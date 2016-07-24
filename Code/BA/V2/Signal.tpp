@@ -272,7 +272,7 @@ void Signal<T>::fill(T num)
 }
 
 template <class T>
-void Signal<T>::reshape(int h, int w, int f = 1)
+void Signal<T>::reshape(int h, int w, int f)
 {
     if(this->size() != h*w*f) error("number of elements must not change");
     

@@ -1,6 +1,8 @@
 #ifndef GUARD_INIT_HPP
 #define GUARD_INIT_HPP
 
+#include <cmath>
+
 #include "utilities.hpp"
 
 void initialize(double **BASIS, double *targets, double *scaling, double &alpha, double &beta, double noiseStd, double *phi_column, int &in_model, int N, int M)
@@ -52,7 +54,7 @@ void initialize(double **BASIS, double *targets, double *scaling, double &alpha,
 				}
 			double projection = multiply1D1Dnum(column,targets,N);
 
-			if (abs(projection) > abs(max_projection))
+			if (std::abs(projection) > std::abs(max_projection))
 				{
 				max_projection = projection;
 				in_model = basis;

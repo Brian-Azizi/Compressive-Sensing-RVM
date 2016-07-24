@@ -1,5 +1,6 @@
 #include <stdexcept>
 #include <fstream>
+#include <cstdlib>
 #include "Timer.hpp"
 
 #include "Interpolator.hpp"
@@ -67,4 +68,7 @@ int main(int argc, char* argv[])
 	}
 	std::cerr << "An unexpected error occured! Error message: " << e.what() << "\n";
     } 
+
+    // run matlab script
+    int status = system("matlab -nodisplay -nosplash -nodesktop -r \"interpolatorOutput; exit;\" ");
 }

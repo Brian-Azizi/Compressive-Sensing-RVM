@@ -67,7 +67,7 @@ public:
     void putPatch(const Signal<T>& arg, int startingRow);
     
     // reshape signal
-    void reshape(int height, int width, int frames);
+    void reshape(int height, int width, int frames = 1);
     void reshape(const Dim& dim);
     
     // post multiply by scalar

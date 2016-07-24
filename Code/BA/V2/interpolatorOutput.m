@@ -1,8 +1,9 @@
 % *** options ***
-displayOutput = true;
+displayOutput = false;
 saveAsMedia = true;
 frameRate = 30;
-mediaOutputDirectory = '/local/data/public/ba308/Media/';
+%mediaOutputDirectory = '/local/data/public/ba308/Media/';
+mediaOutputDirectory = '/Users/brianazizi/Data/';
 
 outputFilenames = './rvmOutputFilenames.txt';
 fid = fopen(outputFilenames);
