@@ -54,6 +54,10 @@ public:
     Interpolator(const SignalSettings& settingsFile);//std::string settingsFile); // construct from settings file name
     bool printProgress() const { return m_printProgress; }
     void run();				    // run interpolator
+
+    int getIntRange(double input, int min = 0, int max = 255);
+    double computeMSE(const Signal<double>& original, const Signal<double>& reconstructed);
+    double MSEtoPSNR(double mse);
 };
 
 Interpolator::Interpolator(const SignalSettings& settingsFile)//std::string fileName)
@@ -129,9 +133,22 @@ void Interpolator::run()
 	if (outF) outF << "recovered_" << scale+1 << "\t\t" << name << std::endl;
 	if(cfg.printProgress) std::cout << "\nRecovered Signal (scale " << scale+1 << ") saved at:\t" << name;
     }
-
-    // Output times    
-    if (cfg.printProgress) std::cout << "\n\n\t *** Measured Time: ***\n";
+    
+    /*** Output MSE and PSNR for each stage ***/
+    if (cfg.computePSNR) {
+	if (cfg.printProgress) std::cout << "\n\n\t*** Accuracy of Reconstruction ***\n";
+	for (int scale = 0; scale < cfg.endScale; ++scale) {
+	    double mse = computeMSE(signal, cascadeRecoveredSignals[scale]);
+	    double psnr = MSEtoPSNR(mse);
+	    std::stringstream record;
+	    record << "Scale " << scale+1 << ":  MSE  = " << mse << "\n";
+	    record << "\t  PSNR = " << psnr << "\n";
+	    std::cout << record.str();
+	}
+    }
+    
+    /*** Output times ***/
+    if (cfg.printProgress) std::cout << "\n\t *** Measured Time: ***\n";
     if (cfg.printProgress) std::cout << "Average loop time: " << bigLoopTime/(double)itt << " ms." << std::endl;
     if (cfg.printProgress) std::cout << "Average  RVM train time: " << loopSetupTime/(double)itt << " ms." << std::endl;
     if (cfg.printProgress) std::cout << "Average train time: " << trainTime/(double)trainIdx << " ms." << std::endl;
@@ -225,5 +242,44 @@ void Interpolator::reconstruct()
 	    }
 }
 
+double Interpolator::computeMSE(const Signal<double>& orig, const Signal<double>& rec)
+{
+    // check input
+    if (orig.dim() != rec.dim()) error("MSE: inputs must have the same dimensions");
+    
+    int maxEntry = 255;
+    int minEntry = 0;
+
+    double error = 0;
+    int xo, xr;			// note, this will convert to integers
+
+    for (int i = 0; i < orig.size(); ++i) {
+	xo = getIntRange(orig.data()[i], minEntry, maxEntry);
+	xr = getIntRange(rec.data()[i], minEntry, maxEntry);
+	error += ((xo-xr) * (xo-xr));
+    }
+    double ret = (double) error / orig.size();
+
+    return ret;
+}
+
+int Interpolator::getIntRange(double input, int min, int max)
+{
+    int ret;
+    if (input <= min) ret = min;
+    else if (input >= max) ret = max;
+    else ret = (int) (input + 0.5); // rounds to the nearest integer;    
+
+    return ret;
+}
+
+double Interpolator::MSEtoPSNR(double mse)
+{
+    double maxValue = 255;
+    if (mse < 0) error("MSE must be non-negative");
+    double psnr = -10 * std::log10 ( mse / (maxValue*maxValue));
+    
+    return psnr;
+}
 
 #endif

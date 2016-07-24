@@ -11,6 +11,7 @@
 #include "SignalBasis.hpp"
 
 struct SignalSettings {
+    std::string cfgFile;
     std::string inputFile;    
     std::string maskFile;
     std::string outputName;
@@ -26,7 +27,9 @@ struct SignalSettings {
     double stdDev;
     double deltaML_threshold;
     std::string outputDirectory;
-    
+
+    bool computePSNR;
+
     bool convertToMedia;
     double frameRate;
     
@@ -40,7 +43,7 @@ struct SignalSettings {
 
 std::ostream& operator<<(std::ostream& os, const SignalSettings& cfg);
 
-void helpMessage(const std::string& argv_0);
+std::string helpMessage(const std::string& argv_0);
 
 #include "SignalSettings.tpp"
 

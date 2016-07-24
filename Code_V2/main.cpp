@@ -1,9 +1,9 @@
 #include <stdexcept>
 #include <fstream>
 #include <cstdlib>
-#include "Timer.hpp"
+#include "Headers/Timer.hpp"
 
-#include "Interpolator.hpp"
+#include "Headers/Interpolator.hpp"
 
 
 int main(int argc, char* argv[]) 
@@ -17,14 +17,14 @@ int main(int argc, char* argv[])
 
     // Check whether we should display help message
     if (fileName == "-h" || fileName == "--help") {
-	helpMessage(argv[0]);
+	std::cout << helpMessage(argv[0]);
 	return 0;
     }
 
     // Attempt to open settings file
     if (!std::ifstream(fileName.c_str())) {
 	std::cerr << "Could not open default settings file '" << fileName << "'. Abort.\n";
-	helpMessage(argv[0]);
+	std::cerr << helpMessage(argv[0]);
 	return 1;
     }
     
@@ -45,14 +45,17 @@ int main(int argc, char* argv[])
 	if (cfg.convertToMedia) {
 	    std::stringstream fps;
 	    fps << cfg.frameRate;
-	    if (cfg.printProgress) std::cout << "\n\t***Converting output to media format using Matlab ***" << std::endl;
+	    if (cfg.printProgress) std::cout << "\n\t*** Converting output to media format using Matlab ***" << std::endl;
 	    const std::string matlabScript = "convertSignal";
 	    const std::string openMatlab = "matlab -nodisplay -nosplash -nodesktop -r ";
 	    const std::string matlabCommand = "\"try frameRate = " + fps.str() + "; "
-		+ matlabScript + "; catch disp('Matlab Error: Unable to run ''" 
-		+ matlabScript + "''.'); end; exit;\" ";
+	    	+ matlabScript + "; catch disp('Matlab Error: Unable to run ''" 
+	    	+ matlabScript + "''.'); end; exit;\" ";
 	    
-	    int status = system((openMatlab + matlabCommand + " | tail -n +14 ").c_str()); // call matlab
+	    int status;
+	    if (cfg.printProgress) status = system((openMatlab + matlabCommand).c_str());// + " | tail -n +14 ").c_str()); // call matlab
+	    else status = system((openMatlab + matlabCommand + " | tail -0 ").c_str()); // call matlab
+	    if (status != 0) std::cerr << "Error in opening Matlab on the command line. Unable to convert .txt output to media format" << std::endl;	    
 	}
 
 	/*** Display Time ***/
@@ -62,7 +65,7 @@ int main(int argc, char* argv[])
     catch (const std::exception& e) {
 	if (!successfulRead) {
 	    std::cerr << "Error with settings file '" << fileName << "': " << e.what() << "\n\n";
-	    helpMessage(argv[0]);
+	    std::cerr << helpMessage(argv[0]);
 	    return 1;
 	} else if (!successfulRun) {
 	    std::cerr << "An error occured while running the interpolator: " << e.what() << "\n\n";

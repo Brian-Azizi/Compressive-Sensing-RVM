@@ -5,6 +5,7 @@
 #include <map>
 #include <ostream>
 #include <string>
+#include <sstream>
 #include <sys/stat.h>
 
 #include "ConfigFile.hpp"
@@ -14,7 +15,7 @@
 #include "SignalBasis.hpp"
 
 SignalSettings::SignalSettings(const std::string& settingsFile)
-    : cfg(settingsFile)
+    : cfg(settingsFile), cfgFile(settingsFile)
 {
     initParameters();
     check();
@@ -113,6 +114,9 @@ void SignalSettings::initParameters() {
     /*** Check if we convert output to media file ***/
     convertToMedia = cfg.getValueOfKey<bool>("convertToMedia", true); // default is true
     frameRate = cfg.getValueOfKey<double>("frameRate", 30); // default is 30 fps
+
+    /*** Check if we should compute the PSNR ***/
+    computePSNR = cfg.getValueOfKey<bool>("computePSNR", true); // default is yes
 }
 
 void SignalSettings::check()
@@ -159,7 +163,8 @@ void SignalSettings::check()
 std::ostream& operator<<(std::ostream& os, const SignalSettings& setting)
 {
     os << "\n\t*** Settings: ***\n";
-    os << "Input File:\t\t" << setting.inputFile;
+    os << "Settings File:\t\t" << setting.cfgFile;
+    os << "\nInput File:\t\t" << setting.inputFile;
     os << "\nSignal Dimensions:\t" << setting.signalDim;
 
     os << "\nOutput Directory:\t" << setting.outputDirectory;
@@ -200,9 +205,12 @@ std::ostream& operator<<(std::ostream& os, const SignalSettings& setting)
     os << "\nRVM delta ML threshold:\t" << setting.deltaML_threshold ;
     if (!setting.cfg.keyExists("deltaML_threshold")) os << "\t\t(default)";
 
+    os << "\nCompute PSNR:\t\t" << (setting.computePSNR ? "yes" : "no");
+    if (!setting.cfg.keyExists("computePSNR")) os << "\t\t(default)";
+
     os << "\nPrinting Progress:\t" << (setting.printProgress ? "yes" : "no");
     if (!setting.cfg.keyExists("printProgress")) os << "\t\t(default)";
-    
+        
     os << "\nRNG Seed:\t\t" << setting.rngSeed;
     if (!setting.cfg.keyExists("rngSeed")) os << "\t(default: current time)";
     os << "\nConverting to media:\t" << (setting.convertToMedia ? "yes" : "no");
@@ -215,34 +223,36 @@ std::ostream& operator<<(std::ostream& os, const SignalSettings& setting)
     return os;
 }
 
-void helpMessage(const std::string& argv_0)
+std::string helpMessage(const std::string& argv_0)
 {
-    std::cerr << "Usage : " << argv_0 << " [settingsFile]\n"
-	      << "Default settings file is '.rvmsettings.cfg'\n"
-	      << "The format is \t\tsetting = val\n"
-	      << "The names of the output files will be saved in the file './rvmOutputFilenames.txt'. This is to allow interfacing with other programs for later analysis\n"
-	      << "\nPossible settings:\n"
-	      << "  inputFile\t\tInput file name. Txt file containing input signal pixel values. Frames are seperated by empty lines. Each frame must have a consistent number of rows and columns, respectively. (No default; must be specified)\n"
-	      << "  outputDirectory\tName of output directory (default: ./)\n"
-	      << "  outputName\t\tA label for the names of the output files. Everything up to final '/' character will be ignored. The default name is a long string containing information on all the settings\n"
-	      << "  blockHeight\t\tHeight of signal blocks (default: 2)\n"
-	      << "  blockWidth\t\tWidth signal blocks (default: 2)\n"
-	      << "  blockFrames\t\tDepth of signal blocks (default: 1)\n"
-	      << "  simulateCorruption\tIf 1, simulate corrupted signal, else mask file is used (default: 1)\n"
-	      << "  maskFile\t\tFile name of signal mask. (No default; must be specified if we don't simulate corruption)\n"
-	      << "  corrupterMode\t\tDecimation pattern of simulated mask. Possible values: uniform, timeRays, verticalFlicker, horizontalFlicker, missingFrames, verticalLines, horizontalLines (default: uniform; ignored if we are not simulating corruption)\n"
-	      << "  corrupterPercentage\tProportion of masked measurements (default: 30; ignored if we are not simulating corruption)\n"
-	      << "  basisMode\t\tForm of basis functions used to represent the signal. Possible values: haar, dct (default: dct)\n"
-	      << "  basisEndScale\t\tMaximum scale of basis functions (default: 1; ignored if using dct)\n"
-	      << "  stdDev\t\tStandard deviation of the noise in the RVM (default: 1.0)\n"
-	      << "  deltaML_threshold\tThreshold for change in marginal likelihood in the RVM (default: 1.0)\n"
-	      << "  rngSeed\t\tSeed for random number generator for reproducability (default: set to current time)\n"
-	      << "  printProgress\t\tIf 1, print progress to standard out (default: 1)\n"
-	      << "  convertToMedia\tIf 1, output .txt files will also be converted to media files (.png for images and .avi for videos). Requires MATLAB. (default: 1)\n"
-	      << "  frameRate\t\tFrame rate for output videos (default: 30; ignored if input is an image or if we are not converting to media).\n"
-	      << std::endl;
-	      
-    return;
+    std::stringstream ss;
+    ss << "Usage : " << argv_0 << " [settingsFile]\n"
+       << "Default settings file is '.rvmsettings.cfg'\n"
+       << "The format is \t\tsetting = val\n"
+       << "The names of the output files will be saved in the file './rvmOutputFilenames.txt'. This is to allow interfacing with other programs for later analysis\n"
+       << "\nPossible settings:\n"
+       << "  inputFile\t\tInput file name. Txt file containing input signal pixel values. Frames are seperated by empty lines. Each frame must have a consistent number of rows and columns, respectively. (No default; must be specified)\n"
+       << "  outputDirectory\tName of output directory (default: ./)\n"
+       << "  outputName\t\tA label for the names of the output files. Everything up to final '/' character will be ignored. The default name is a long string containing information on all the settings\n"
+       << "  blockHeight\t\tHeight of signal blocks (default: 2)\n"
+       << "  blockWidth\t\tWidth signal blocks (default: 2)\n"
+       << "  blockFrames\t\tDepth of signal blocks (default: 1)\n"
+       << "  simulateCorruption\tIf 1, simulate corrupted signal, else mask file is used (default: 1)\n"
+       << "  maskFile\t\tFile name of signal mask. (No default; must be specified if we don't simulate corruption)\n"
+       << "  corrupterMode\t\tDecimation pattern of simulated mask. Possible values: uniform, timeRays, verticalFlicker, horizontalFlicker, missingFrames, verticalLines, horizontalLines (default: uniform; ignored if we are not simulating corruption)\n"
+       << "  corrupterPercentage\tProportion of masked measurements (default: 30; ignored if we are not simulating corruption)\n"
+       << "  basisMode\t\tForm of basis functions used to represent the signal. Possible values: haar, dct (default: dct)\n"
+       << "  basisEndScale\t\tMaximum scale of basis functions (default: 1; ignored if using dct)\n"
+       << "  stdDev\t\tStandard deviation of the noise in the RVM (default: 1.0)\n"
+       << "  deltaML_threshold\tThreshold for change in marginal likelihood in the RVM (default: 1.0)\n"
+       << "  rngSeed\t\tSeed for random number generator for reproducability (default: set to current time)\n"
+       << "  computePSNR\t\tIf 1, the Mean Square Error and Peak Signal-to-Noise Ratio for each reconstruction stage will be computed and displayed on standard out. Note that this computation will cap Signal entries in the range [0,255]. Actual saved output is not affected by this. (default: 1)\n"
+       << "  printProgress\t\tIf 1, print progress to standard out (default: 1)\n"
+       << "  convertToMedia\tIf 1, output .txt files will also be converted to media files (.png for images and .avi for videos). Requires MATLAB. (default: 1)\n"
+       << "  frameRate\t\tFrame rate for output videos (default: 30; ignored if input is an image or if we are not converting to media).\n"
+       << std::endl;
+    
+    return ss.str();
 }
 
 

@@ -1,4 +1,4 @@
-leaf : main.cpp ConfigFile.hpp ConfigFile.tpp Convert.hpp Corrupter.hpp Corrupter.tpp Dim.hpp Dim.tpp Errors.hpp Errors.tpp fast_updates.hpp full_statistics.hpp init.hpp Interpolator.hpp LapackFunctions.hpp RVM.hpp SignalBasis.hpp SignalBasis.tpp Signal.hpp SignalSettings.hpp SignalSettings.tpp Signal.tpp Timer.hpp utilities.hpp
+leaf : main.cpp Headers/ConfigFile.hpp Headers/ConfigFile.tpp Headers/Convert.hpp Headers/Corrupter.hpp Headers/Corrupter.tpp Headers/Dim.hpp Headers/Dim.tpp Headers/Errors.hpp Headers/Errors.tpp Headers/fast_updates.hpp Headers/full_statistics.hpp Headers/init.hpp Headers/Interpolator.hpp Headers/LapackFunctions.hpp Headers/RVM.hpp Headers/SignalBasis.hpp Headers/SignalBasis.tpp Headers/Signal.hpp Headers/SignalSettings.hpp Headers/SignalSettings.tpp Headers/Signal.tpp Headers/Timer.hpp Headers/utilities.hpp
 	g++ main.cpp -o leaf -llapack -lblas -O3
 
 clean :
