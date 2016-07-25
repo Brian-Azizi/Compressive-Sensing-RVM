@@ -3,8 +3,12 @@
 #include <cstdlib>
 #include "Headers/Timer.hpp"
 
-#include "Headers/Interpolator.hpp"
+uint64 startTime = 0;
+uint64 trainTime = 0; int trainTimeCount = 0;
+uint64 predictTime = 0; int predictTimeCount = 0;
+uint64 errorTime = 0; int errorTimeCount = 0;
 
+#include "Headers/Interpolator.hpp" // needs to be after declaration of global timing variables
 
 int main(int argc, char* argv[]) 
 {
@@ -59,8 +63,13 @@ int main(int argc, char* argv[])
 	}
 
 	/*** Display Time ***/
-	if (cfg.printProgress) 
-	    std::cout << "\nTotal execution time: " << GetTimeMs64() - startTime << " ms.\n\n";	
+	if (cfg.printProgress) {
+	    std::cout << "\n\t*** Measured Times ***\n"
+		      << "Total execution time: " << GetTimeMs64() - startTime << " ms\n"
+		      << "Average time for training: " << trainTime / (double) trainTimeCount << " ms\n"
+		      << "Average time for prediction: " << predictTime / (double) predictTimeCount << " ms\n"
+		      << "Average time for errors: " << errorTime / (double) errorTimeCount << " ms\n\n";
+	}
     } 
     catch (const std::exception& e) {
 	if (!successfulRead) {

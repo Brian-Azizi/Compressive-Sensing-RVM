@@ -8,11 +8,6 @@
 
 #include "Timer.hpp"
 
-uint64 statsTime=0, whileTime=0, trainTime=0;
-uint64 focusTime1=0, focusTime2=0, focusTime3=0, focusTime4=0;
-int statsIdx=0, whileIdx=0, trainIdx=0;
-int focusIdx1=0, focusIdx2=0, focusIdx3=0, focusIdx4=0;
-
 #include "SignalSettings.hpp"
 #include "SignalBasis.hpp"
 #include "Corrupter.hpp"
@@ -46,10 +41,6 @@ private:
     bool m_printProgress;
 
     void reconstruct();
-    uint64 bigLoopTime;
-    uint64 loopSetupTime;
-    int itt;
-    
 public:
     Interpolator(const SignalSettings& settingsFile);//std::string settingsFile); // construct from settings file name
     bool printProgress() const { return m_printProgress; }
@@ -92,9 +83,6 @@ void Interpolator::run()
 	cascadeBasis.push_back(getBasis(block.dim(), cfg.basisMode, scale+1));
 
     // Reconstruct the signal
-    bigLoopTime = 0;
-    loopSetupTime = 0;
-    itt = 0;
     if (cfg.printProgress) std::cout << "\t*** Start Reconstruction ***\n";
     reconstruct();
     
@@ -145,19 +133,7 @@ void Interpolator::run()
 	    record << "\t  PSNR = " << psnr << "\n";
 	    std::cout << record.str();
 	}
-    }
-    
-    /*** Output times ***/
-    if (cfg.printProgress) std::cout << "\n\t *** Measured Time: ***\n";
-    if (cfg.printProgress) std::cout << "Average loop time: " << bigLoopTime/(double)itt << " ms." << std::endl;
-    if (cfg.printProgress) std::cout << "Average  RVM train time: " << loopSetupTime/(double)itt << " ms." << std::endl;
-    if (cfg.printProgress) std::cout << "Average train time: " << trainTime/(double)trainIdx << " ms." << std::endl;
-    if (cfg.printProgress) std::cout << "Average stats time: " << statsTime/(double)statsIdx << " ms." << std::endl;
-    if (cfg.printProgress) std::cout << "Average while loop time: " << whileTime/(double)whileIdx << " ms." << std::endl;
-    if (cfg.printProgress) std::cout << "Average focus time 1: " << focusTime1/(double)focusIdx1 << " ms." << std::endl;
-    if (cfg.printProgress) std::cout << "Average focus time 2: " << focusTime2/(double)focusIdx2 << " ms." << std::endl;
-    if (cfg.printProgress) std::cout << "Average focus time 3: " << focusTime3/(double)focusIdx3 << " ms." << std::endl;
-    if (cfg.printProgress) std::cout << "Average focus time 4: " << focusTime4/(double)focusIdx4 << " ms." << std::endl;
+    }    
 }
 
 void Interpolator::reconstruct()
@@ -174,7 +150,6 @@ void Interpolator::reconstruct()
 			      << "," << frameIdx+1 << ")   \tof\t("
 			      << numBlocksHeight << "," << numBlocksWidth
 			      << "," << numBlocksFrames << ")\t";
-		uint64 startLoopTime = GetTimeMs64();
 		
 		signalPatch = corruptedSignal
 		    .getPatch(rowIdx*block.height(), colIdx*block.width(), 
@@ -201,21 +176,23 @@ void Interpolator::reconstruct()
 		    
 		    /*** Declare and define RVM variables ***/
     		    Signal<double> targets = getTargets(signalPatchVector, sensedPatchVector);
-    		    Signal<double> designMatrix = getDesignMatrix(cascadeBasis[scale], sensedPatchVector);
-		    Signal<double> errors(block.size()); // for fastUpdates
+    		    Signal<double> designMatrix = getDesignMatrix(cascadeBasis[scale], sensedPatchVector);		    
 
     		    /*** Start the RVM ***/
     		    bool useCascade;
     		    if (scale+1 < cfg.endScale) useCascade = true;
     		    else useCascade = false;
-	    
-		    uint64 startSetupTime = GetTimeMs64();    
-    		    RVM rvm(cfg.stdDev, cfg.deltaML_threshold, cfg.printProgress);
-		    //rvm.train(designMatrix, targets);		    
-		    rvm.fastUpdates(designMatrix, targets, useCascade, cascadeBasis[scale], errors); // for fastUpdates
-		    loopSetupTime += (GetTimeMs64() - startSetupTime);
-		    //recoveredVector = rvm.predict(cascadeBasis[scale]);		    		    
-		    recoveredVector = matMult(cascadeBasis[scale], rvm.fastMu()); // for fastUpdates
+		    
+		    RVM rvm(cfg.stdDev, cfg.deltaML_threshold, cfg.printProgress);
+
+		    uint64 trainTimeStart = GetTimeMs64();
+		    rvm.train(designMatrix, targets);	
+		    trainTime += (GetTimeMs64() - trainTimeStart); trainTimeCount++;
+
+		    uint64 predictTimeStart = GetTimeMs64();
+		    recoveredVector = rvm.predict(cascadeBasis[scale]);		    		    		    
+		    predictTime += (GetTimeMs64() - predictTimeStart); predictTimeCount++;
+
 		    recoveredVector.fill(initialSignalVector, initialSensedVector);
 
     		    /*** Save recovered patch ***/
@@ -226,8 +203,10 @@ void Interpolator::reconstruct()
 
     		    /*** Prepare for next part of cascade ***/
     		    if (useCascade) {			
-			//Signal<double> errors = rvm.predictionErrors(cascadeBasis[scale]); // remove for fastupdates
-    			for (int i = 0; i < block.size(); ++i) { 
+			uint64 errorTimeStart = GetTimeMs64();
+			Signal<double> errors = rvm.predictionErrors(cascadeBasis[scale]);
+    			errorTime += (GetTimeMs64() - errorTimeStart); ++errorTimeCount;
+			for (int i = 0; i < block.size(); ++i) { 
     			    if (errors(i) != 0) sensedPatchVector(i) = true; // get new mask
     			    else sensedPatchVector(i) = false;
 			    
@@ -236,8 +215,6 @@ void Interpolator::reconstruct()
     			}
 			if (cfg.printProgress) std::cout << "\t\t\t\t\t\t";
     		    }
-		    bigLoopTime += (GetTimeMs64() - startLoopTime);
-		    ++itt;		    
 		}
 	    }
 }

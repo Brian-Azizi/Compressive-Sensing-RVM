@@ -75,7 +75,7 @@ public:
     // return covariance of posterior    
     Signal<double> Sigma() const; 
 
-    // use GGP's function
+    // use fast_updates function from previous version (no longer necessary - doesn't seem to be faster any more and also has a memory leak)
     void fastUpdates(Signal<double>& designMatrix, Signal<double>& targets, bool useCascade, Signal<double>& points, Signal<double>& errors);
 };
 
@@ -512,20 +512,7 @@ void RVM::addNewBasisFunction(int currentIdx, const Signal<double>& designMatrix
     }
     
 }
-
-    // uint64 focusTime1S = GetTimeMs64();
-    // focusTime1 += GetTimeMs64() - focusTime1S;
-    // focusIdx1++;
-    // uint64 focusTime2S = GetTimeMs64();
-    // focusTime2 += GetTimeMs64() - focusTime2S;
-    // focusIdx2++;
-    // uint64 focusTime3S = GetTimeMs64();
-    // focusTime3 += GetTimeMs64() - focusTime3S;
-    // focusIdx3++;
-    // uint64 focusTime4S = GetTimeMs64();
-    // focusTime4 += GetTimeMs64() - focusTime4S;
-    // focusIdx4++;    
-    
+  
 
 /*** Trains the RVM model given a NxM designMatrix, and an Nx1 vector of targets using the fast update formulae
      by [Tipping & Faul (2003)]. Currently only considers addition of basis functions. We stop the algorithm
@@ -533,7 +520,6 @@ void RVM::addNewBasisFunction(int currentIdx, const Signal<double>& designMatrix
      basis function for the next iteration (and e.g. chooses to re-estimate or delete instead). ***/     
 void RVM::train(const Signal<double>& designMatrix, const Signal<double>& targets)
 {   
-    uint64 trainTimeS = GetTimeMs64();
     /*** 0) Initialize member data ***/
     int N = designMatrix.height();
     int M = designMatrix.width();
@@ -553,23 +539,19 @@ void RVM::train(const Signal<double>& designMatrix, const Signal<double>& target
     /*** 1+2) Initialise with a single basis vector and set alpha:
 	 pick the one with the largest normalised projection onto the target vector ***/
     getFirstBasisFunction(designMatrix, targets);    
-    uint64 statsTimeS = GetTimeMs64();
 
     /*** 3) Compute the intial full statistics (mu, Sigma, s, q, S, Q, thetas). 
 	 Can call either computeFullStatistics or firstFullStatistics at this point since we currently only
 	 have a single basis function in out model. The output and effect to the state of the RVM should be
 	 identical, though there me be differences in speed. ***/
-    //computeFullStatistics(designMatrix, targets);
+         //computeFullStatistics(designMatrix, targets);
     firstFullStatistics(designMatrix, targets); 
-    statsTime += GetTimeMs64() - statsTimeS;
-    statsIdx++;
 
     /**** Start the main loop ****/
     //    Signal<double> phi(N);	// holds basis function currently being considered 
     bool lastIteration = false;
     double maxDML = m_DUMMY;
     int count = 0;
-    uint64 whileTimeS = GetTimeMs64();
     while(!lastIteration) {	
 	++ count;
 	if(m_print && count % 10 == 0) std::cout << "." << std::flush;
@@ -597,13 +579,9 @@ void RVM::train(const Signal<double>& designMatrix, const Signal<double>& target
 	if (maxDML < m_threshold)
 	    lastIteration = true;
     }
-    whileTime += GetTimeMs64() - whileTimeS;
-    whileIdx++;
-    
+
     if(m_print) std::cout << std::endl;
     m_trainingFinished = true;
-    trainTime += GetTimeMs64() - trainTimeS;
-    trainIdx ++;
 }
 
 /*** Returns predictions made by the RVM. Cannot be called before we have trained the model. 
