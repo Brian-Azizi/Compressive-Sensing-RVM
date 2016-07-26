@@ -9,3 +9,6 @@ Code_V2/leaf
 Code_V2/log.txt
 Code_V2/rvmOutputFilenames.txt
 Data
+Code_V2/*.cfg
+Code_V2/setupDir.sh
+Code_V2/host_file

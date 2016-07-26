@@ -14,6 +14,7 @@ function raw = yuv2rawBW_save(fileIn, heightIn, widthIn, format, ...
 % heightOut - height of output video
 % widthOut - width of output video
 % framesOut - frames of input video to be saved. Cannot exceed number of frames of input video
+% saving - if true, will save to fileOut.
 % 
 % Example: raw = yuv2rawBW_save('foreman_cif.yuv',288,352,'420',...
 % 'foreman.txt',256,256,256);
