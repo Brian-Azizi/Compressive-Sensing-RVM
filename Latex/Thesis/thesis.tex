@@ -1,242 +1,189 @@
-%%\documentclass[final,3p,times,twocolumn]{elsarticle}
-\documentclass[final,3p]{report}
+% ******************************* PhD Thesis Template **************************
+% Please have a look at the README.md file for info on how to use the template
 
-\includeonly{cs}
+\documentclass[a4paper,12pt,times,numbered,print,index]{Classes/PhDThesisPSnPDF}
 
-%% Use the option review to obtain double line spacing
-%% \documentclass[preprint,review,12pt]{elsarticle}
+% ******************************************************************************
+% ******************************* Class Options ********************************
+% *********************** See README for more details **************************
+% ******************************************************************************
 
-%% Use the options 1p,twocolumn; 3p; 3p,twocolumn; 5p; or 5p,twocolumn
-%% for a journal layout:
-%% \documentclass[final,1p,times]{elsarticle}
-%% \documentclass[final,1p,times,twocolumn]{elsarticle}
-%% \documentclass[final,3p,times]{elsarticle}
-%% \documentclass[final,3p,times,twocolumn]{elsarticle}
-%% \documentclass[final,5p,times]{elsarticle}
-%% \documentclass[final,5p,times,twocolumn]{elsarticle}
-
-%% if you use PostScript figures in your article
-%% use the graphics package for simple commands
-%% \usepackage{graphics}
-%% or use the graphicx package for more complicated commands
-%% \usepackage{graphicx}
-%% or use the epsfig package if you prefer to use the old commands
-%% \usepackage{epsfig}
-
-%% The amssymb package provides various useful mathematical symbols
-\usepackage{amssymb}
-%% The amsthm package provides extended theorem environments
-%% \usepackage{amsthm}
-%% The bm package lets you access bold symbols in math mode using the \boldsymbol command (useful to get bold greek letters).
-\usepackage{bm}
-%% The bbm package is contains the indicator function symbol \mathbbm{1}
-\usepackage{bbm}
-%% The amsmath package contains the split environment, letting you split equations into multiple lines.
-%% See "https://www.sharelatex.com/learn/Aligning_equations_with_amsmath " for an explanation.
-\usepackage{amsmath}
-%% The lineno packages adds line numbers. Start line numbering with
-%% \begin{linenumbers}, end it with \end{linenumbers}. Or switch it on
-%% for the whole article with \linenumbers after \end{frontmatter}.
-%% \usepackage{lineno}
-%% The algorithm defines the algorithm floating environment and the algpseudocode package is useful for constructing Pseudo code.
-\usepackage{algorithm}
-\usepackage{algpseudocode}
-%% For creating pictures
-\usepackage{tikz}
-%% For making algorithms float
-\usepackage{float}
-\newfloat{algorithm}{t}{lop}
-%% For creating draft watermark
-%\usepackage{draftwatermark}
-%\SetWatermarkText{DRAFT}
-%\SetWatermarkScale{1}
-\usepackage{pdfpages}
-
-%% Declaring \argmin and \argmax operators:
-\DeclareMathOperator*{\argmin}{arg\,min}
-\DeclareMathOperator*{\argmax}{arg\,max}
-%% Declare trace operator \Tr:
-\DeclareMathOperator*{\Tr}{Tr}
-%% Declare pdf functions
-\DeclareMathOperator*{\Cat}{Cat}
-\DeclareMathOperator*{\Dir}{Dir}
-\DeclareMathOperator*{\DP}{DP}
-\DeclareMathOperator*{\Beta}{Beta}
-\DeclareMathOperator*{\GEM}{GEM}
-\DeclareMathOperator*{\Stick}{Stick}
-\DeclareMathOperator*{\Uniform}{Uniform}
-%% shorthand for \boldsymbol and \overline
-\let\bs\boldsymbol
-\let\ol\overline
-%% command that allows equations to be split across pages
-%\allowdisplaybreaks[3]
-
-%% natbib.sty is loaded by default. However, natbib options can be
-%% provided with \biboptions{...} command. Following options are
-%% valid:
-
-%%   round  -  round parentheses are used (default)
-%%   square -  square brackets are used   [option]
-%%   curly  -  curly braces are used      {option}
-%%   angle  -  angle brackets are used    <option>
-%%   semicolon  -  multiple citations separated by semi-colon
-%%   colon  - same as semicolon, an earlier confusion
-%%   comma  -  separated by comma
-%%   numbers-  selects numerical citations
-%%   super  -  numerical citations as superscripts
-%%   sort   -  sorts multiple citations according to order in ref. list
-%%   sort&compress   -  like sort, but also compresses numerical citations
-%%   compress - compresses without sorting
-%%
-%% \biboptions{comma,round}
-
-% \biboptions{}
+% `a4paper'(The University of Cambridge PhD thesis guidelines recommends a page
+% size a4 - default option) or `a5paper': A5 Paper size is also allowed as per
+% the Cambridge University Engineering Deparment guidelines for PhD thesis
+%
+% `11pt' or `12pt'(default): Font Size 10pt is NOT recommended by the University
+% guidelines
+%
+% `oneside' or `twoside'(default): Printing double side (twoside) or single
+% side.
+%
+% `print': Use `print' for print version with appropriate margins and page
+% layout. Leaving the options field blank will activate Online version.
+%
+% `index': For index at the end of the thesis
+%
+% `draft': For draft mode without loading any images (same as draft in book)
+%
+% `draftmode': Special draft mode with line numbers, images, and water mark with
+% timestamp and custom text. Position of the text can also be modified.
+%
+% `abstract': To generate only the title page and abstract page with
+% dissertation title and name, to submit to the Student Registry
+%
+% `chapter`: This option enables only the specified chapter and it's references
+%  Useful for review and corrections.
+%
+% ************************* Custom Page Margins ********************************
+%
+% `custommargin`: Use `custommargin' in options to activate custom page margins,
+% which can be defined in the preamble.tex. Custom margin will override
+% print/online margin setup.
+%
+% *********************** Choosing the Fonts in Class Options ******************
+%
+% `times' : Times font with math support. (The Cambridge University guidelines
+% recommend using times)
+%
+% `fourier': Utopia Font with Fourier Math font (Font has to be installed)
+%            It's a free font.
+%
+% `customfont': Use `customfont' option in the document class and load the
+% package in the preamble.tex
+%
+% default or leave empty: `Latin Modern' font will be loaded.
+%
+% ********************** Choosing the Bibliography style ***********************
+%
+% `authoryear': For author-year citation eg., Krishna (2013)
+%
+% `numbered': (Default Option) For numbered and sorted citation e.g., [1,5,2]
+%
+% `custombib': Define your own bibliography style in the `preamble.tex' file.
+%              `\RequirePackage[square, sort, numbers, authoryear]{natbib}'.
+%              This can be also used to load biblatex instead of natbib
+%              (See Preamble)
+%
+% **************************** Choosing the Page Style *************************
+%
+% `default (leave empty)': For Page Numbers in Header (Left Even, Right Odd) and
+% Chapter Name in Header (Right Even) and Section Name (Left Odd). Blank Footer.
+%
+% `PageStyleI': Chapter Name next & Page Number on Even Side (Left Even).
+% Section Name & Page Number in Header on Odd Side (Right Odd). Footer is empty.
+%
+% `PageStyleII': Chapter Name on Even Side (Left Even) in Header. Section Number
+% and Section Name in Header on Odd Side (Right Odd). Page numbering in footer
 
 
-%\journal{MPhil in Scientific Computing}
+% ********************************** Preamble **********************************
+% Preamble: Contains packages and user-defined commands and settings
+\input{Preamble/preamble}
 
+% ************************ Thesis Information & Meta-data **********************
+% Thesis title and author information, refernce file for biblatex
+\input{thesis-info}
+
+% ***************************** Abstract Separate ******************************
+% To printout only the titlepage and the abstract with the PhD title and the
+% author name for submission to the Student Registry, use the `abstract' option in
+% the document class.
+
+\ifdefineAbstract
+ \pagestyle{empty}
+ \includeonly{Declaration/declaration, Abstract/abstract}
+\fi
+
+% ***************************** Chapter Mode ***********************************
+% The chapter mode allows user to only print particular chapters with references
+% Title, Contents, Frontmatter are disabled by default
+% Useful option to review a particular chapter or to send it to supervisior.
+% To use choose `chapter' option in the document class
+
+\ifdefineChapter
+ \includeonly{Chapter3/chapter3}
+\fi
+
+% ******************************** Front Matter ********************************
 \begin{document}
 
-%% for elsarticle class
-%\begin{frontmatter}
-
-%% Title, authors and addresses
-
-%% use the tnoteref command within \title for footnotes;
-%% use the tnotetext command for the associated footnote;
-%% use the fnref command within \author or \address for footnotes;
-%% use the fntext command for the associated footnote;
-%% use the corref command within \author for corresponding author footnotes;
-%% use the cortext command for the associated footnote;
-%% use the ead command for the email address,
-%% and the form \ead[url] for the home page:
-%%
-%% \title{Title\tnoteref{label1}}
-%% \tnotetext[label1]{}
-%% \author{Name\corref{cor1}\fnref{label2}}
-%% \ead{email address}
-%% \ead[url]{home page}
-%% \fntext[label2]{}
-%% \cortext[cor1]{}
-%% \address{Address\fnref{label3}}
-%% \fntext[label3]{}
+\frontmatter
 
 \begin{titlepage}
-\begin{center}
-\includegraphics[width=0.6\textwidth]{cam.png}\\
-
-\vspace*{4cm}
-\Huge\textbf{Compressive Sensing in Video Reconstruction}
-
-\vspace*{1.5cm}
-\LARGE
-\textbf{Brian Azizi}
-\vfill
-
-\normalsize
-A thesis submitted in partial fulfillment of the requirements for\\
-the degree of Master of Philosophy
-
-\vspace{0.8cm}
-
-\normalsize
-Supervised by:\\
-Dr Anita Faul
-
-\vspace{0.2cm}
-Department of Physics\\
-Cavendish Laboratory\\
-JJ Thomson Avenue\\
-CB3 0HE\\
-Cambridge, UK\\
-\vspace{0.4cm}
-\normalsize
-\today
-
-\end{center}
+  \maketitle
 \end{titlepage}
 
 
-\title{Compressive Sensing in Video Reconstruction}
+\include{Dedication/dedication}
+\include{Declaration/declaration}
+\include{Acknowledgement/acknowledgement}
+\include{Abstract/abstract}
 
-%% use optional labels to link authors explicitly to addresses:
-%% \author[label1,label2]{<author name>}
-%% \address[label1]{<address>}
-%% \address[label2]{<address>}
-
-\author{Brian Azizi}
-
-%\address{Cavendish Laboratory, Department of Physics, J J Thomson
- % Avenue, Cambridge. CB3 0HE}
-
+% *********************** Adding TOC and List of Figures ***********************
 
 \tableofcontents
 
-%\end{frontmatter}
+\listoffigures
 
-%%
-%% Start line numbering here if you want
-%%
-% \linenumbers
+\listoftables
 
-%% main text
-\include{intro}
+% \printnomencl[space] space can be set as 2em between symbol and description
+%\printnomencl[3em]
 
-\include{cs}
+\printnomencl
 
-\include{dwt}
+% ******************************** Main Matter *********************************
+\mainmatter
 
-\include{rvm}
+\include{Chapter1/chapter1}
+\include{Chapter2/chapter2}
+\include{Chapter3/chapter3}
+\include{Chapter4/chapter4}
+\include{Chapter5/chapter5}
+\include{Chapter6/chapter6}
+\include{Chapter7/chapter7}
+\include{Chapter8/chapter8}
+%\include{Chapter9/chapter9}
 
-\include{implementation}
-
-\include{results}
-
-\include{conclusion}
 
 
-%\setboolean{@twoside}{false}
-%\includepdf[pages={1},angle=270]{gantt.pdf}
-%\section*{Acknowledgements}
-%Here I acknowledge the assistance of my supervisor, my industrial sponsor,
-%and the effects of caffeine on my ability to produce this report on time.
+% ********************************** Back Matter *******************************
+% Backmatter should be commented out, if you are using appendices after References
+%\backmatter
 
-%% The Appendices part is started with the command \appendix;
-%% appendix sections are then done as normal sections
-%\appendix
+% ********************************** Bibliography ******************************
+\begin{spacing}{0.9}
 
-%% References
-%%
-%% Following citation commands can be used in the body text:
-%% Usage of \cite is as follows:
-%%   \cite{key}         ==>>  [#]
-%%   \cite[chap. 2]{key} ==>> [#, chap. 2]
-%%
+% To use the conventional natbib style referencing
+% Bibliography style previews: http://nodonn.tipido.net/bibstyle.php
+% Reference styles: http://sites.stat.psu.edu/~surajit/present/bib.htm
 
-%% References with bibTeX database:
-%\section*{Bibliography}
-\bibliographystyle{elsarticle-num}
-%\bibliographystyle{apa}
-\bibliography{referencesRVM.bib}
+\bibliographystyle{apalike}
+%\bibliographystyle{plainnat} % use this to have URLs listed in References
+\cleardoublepage
+\bibliography{References/references} % Path to your References.bib file
 
-%% Authors are advised to submit their bibtex database files. They are
-%% requested to list a bibtex style file in the manuscript if they do
-%% not want to use elsarticle-num.bst.
 
-%% References without bibTeX database:
+% If you would like to use BibLaTeX for your references, pass `custombib' as
+% an option in the document class. The location of 'reference.bib' should be
+% specified in the preamble.tex file in the custombib section.
+% Comment out the lines related to natbib above and uncomment the following line.
 
-% \begin{thebibliography}{00}
+%\printbibliography[heading=bibintoc, title={References}]
 
-%% \bibitem must have the following form:
-%%   \bibitem{key}...
-%%
 
-% \bibitem{}
+\end{spacing}
 
-% \end{thebibliography}
+% ********************************** Appendices ********************************
 
+\begin{appendices} % Using appendices environment for more functunality
+
+\include{Appendix1/appendix1}
+\include{Appendix2/appendix2}
+
+\end{appendices}
+
+% *************************************** Index ********************************
+\printthesisindex % If index is present
 
 \end{document}
-
-%%
-%% End of file `rvm.tex'.

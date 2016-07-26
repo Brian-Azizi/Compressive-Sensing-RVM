@@ -1,0 +1,6 @@
+\chapter{Design of the Multi-Scale Cascade of Estimations Algorithm}
+\emph{Bringing all building blocks together. Description and explanation of the algorithm}
+
+\section{Interpolator}
+We use a sensing matrix $\bs\Omega$ that acts as signal mask. That is, we obtain the $N\times M$ matrix $\bs\Omega$ by taking the $M\times M$ identity matrix $\bs I_M$ and deleting $(M-N)$ rows. This corresponds to a subsampled signal in which we only measured $N$ pixel values. For this specific class of sensing matrices, the problem of reconstructing the original signal is also known as \emph{interpolation}.
+
