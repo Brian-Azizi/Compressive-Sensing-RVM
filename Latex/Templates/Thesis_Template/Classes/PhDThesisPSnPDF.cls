@@ -15,7 +15,7 @@
 \newcommand\fileversion{1.4.2}
 \newcommand\filedate{2014/10/08}
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesClass{Classes/PhDThesisPSnPDF}[\filedate\space A PhD thesis class file
+\ProvidesClass{PhDThesisPSnPDF}[\filedate\space A PhD thesis class file
  by Krishna Kumar (v\fileversion)]
 \typeout{https://github.com/kks32/phd-thesis-template/}
 
@@ -1038,7 +1038,7 @@ wish to left align your text}
 \ifthenelse{\equal{#1}{Z}}{\item[\textbf{Acronyms / Abbreviations}]}{%
 \ifthenelse{\equal{#1}{R}}{\item[\textbf{Superscripts}]}{%
 \ifthenelse{\equal{#1}{S}}{\item[\textbf{Subscripts}]}{%
-\ifthenelse{\equal{#1}{X}}{\item[\textbf{Other Symbols}]}%
+\ifthenelse{\equal{#1}{X}}{\item[\textbf{Other Symbols}]}
 {}
 }% matches mathematical symbols > X
 }% matches Subscripts           > S

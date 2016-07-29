@@ -1,41 +1,152 @@
+%%%%%%%%% RVM Nomenclature %%%%%%%%%
+\nomenclature[a-rvm_M]{$N$}{Number of training examples}
+\nomenclature[a-rvm_x]{$\bm x^{(i)}$}{$i$th input vector}
+\nomenclature[a-rvm_y]{$y^{(i)}$}{$i$th target}
+\nomenclature[a-rvm_w]{$\bm w$}{RVM weights vector}
+\nomenclature[z-rvm]{RVM}{Relevance Vector Machine}
+
+%%%%%%%%%%% RVM chapter %%%%%%%%%%%%
 \chapter{Sparse Bayesian Learning}
-So far, we have not addressed the central question: How do we solve the compressive sensing problem (\ref{eqn:CSproblem})?
-Various deterministic approaches have been developed in recent years.
-See \cite{pilikos2014} for an overview.
+\emph{Sparse Baysian Learning} \cite{tipping2001} is a general Bayesian framework within supervised Machine Learning. 
+It can be applied to both regression and classification tasks.
+The \emph{Relevance Vector Machine}, or \emph{RVM}, is a particular specialisation of the Sparse Bayesian Learning model which has identical functional form to the Support Vector Machine (SVM).
+However, the RVM comes with a number of key advantages over the SVM. 
+The solution produced by a RVM is typically much sparser than the solution by a comparable SVM.
+Furthermore, the RVM is a probabilistic model and as such, allows us to estimate error bounds in its predictions.
 
-In the MPhil project, we will employ a probabilistic technique based on Sparse Bayesian Learning.
-In particular, we will use the \emph{Relevance Vector Machine (RVM)} \cite{tipping2001,tipping2003} to reconstruct $\bs w$ from the measurements $\bs y$.
-Following that, we obtain a reconstructed version of the desired signal $\bs x$ by pre-multiplying $\bs w$ by $\bs \Psi$ to obtain the desired signal.
+In this chapter, we will derive the Sparse Bayesian Learning model for regression.
+We will summarize both the original inference algorithm \cite{tipping2001} and also the faster ``Sequential Sparse Bayesian Learning Algorithm'' \cite{tipping2003}.
 
-The RVM is a \emph{regression} technique.
-We model the relationship between $\bs y$ and $\bs x$ by
-\begin{equation}
-\label{eqn:rvmmodel}
-y_i = \bs w^T \bs \psi(x_i) + \epsilon_i
+\section{Model Specification}
+We are given a data set of $N$ input vectors $\{\bm x^{(i)}\}^N_{i=1}$ and their associated \emph{targets} $\{y^{(i)}\}_{i=1}^N$.
+The input vectors live in $D$-dimensional space, $\bm x \in \mathbb{R}^D$.
+The targets are real values, $y \in \mathbb{R}$.
+\footnote{When using the Sparse Bayesian model for regression, we assume the targets are real-valued.
+  It is also possible to use the model for classification in which cased the targets are assumed to be discrete class labels.
+}
+
+We model the data using a linearly-weighted sum of $M$ fixed basis functions $\{\phi_j(\cdot)\}_{j=1}^M$ and base our predictions on the function $f(\cdot)$ defined as
+\begin{equation} 
+  \label{rvm:function}
+  f(\bm x; \bm w) = \sum_{j=1}^M w_j \phi_j(\bm x) = \bm w^T \bm \phi(\bm x)
 \end{equation}
-where $\psi(x_i)$ is the $i$th column of $\Psi$ and the $\epsilon_i$ are independent noise variables drawn from a zero-mean Gaussian distribution $\mathcal{N}(o,\sigma^2)$.
+where $\bm w = [w_1, \dots, w_M]^T$ and $\bm \phi(\cdot) = [\phi_1(\cdot), \dots, \phi_M(\cdot)]^T$.
+Using a large number $M$ of non-linear basis functions $\phi_j : \mathbb{R}^D \to \mathbb{R}$ allows for a highly flexible model. 
 
-The model uses the available measurements $\{(x_1,y_1),\dots,(x_M,y_M)\}$ as training data to train the model in a Bayesian framework.
-The result of training the RVM is a posterior distribution for the unknown vector of coefficients $\bs w$.
-A special feature of the RVM is that the posterior mean $\bs \mu$ of $\bs w$ is often very sparse.
+The \emph{Relevance Vector Machine}, or RVM, is a specialisation of the Sparse Bayesian Learning model in which the basis functions take the form of \emph{kernel functions} 
+\begin{equation*}
+  \phi_j(\cdot) \equiv K\left(\cdot\,,\,\bm x^{(j)}\right).
+\end{equation*}
+This defines a basis function for each training data point $\bm x^{(i)}$.
+Typically, we also include an additional \emph{bias} term $\phi_0(\cdot) \equiv 1$, so that $M = N+1$.
+The RVM has identical functional form to the popular Support Vector Machine (SVM), but superior properties.
+It typically gives sparser solutions than the SVM and has the additional advantage of providing confidence measures for its predictions.
 
-In order to reconstruct the image, we use the estimated posterior mean to ``predict'' what a pixel value $y^*$ should be at a location $x^*$ in which information was missing:
+However, in the following derivation, we will stick to the case of general basis functions $\phi_j:\mathbb{R}^D\to\mathbb{R}$.
+Thus $M$ need not equal $N+1$ and may, in fact, be a lot larger.
+
+To train the model (\ref{rvm:function}), i.e. find values for $\bm w$ that are optimal in some sense, we make the standard assumption that our training data are samples from the model with additive noise:
 \begin{equation}
-y^* = \bs w^T\bs\psi(x^*)
+  \label{rvm:lklhd_1}
+  \begin{split}
+    y^{(i)} &= f(\bm x^{(i)}; \bm w) + \epsilon^{(i)}\\
+    &= \bm w^T \bm \phi(\bm x^{(i)}) + \epsilon^{(i)}\qquad i = 1, \dots, N.
+  \end{split}
+\end{equation}
+The errors $\{\epsilon^{(i)}\}_{i=1}^N$ are assumed to be independent samples from a zero-mean Gaussian distribution with variance $\sigma^2$
+\begin{equation}
+  \label{rvm:error}
+  p(\epsilon^{(i)}) = \mathcal{N}(\epsilon^{(i)}\,|\,0, \sigma^2)\qquad i = 1, \dots, N.
 \end{equation}
 
-\begin{figure}
-\label{fig:lennareconstruction}
-\center
-\includegraphics{Images/0.png}
-\includegraphics{Images/3.png}
-\caption{Corrupted signal $\bs y$ (left) and reconstructed signal $\hat{\bs x}$ (right) using a cascade of 3 RVMs with Haar basis functions (see \cite{pilikos2014}).}
-\end{figure}
+Combining equation (\ref{rvm:lklhd_1}) with equation (\ref{rvm:function}), we may express the model for the complete data using matrix notation:
+\begin{equation}
+  \label{rvm:lklhd_2}
+  \bm y = \bm\Phi \bm w + \bm \epsilon
+\end{equation}
+where $\bm \epsilon = \left[\epsilon^{(1)}, \cdots, \epsilon^{(N)}\right]^T$.
+The $N\times M$ matrix $\bm \Phi$ is known as the design matrix. 
+The $i$th row of $\bm \Phi$ is given by $\bm \phi(\bm x^{(i)})^T$.
+The $j$th column of $\bm \Phi$ is given by $\bm \phi_j = \left[\phi_j\left(\bm x^{(1)}\right), \cdots, \phi_j\left(\bm x^{(N)}\right)\right]^T$, which is also referred to as the $j$th \emph{basis vector}.
+Thus
+\begin{equation*}
+  \bm\Phi =
+  \begin{bmatrix}
+    \bm\phi_1 & \cdots & \bm\phi_M
+  \end{bmatrix}
+  =
+  \begin{bmatrix}
+    \bm\phi(\bm x^{(1)})^T\\
+    \vdots\\
+    \bm\phi(\bm x^{(N)})^T
+  \end{bmatrix}
+\end{equation*}
 
-Apart from achieving sparse solutions, one further desirable feature of the RVM is that the model provides error bars for its predictions.
-This is used in \cite{pilikos2014} to construct a multi-scale cascade of RVM estimations and achieve significant performance boosts.
+Combining equation (\ref{rvm:lklhd_2}) and equation (\ref{rvm:error}), we find that the complete data likelihood function is given by
+\begin{equation}
+  \label{rvm:complete_lk}
+  \begin{split}
+    p\left(\bm y\,|\,\bm w,\sigma^2\right) &= \mathcal{N}\left(\bm y\,|\,\bm w,\sigma^2 \bm I_M\right)\\
+    &= (2\pi\sigma^2)^{-N/2} \exp\left\{-\frac{1}{2\sigma^2}||\bm y - \bm\Phi\bm w||^2\right\}
+  \end{split}
+\end{equation}
+where $\bm I_M$ is the $M\times M$ identity matrix.
 
-An example of this can be seen in Figure \ref{fig:lennareconstruction}.
+So far, we have specified the general linear regression model.
+To get to the sparse Bayesian formulation, we define a zero-mean Gaussian prior distribution over the parameters $\bm w$
+\begin{equation}
+  \label{rvm:prior}
+  p(\bm w\,|\,\bm \alpha) = \prod_{j=1}^M \mathcal{N}\left(w_j\,|\,\alpha_j^{-1}\right)
+\end{equation}
+where $\bm \alpha = \left[\alpha_1,\cdots,\alpha_M\right]^T$ is a vector of $M$ hyperparameters.
+It is important to note that each hyperparameter $\alpha_j$ is solely responsible for controlling the strength of the prior of its associated weight $w_j$.
+If $\alpha_j$ is large, the prior over $w_j$ is very strongly peaked at zero.
+This form of the prior distribution is, more than anything, responsible for the dramatic sparsity in the final model.
+
+To complete the specification, we must define a prior over the noise parameter $\sigma^2$ and the a hyperprior over the hyperparameters $\bm \alpha$.
+Following the derivation in \cite{tipping2001}, we use the following Gamma
+\footnote{
+  The Gamma distribution is defined by   
+  \[
+  \GammaDist(z\,|\,a,b) = \Gamma(a)^{-1} b^a z^{a-1} \exp(-bz)  \qquad z,a,b > 0
+  \]
+  where $\Gamma(.)$ is the Gamma function defined by 
+  \[
+  \Gamma(z) = \int_0^\infty t^{z-1} \exp(-t) dt.
+  \]
+} priors
+\begin{equation*}
+  p(\bm\alpha\,|\,a,b) = \prod_{j=1}^M \GammaDist(\alpha_j\,|\,a,b)
+\end{equation*}
+\begin{equation*}
+  p(\beta\,|\,c,d) = \GammaDist(\beta\,|\,c,d)
+\end{equation*}
+where $\beta \equiv \sigma^{-2}$.
+We make the simplifying assumption $a=b=c=d=0$, giving as a uniform, but improper, hyperprior.
+For the general case, see \cite{tipping2001}.
+
+As a side note, consider the prior of $\bm w$ after marrginalizing out the dependence on the hyperpriors $\bm\alpha$.
+Since each $w_j$ is normally distributed with an unknown precision parameter $\alpha_j$ and since the (hyper)prior over $\alpha_j$ is the Gamma distribution and therefore conjugate to $p(w_j\,|\,\alpha_j)$, it follows that the resulting integral can be evaluated analytically
+\begin{equation*}
+  \begin{split}
+    p(\bm w\,|\,a,b) &= \int p(\bm w\,|\,\bm\alpha) p(\bm\alpha\,|\,a,b)d\bm\alpha\\
+    &= \prod_{j=1}^M \int \mathcal{N}(w_j\,|\,0,\alpha_j^{-1}) \GammaDist(\alpha_j|\,a,b)d\alpha_j\\
+    &= \prod_{j=1}^M \frac{b^a\Gamma(a+\frac{1}{2})}{(2\pi)^{\frac{1}{2}}\Gamma(a)}\left(b+\frac{w_j^2}{2}\right)^{-(a+\frac{1}{2})}.
+\end{split}
+\end{equation*}
+This corresponds to a product of independent Student-t density functions over the weights $w_j$.
+The choice $a=b=0$ implies that $p(\bm w \,|\,a,b) \propto \prod_{j=1}^M 1/|w_j|$.
+As discussed in \cite{tipping2001}, it is this hierarchical formulation of the weight prior that is ultimately responsible for encouriging sparse solutions.
+
+
+\section{Model Inference}
+...
+\subsection{Original Training Algorithm}
+Following \cite{tipping2001}
+\subsection{Sequential Sparse Bayesian Learning Algorithm}
+Follows \cite{tipping2003}
+
+\section{Making Predictions}
 
 For details on the RVM and its implementation see \cite{pilikos2014,tipping2003,tipping2001}.
 
