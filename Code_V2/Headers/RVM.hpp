@@ -17,7 +17,7 @@ private:
     double m_threshold;
     bool m_onlyAdd;		// if true, we only consider addition of basis functions, no deletions
   
-    const static double zeroFactor = 1.0e-12;
+    const static double zeroFactor;// = 1.0e-12; 
     // RVM internals
     bool m_trainingFinished;
     bool m_fastUpdatesFinished;
@@ -78,7 +78,7 @@ public:
     // use fast_updates function from previous version (no longer necessary - doesn't seem to be faster any more and also has a memory leak)
     void fastUpdates(Signal<double>& designMatrix, Signal<double>& targets, bool useCascade, Signal<double>& points, Signal<double>& errors);
 };
-
+const double RVM::zeroFactor = 1.0e-12; 
 RVM::RVM(double stdDev, double threshold, bool print, bool onlyAdd)
     : m_stdDev(stdDev), m_threshold(threshold), m_print(print), m_onlyAdd(onlyAdd),
 	  m_trainingFinished(false)

@@ -1,11 +1,18 @@
+function convertSignal(FLS_file,frameRate)
 addpath ML_Headers
 
+outputFilenames = FLS_file;
+
+% %outputFilenames = './rvmOutputFilenames.txt';
 % *** options ***
-if ~exist('frameRate','var')    
+if nargin < 2
     frameRate = 30;
 end
 
-outputFilenames = './rvmOutputFilenames.txt';
+% if ~exist('frameRate','var')    
+%     frameRate = 30;
+% end
+
 fid = fopen(outputFilenames);
 settings = textscan(fid,'%s %s');
 fclose(fid);
@@ -70,7 +77,7 @@ end
     end
     disp(['Media output saved in directory:        ' outputDir]);
 
-
-clear fid file h i outputFilenames settings ans ...
-    displayOutput saveAsMedia var files N j vid ...
-    mediaOutputDirectory name split fname split2 stem name
+end
+% clear fid file h i outputFilenames settings ans ...
+%     displayOutput saveAsMedia var files N j vid ...
+%    mediaOutputDirectory name split fname split2 stem name

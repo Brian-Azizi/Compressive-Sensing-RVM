@@ -2,11 +2,14 @@
 #define GUARD_SIGNALSETTING_TPP
 
 #include <cmath>
+#include <cstdio>
+#include <iostream>
 #include <map>
 #include <ostream>
 #include <string>
 #include <sstream>
 #include <sys/stat.h>
+#include <unistd.h>
 
 #include "ConfigFile.hpp"
 #include "Corrupter.hpp"
@@ -22,8 +25,21 @@ SignalSettings::SignalSettings(const std::string& settingsFile)
 }
 
 void SignalSettings::initParameters() {
-    /*** First: check if we print ***/
-    printProgress = cfg.getValueOfKey<bool>("printProgress", true); // default is 'true'
+    /*** First: open the log file ***/
+    logFileName = cfgFile;
+    logFileName.erase(logFileName.find_last_of('.'));
+    logFileName += ".log";
+    if (!std::ofstream(logFileName.c_str())) error("Log file could not be created");
+    
+    // /*** First: check if we print ***/
+    //printProgress = cfg.getValueOfKey<bool>("printProgress", true); // default is 'true'
+    printProgress = true;
+
+    /*** Set filename for fls file and check if we can open it ***/
+    flsFileName = cfgFile;
+    flsFileName.erase(flsFileName.find_last_of('.'));
+    flsFileName += ".fls";
+    if (!std::ofstream(flsFileName.c_str())) error("fls file could not be created");
 
     /*** Get input file and check it ***/
     if (!cfg.keyExists("inputFile")) error("CFG: No input file specified.\n");
@@ -73,7 +89,7 @@ void SignalSettings::initParameters() {
 
     /*** Get output name ***/
     outputName = cfg.getValueOfKey<std::string>("outputName",""); // If no name is given, default will be generated
-
+    
     /*** Get block dimensions ***/
     int blockHeight = cfg.getValueOfKey<int>("blockHeight", 2);
     int blockWidth = cfg.getValueOfKey<int>("blockWidth", 2);
@@ -163,8 +179,7 @@ void SignalSettings::check()
 std::ostream& operator<<(std::ostream& os, const SignalSettings& setting)
 {
     os << "\n\t*** Settings: ***\n";
-    os << "Settings File:\t\t" << setting.cfgFile;
-    os << "\nInput File:\t\t" << setting.inputFile;
+    os << "Input File:\t\t" << setting.inputFile;
     os << "\nSignal Dimensions:\t" << setting.signalDim;
 
     os << "\nOutput Directory:\t" << setting.outputDirectory;
@@ -208,8 +223,8 @@ std::ostream& operator<<(std::ostream& os, const SignalSettings& setting)
     os << "\nCompute PSNR:\t\t" << (setting.computePSNR ? "yes" : "no");
     if (!setting.cfg.keyExists("computePSNR")) os << "\t\t(default)";
 
-    os << "\nPrinting Progress:\t" << (setting.printProgress ? "yes" : "no");
-    if (!setting.cfg.keyExists("printProgress")) os << "\t\t(default)";
+    // os << "\nPrinting Progress:\t" << (setting.printProgress ? "yes" : "no");
+    // if (!setting.cfg.keyExists("printProgress")) os << "\t\t(default)";
         
     os << "\nRNG Seed:\t\t" << setting.rngSeed;
     if (!setting.cfg.keyExists("rngSeed")) os << "\t(default: current time)";
@@ -219,6 +234,10 @@ std::ostream& operator<<(std::ostream& os, const SignalSettings& setting)
 	os << "\nFrame Rate:\t\t" << setting.frameRate;
 	if (!setting.cfg.keyExists("frameRate")) os << "\t\t(default)";
     }
+    os << "\n";
+    os << "\nSettings File:\t\t" << setting.cfgFile;
+    os << "\nLog file:\t\t" << setting.logFileName;
+    os << "\nFLS file:\t\t" << setting.flsFileName;
     os << "\n";
     return os;
 }
@@ -247,7 +266,7 @@ std::string helpMessage(const std::string& argv_0)
        << "  deltaML_threshold\tThreshold for change in marginal likelihood in the RVM (default: 1.0)\n"
        << "  rngSeed\t\tSeed for random number generator for reproducability (default: set to current time)\n"
        << "  computePSNR\t\tIf 1, the Mean Square Error and Peak Signal-to-Noise Ratio for each reconstruction stage will be computed and displayed on standard out. Note that this computation will cap Signal entries in the range [0,255]. Actual saved output is not affected by this. (default: 1)\n"
-       << "  printProgress\t\tIf 1, print progress to standard out (default: 1)\n"
+       << "  printProgress\t\tIf 1, print progress to standard out (default: 1) (now deprecated. Once settings file has been successfully parsed, all messages get redirected to the log file)\n"
        << "  convertToMedia\tIf 1, output .txt files will also be converted to media files (.png for images and .avi for videos). Requires MATLAB. (default: 1)\n"
        << "  frameRate\t\tFrame rate for output videos (default: 30; ignored if input is an image or if we are not converting to media).\n"
        << std::endl;

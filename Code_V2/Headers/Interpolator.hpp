@@ -89,28 +89,28 @@ void Interpolator::run()
     // Print settings again
     if (cfg.printProgress) std::cout << cfg;
 
-    // Write the output to disk and store the output file names in '.rvmOutputFilenames.txt'
+    // Write the output to disk and store the output file names in the fls file
     if (cfg.printProgress) std::cout<< "\n\t *** Output Files ***";        
-    std::string outNames = "./rvmOutputFilenames.txt";
-    std::ofstream outF(outNames.c_str());
-    if (!outF) { 
-	if (cfg.printProgress) std::cerr << "\nCould not open save names of output files in " << outNames << std::endl;;
-    } else if(cfg.printProgress) std::cout << "\nRelevant file names for interfacing with Matlab have been saved in:\t" << outNames << std::endl;
+    //std::string outNames = "./rvmOutputFilenames.txt";
+    std::ofstream flsFile(cfg.flsFileName.c_str());
+    if (!flsFile) { 
+	if (cfg.printProgress) std::cerr << "\nCould not save names of output files in " << cfg.flsFileName << std::endl;;
+    } else if(cfg.printProgress) std::cout << "\nRelevant file names for interfacing with Matlab have been saved in:\t" << cfg.flsFileName << std::endl;
     std::string name;
     
     // original
     name = cfg.inputFile;
-    if (outF) outF << "original\t\t" << name << std::endl;
+    if (flsFile) flsFile << "original\t\t" << name << std::endl;
     if (cfg.printProgress) std::cout << "\nOriginal signal file:\t\t\t" << name;
 
     // corrupted
     name = outputSignal(corruptedSignal, "_CORRUPTED", cfg); // writes to disk and returns filename
-    if (outF) outF << "corrupted\t\t" << name << std::endl;
+    if (flsFile) flsFile << "corrupted\t\t" << name << std::endl;
     if (cfg.printProgress) std::cout << "\nCorrupted signal saved at:\t\t" << name;
     
     // mask
     name = outputSignal(sensedEntries, "_MASK", cfg);
-    if (outF) outF << "mask\t\t\t" << name << std::endl;
+    if (flsFile) flsFile << "mask\t\t\t" << name << std::endl;
     if (cfg.printProgress) std::cout << "\nSignal mask saved at:\t\t\t" << name;
     
     // recovered
@@ -118,7 +118,7 @@ void Interpolator::run()
 	std::stringstream label;
 	label << "_RECOVERED_" << scale+1 << "_OF_" << cfg.endScale;
 	name = outputSignal(cascadeRecoveredSignals[scale], label.str(), cfg);
-	if (outF) outF << "recovered_" << scale+1 << "\t\t" << name << std::endl;
+	if (flsFile) flsFile << "recovered_" << scale+1 << "\t\t" << name << std::endl;
 	if(cfg.printProgress) std::cout << "\nRecovered Signal (scale " << scale+1 << ") saved at:\t" << name;
     }
     
