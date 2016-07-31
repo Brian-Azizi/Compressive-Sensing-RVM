@@ -7,7 +7,7 @@
 
 %%%%%%%%%%% RVM chapter %%%%%%%%%%%%
 \chapter{Sparse Bayesian Learning}
-\emph{Sparse Baysian Learning} \cite{tipping2001} is a general Bayesian framework within supervised Machine Learning. 
+\emph{Sparse Bayesian Learning} \cite{tipping2001} is a general Bayesian framework within supervised Machine Learning. 
 It can be applied to both regression and classification tasks.
 The \emph{Relevance Vector Machine}, or \emph{RVM}, is a particular specialisation of the Sparse Bayesian Learning model which has identical functional form to the Support Vector Machine (SVM).
 However, the RVM comes with a number of key advantages over the SVM. 
@@ -15,7 +15,7 @@ The solution produced by a RVM is typically much sparser than the solution by a 
 Furthermore, the RVM is a probabilistic model and as such, allows us to estimate error bounds in its predictions.
 
 In this chapter, we will derive the Sparse Bayesian Learning model for regression.
-We will summarize both the original inference algorithm \cite{tipping2001} and also the faster ``Sequential Sparse Bayesian Learning Algorithm'' \cite{tipping2003}.
+We will summarise both the original inference algorithm \cite{tipping2001} and also the faster ``Sequential Sparse Bayesian Learning Algorithm'' \cite{tipping2003}.
 
 \section{Model Specification}
 We are given a data set of $N$ input vectors $\{\bm x^{(i)}\}^N_{i=1}$ and their associated \emph{targets} $\{y^{(i)}\}_{i=1}^N$.
@@ -106,14 +106,14 @@ This form of the prior distribution is, more than anything, responsible for the 
 To complete the specification, we must define a prior over the noise parameter $\sigma^2$ and the a hyperprior over the hyperparameters $\bm \alpha$.
 Following the derivation in \cite{tipping2001}, we use the following Gamma
 \footnote{
-  The Gamma distribution is defined by   
-  \[
-  \GammaDist(z\,|\,a,b) = \Gamma(a)^{-1} b^a z^{a-1} \exp(-bz)  \qquad z,a,b > 0
-  \]
-  where $\Gamma(.)$ is the Gamma function defined by 
-  \[
-  \Gamma(z) = \int_0^\infty t^{z-1} \exp(-t) dt.
-  \]
+The Gamma distribution is defined by   
+\[
+\GammaDist(z\,|\,a,b) = \Gamma(a)^{-1} b^a z^{a-1} \exp(-bz)  \qquad z,a,b > 0
+\]
+where $\Gamma(.)$ is the Gamma function defined by 
+\[
+\Gamma(z) = \int_0^\infty t^{z-1} \exp(-t) dt.
+\]
 } priors
 \begin{equation*}
   p(\bm\alpha\,|\,a,b) = \prod_{j=1}^M \GammaDist(\alpha_j\,|\,a,b)
@@ -122,10 +122,8 @@ Following the derivation in \cite{tipping2001}, we use the following Gamma
   p(\beta\,|\,c,d) = \GammaDist(\beta\,|\,c,d)
 \end{equation*}
 where $\beta \equiv \sigma^{-2}$.
-We make the simplifying assumption $a=b=c=d=0$, giving as a uniform, but improper, hyperprior.
-For the general case, see \cite{tipping2001}.
 
-As a side note, consider the prior of $\bm w$ after marrginalizing out the dependence on the hyperpriors $\bm\alpha$.
+As a side note, consider the prior of $\bm w$ after marginalising out the dependence on the hyperpriors $\bm\alpha$.
 Since each $w_j$ is normally distributed with an unknown precision parameter $\alpha_j$ and since the (hyper)prior over $\alpha_j$ is the Gamma distribution and therefore conjugate to $p(w_j\,|\,\alpha_j)$, it follows that the resulting integral can be evaluated analytically
 \begin{equation*}
   \begin{split}
@@ -136,18 +134,195 @@ Since each $w_j$ is normally distributed with an unknown precision parameter $\a
 \end{equation*}
 This corresponds to a product of independent Student-t density functions over the weights $w_j$.
 The choice $a=b=0$ implies that $p(\bm w \,|\,a,b) \propto \prod_{j=1}^M 1/|w_j|$.
-As discussed in \cite{tipping2001}, it is this hierarchical formulation of the weight prior that is ultimately responsible for encouriging sparse solutions.
+As discussed in \cite{tipping2001}, it is this hierarchical formulation of the weight prior that is ultimately responsible for encouraging sparse solutions.
 
 
 \section{Model Inference}
-Once we have set up the model likelihood function and the prior over the parameters we can obtain the posterior distribution of the parameters via Bayes' Rule.
-...
+We have specified the likelihood model for the data and a prior distribution over the model parameters.
+The next step in Bayesian inference is to compute the posterior distribution of the parameters.
+We begin by setting up Bayes' Rule
+\begin{equation}
+\label{rvm:bayes1}
+  p(\bm w, \bm \alpha, \sigma^2 \,|\,\bm y) = \frac{p(\bm y \,|\, \bm w, \bm \alpha, \sigma^2) p(\bm w, \bm \alpha, \sigma^2)}
+  {\int p(\bm y \,|\, \bm w, \bm \alpha, \sigma^2) p(\bm w, \bm \alpha, \sigma^2)d\bm w d\bm \alpha d\sigma^2}
+\end{equation}
+
+The integral in the denominator of (\ref{rvm:bayes1}) is computationally intractable and we must resort to an alternative strategy.
+First, we decompose the left-hand-side of equation (\ref{rvm:bayes1}) as
+\begin{equation}
+  \label{rvm:decompose}
+  p(\bm w, \bm \alpha, \sigma^2\,|\,\bm y) = p(\bm w\,|\,\bm y, \bm \alpha, \sigma^2) p(\bm\alpha,\sigma^2\,|\,\bm y).
+\end{equation}
+Next, we use Bayes' Rule to compute the posterior distribution of the weights given $\bm\alpha$ and $\sigma^2$
+\begin{equation}
+  \label{rvm:bayes2}
+  p(\bm w\,|\,\bm y, \bm \alpha, \sigma^2) = \frac{p(\bm y\,|\,\bm w,\sigma^2) p(\bm w\,|\,\bm \alpha)}{p(\bm y\,|\,\bm\alpha,\sigma^2)}
+\end{equation}
+
+The denominator of the right-hand-side is known as the \emph{marginal likelihood} and given by
+\begin{equation}
+  \label{rvm:ML1}
+  p(\bm y\,|\,\bm\alpha,\sigma^2) = \int p(\bm y\,|\,\bm w,\sigma^2) p(\bm w\,|\,\bm \alpha) d\bm w
+\end{equation}
+Since $\bm\alpha$ and $\sigma^2$ are treated as fixed quantities in equation (\ref{rvm:bayes2}), the Gaussian density $p(\bm w\,|\,\bm\alpha)$ is the conjugate prior to the Gaussian likelihood function $p(\bm y\,|\,\bm w,\sigma^2)$.
+Thus, the integral in equation (\ref{rvm:ML1}) is a convolution of two Gaussians and therefore equal to another Gaussian:
+\begin{equation}
+  \label{rvm:ML2}
+  \begin{split}
+    p(\bm y\,|\,\bm\alpha,\sigma^2) &= \mathcal{N}(\bm y\,|\,\bm 0,\bm C)\\
+    &= (2\pi)^{-N/2} |\bm C|^{-1/2} \exp\left\{-\frac{1}{2}\bm y^T \bm C^{-1} \bm y\right\}
+  \end{split}
+\end{equation}
+where
+\begin{equation}
+  \label{rvm:C}
+  \bm C = \sigma^2 \bm I_N + \bm\Phi\bm A^{-1}\bm\Phi^T.
+\end{equation}
+
+The posterior distribution for $\bm w$ is a also a Gaussian, $p(\bm w\,|\,\bm y,\bm\alpha,\sigma^2) = \mathcal{N}(\bm w\,|\,\bm\mu,\bm\Sigma)$.
+Its mean $\bm \mu$ and covariance matrix $\bm\Sigma$ are given by
+\begin{equation}
+  \label{rvm:Sigma}
+  \bm\Sigma = \left(\sigma^{-2}\bm\Phi^T\bm\Phi + \bm A\right)^{-1}
+\end{equation}
+\begin{equation}
+  \label{rvm:mu}
+  \bm\mu = \sigma^{-2}\bm\Sigma\bm\Phi^T\bm y
+\end{equation}
+with $\bm A = \diag(\bm\alpha)$.
+
+Finally, we need to find the posterior of the hyperparameters, $p(\bm\alpha,\sigma^2\,|\,\bm y)$.
+This part is computationally intractable, so instead we approximate the posterior by a delta-function at its mode.
+Hence, the problem reduces to finding the values of $\bm \alpha$ and $\sigma^2$ that maximise $p(\bm\alpha,\sigma^2\,|\,\bm y) \propto p(\bm y\,|\,\bm\alpha,\sigma^2)p(\bm\alpha)p(\sigma^2)$.
+
+Here, we make the simplifying assumption that $a=b=c=d=0$, giving us uniform (but improper) hyperpriors (see \cite{tipping2001} for the general case).
+Maximising $p(\bm\alpha,\sigma^2\,|\,\bm y)$ is then equivalent to maximising the marginal likelihood, or equivalently, its logarithm
+\begin{equation}
+  \label{rvm:ML}
+  \begin{split}
+    \mathcal{L}(\bm\alpha,\sigma^2) &= \log p(\bm y\,|\,\bm\alpha,\sigma^2) = \log \mathcal{N}(\bm y \,|\,\bm 0, \bm C)\\
+    &=-\frac{1}{2}\left[N\log 2\pi + \log|\bm C| + \bm y^T\bm C^{-1} \bm y\right]
+\end{split}    
+\end{equation}
+The procedure of finding $\bm\alpha$ and $\sigma^2$ that maximise the (log) marginal likelihood (\ref{rvm:ML}) is also known as \emph{type-II Maximum likelihood} and \emph{evidence approximation}.
+
 \subsection{Original Training Algorithm}
-Following \cite{tipping2001}
+The original training algorithm in \cite{tipping2001} is derived by setting the derivatives of (\ref{rvm:ML}) to zero.
+We obtain the following update equations for $\bm\alpha$ and $\sigma^2$:
+\begin{equation}
+  \label{rvm:alpha}
+  \alpha_j^{\mbox{new}} = \frac{\gamma_j}{\mu_j^2}
+\end{equation}
+\begin{equation}
+  \label{rvm:beta}
+  (\sigma^2)^{\mbox{new}} = \frac{||\bm y - \bm\Phi\bm\mu||^2}{N - \sum_j\gamma_j}
+\end{equation}
+where $\mu_j$ is the $j$th component of the posterior mean $\bm\mu$ (\ref{rvm:mu}).
+The quantities $\gamma_j$ are defined by 
+\begin{equation}
+  \label{rvm:gamma}
+  \gamma_j = 1 - \alpha_j \Sigma_{jj}
+\end{equation}
+where $\Sigma_{jj}$ is the $j$th diagonal element of the posterior covariance $\bm\Sigma$ (\ref{rvm:Sigma}).
+
+To train the model, we can start by giving $\bm\alpha$ and $\sigma^2$ some initial values and evaluate the mean and covariance of the weights posterior using equations (\ref{rvm:mu}) and (\ref{rvm:Sigma}), respectively.
+Next we alternate between re-estimating the hyperparamaters $\bm\alpha$ and $\sigma^2$ using (\ref{rvm:alpha}) and (\ref{rvm:beta}) and updating the posterior mean and covariance parameters using (\ref{rvm:mu}) and (\ref{rvm:Sigma}).
+We continue until a relevant convergence criterion is met.
+For example, we may choose to stop if the change in the marginal likelihood - or, alternatively, the change in the parameter values - between two iterations is below a certain pre-defined threshold.
+
+This procedure is summarised in Algorithm (\ref{rvm:alg1}).
+\begin{algorithm}
+  \caption{Sparse Bayesian Learning: Original Training Algorithm}
+  \label{rvm:alg1}
+  \begin{algorithmic}[1]
+    \State Choose some initial positive values for $\sigma^2$ and $\alpha_j$ for $j=1,\cdots,M$ 
+    \Repeat
+    \State $\bm A = \diag(\bm\alpha)$
+    \State $\bm\Sigma = \left(\sigma^{-2}\bm\Phi^T\bm\Phi + \bm A\right)^{-1}$
+    \State $\bm\mu = \sigma^{-2}\bm\Sigma\bm\Phi^T\bm y$
+    \Statex
+    \For {$j=1,\cdots,M$}
+    \State $\gamma_j = 1 - \alpha_j \Sigma_{jj}$
+    \State $\alpha_j = \gamma_j/\mu_j^2$
+    \EndFor
+    \State $\sigma^2 =||\bm y - \bm\Phi\bm\mu||^2 / (N - \sum_j\gamma_j)$
+    \Until Convergence
+  \end{algorithmic}
+\end{algorithm}
+
+During training, it is typically observed that many of the hyperparameters $\alpha_j$ tend to infinity.
+Equations (\ref{rvm:mu}) and (\ref{rvm:Sigma}) imply that the weights $w_j$ corresponding to these hyperparameters have a posterior distribution where the mean and the variance are both zero, meaning their posterior is infinitely peaked at zero.
+As a consequence, the corresponding basis functions $\phi_j(\cdot)$ are effectively removed from the model and we achieve sparsity.
+
+In the case of the RVM, where $\phi_j(\cdot) \equiv K(\cdot, \bm x^{(j)})$, the input vectors $\bm x^{(j)}$ corresponding to the remaining non-zero weights are known as the \emph{relevance vectors} of the model.
+
 \subsection{Sequential Sparse Bayesian Learning Algorithm}
-Follows \cite{tipping2003}
+A central drawback of the training algorithm discussed in the previous section is its speed. 
+The computational complexity scales with the cube of the number of basis functions.
+During training, as basis functions are pruned from the model, the algorithm accelerates.
+Nevertheless, if $M$ is very large, the procedure can be very expensive to run.
+
+An alternative strategy of maximising the marginal likelihood (\ref{rvm:ML}) was developed by \cite{tipping2003}, resulting in a highly accelerated training algorithm: the \emph{Sequential Sparse Bayesian Learning Algorithm}.
+It starts with a single basis function and maximises the marginal likelihood by sequentially adding and deleting candidate basis functions.
+
+To derive the algorithm, we follow the analysis in \cite{tipping2002} and consider the dependence of the marginal likelihood $\mathcal{L}(\bm\alpha,\sigma^2)$ on a single hyperparameter $\alpha_j$.
+First, we decompose the matrix $\bm C$, defined in (\ref{rvm:C}), as follows:
+\begin{equation*}
+  \begin{split}
+    \bm C &= \sigma^2 \bm I_N + \sum_{m \neq j} \alpha_m^{-1}\bm\phi_m\bm\phi_m^T + \alpha_j^{-1}\bm\phi_j\bm\phi_j^T \\
+    &= \bm C_{-j} + \alpha_j^{-1}\bm\phi_j\bm\phi_j^T
+  \end{split}
+\end{equation*}
+where $\bm C_{-j} \equiv \sigma^2 \bm I_N + \sum_{m \neq j} \alpha_m^{-1}\bm\phi_m\bm\phi_m^T$ is $\bm C$ without the contribution of the $j$th basis vector $\bm\phi_j$.
+Making use of standard identities [WHICH ONES?] for matrix inverses and determinants, we can express $|\bm C|$ and $\bm C^{-1}$ as
+\begin{equation*}
+  \bm C^{-1} = \bm C_{-j}^{-1} - \frac{\bm C_{-j}^{-1}\bm\phi_j\bm\phi_j^T\bm C_{-j}^{-1}}{\alpha_j + \bm\phi_j^T\bm C_{-j}^{-1}\bm\phi_j}
+\end{equation*}
+\begin{equation*}
+  \left|\bm C\right| = \left|\bm C_{-j}\right|\left|1 + \alpha^{-1}_j\bm\phi_j^T\bm C_{-j}^{-1}\bm\phi_j\right|
+\end{equation*}
+
+This allows us to decompose the marginal likelihood:
+\begin{equation}
+  \label{rvm:fastML}
+  \begin{split}
+    \mathcal{L}(\bm\alpha,\sigma^2) &= \mathcal{L}(\bm\alpha_{-j},\sigma^2) + \frac{1}{2}\left[\log\alpha_j
+      - \log(\alpha_j + s_j) + \frac{q_j^2}{\alpha_j + s_j}\right]\\
+    &\equiv \mathcal{L}(\bm\alpha_{-j},\sigma^2) + \ell(\alpha_j,\sigma^2)
+  \end{split}
+\end{equation}
+This conveniently seperates terms in $\alpha_j$ in $\ell(\alpha_j,\sigma^2)$ from the remaining terms in $\mathcal{L}(\bm\alpha_{-j},\sigma^2)$, which is the (log) marginal likelihood with the basis vector $\bm\phi_j$ excluded.
+
+The quantity $s_j$ is the \emph{sparsity factor}, defined as
+\begin{equation*}
+  s_j = \bm\phi_j^T\bm C_{-j}^{-1}\bm\phi_j.
+\end{equation*}
+It serves as a measure of how much the marginal likelihood would decrease if we added $\bm\phi_j$ to the model.
+The quantity $q_j$, on the other hand, is known as the \emph{quality factor}.
+It is defined as
+\begin{equation*}
+  q_j = \bm\phi_j^T\bm C_{-j}^{-1} \bm y
+\end{equation*}
+and measures the extent to which $\phi_j$ increases $\mathcal{L}(\bm\alpha,\sigma^2)$ by helping to explain the data $\bm y$.
+Thus, a particular basis vector $\bm\phi_j$ should not be included in the model if its sparsity factor $s_j$ is large, unless it is offset by a large quality factor $q_j$.
+
+We can see this more explicitly if we consider the first derivative of $\ell(\alpha_j,\sigma^2)$ with respect to $\alpha_j$ \cite{tipping2002}
+\begin{equation*}
+  \frac{\partial\ell(\alpha_j,\sigma^2)}{\partial\alpha_j} = \frac{\alpha_j^{-1}s_j^2 - (q_j^2 - s_j)}{2(\alpha_j+s_j)^2}
+\end{equation*}
+Equating it to zero (and noting that $\alpha_j$ is an inverse-variance and therefore positive), we obtain the following solution for $\alpha_j$
+\begin{equation}
+  \label{rvm:solution}
+  \alpha_j = \left\{\begin{array}{lr}
+      s_j^2 / (q_j^2 - s_j) & \mbox{if $q_j^2 > s_j$}\\
+      +\infty & \mbox{otherwise}
+    \end{array}\right..
+\end{equation}
+
 
 \section{Making Predictions}
+sparse mu
+predictive distribution
 
 For details on the RVM and its implementation see \cite{pilikos2014,tipping2003,tipping2001}.
 
