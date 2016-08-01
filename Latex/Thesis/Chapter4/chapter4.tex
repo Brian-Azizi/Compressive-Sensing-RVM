@@ -1,9 +1,11 @@
 %%%%%%%%% RVM Nomenclature %%%%%%%%%
-\nomenclature[a-rvm_M]{$N$}{Number of training examples}
+\nomenclature[a-rvm_N]{$N$}{Number of training examples}
+\nomenclature[a-rvm_M]{$M$}{Number of basis functions}
 \nomenclature[a-rvm_x]{$\bm x^{(i)}$}{$i$th input vector}
 \nomenclature[a-rvm_y]{$y^{(i)}$}{$i$th target}
 \nomenclature[a-rvm_w]{$\bm w$}{RVM weights vector}
-\nomenclature[z-rvm]{RVM}{Relevance Vector Machine}
+\nomenclature[g-rvm_b1]{$\bm\phi_j$}{$j$th basis vector}
+\nomenclature[g-rvm_b2]{$\phi_j(\cdot)$}{$j$th basis function}
 
 %%%%%%%%%%% RVM chapter %%%%%%%%%%%%
 \chapter{Sparse Bayesian Learning}
@@ -94,10 +96,9 @@ where $\bm I_M$ is the $M\times M$ identity matrix.
 
 So far, we have specified the general linear regression model.
 To get to the sparse Bayesian formulation, we define a zero-mean Gaussian prior distribution over the parameters $\bm w$
-\begin{equation}
-  \label{rvm:prior}
+\begin{equation*}
   p(\bm w\,|\,\bm \alpha) = \prod_{j=1}^M \mathcal{N}\left(w_j\,|\,\alpha_j^{-1}\right)
-\end{equation}
+\end{equation*}
 where $\bm \alpha = \left[\alpha_1,\cdots,\alpha_M\right]^T$ is a vector of $M$ hyperparameters.
 It is important to note that each hyperparameter $\alpha_j$ is solely responsible for controlling the strength of the prior of its associated weight $w_j$.
 If $\alpha_j$ is large, the prior over $w_j$ is very strongly peaked at zero.
@@ -149,10 +150,9 @@ We begin by setting up Bayes' Rule
 
 The integral in the denominator of (\ref{rvm:bayes1}) is computationally intractable and we must resort to an alternative strategy.
 First, we decompose the left-hand-side of equation (\ref{rvm:bayes1}) as
-\begin{equation}
-  \label{rvm:decompose}
+\begin{equation*}
   p(\bm w, \bm \alpha, \sigma^2\,|\,\bm y) = p(\bm w\,|\,\bm y, \bm \alpha, \sigma^2) p(\bm\alpha,\sigma^2\,|\,\bm y).
-\end{equation}
+\end{equation*}
 Next, we use Bayes' Rule to compute the posterior distribution of the weights given $\bm\alpha$ and $\sigma^2$
 \begin{equation}
   \label{rvm:bayes2}
@@ -166,13 +166,12 @@ The denominator of the right-hand-side is known as the \emph{marginal likelihood
 \end{equation}
 Since $\bm\alpha$ and $\sigma^2$ are treated as fixed quantities in equation (\ref{rvm:bayes2}), the Gaussian density $p(\bm w\,|\,\bm\alpha)$ is the conjugate prior to the Gaussian likelihood function $p(\bm y\,|\,\bm w,\sigma^2)$.
 Thus, the integral in equation (\ref{rvm:ML1}) is a convolution of two Gaussians and therefore equal to another Gaussian:
-\begin{equation}
-  \label{rvm:ML2}
+\begin{equation*}
   \begin{split}
     p(\bm y\,|\,\bm\alpha,\sigma^2) &= \mathcal{N}(\bm y\,|\,\bm 0,\bm C)\\
     &= (2\pi)^{-N/2} |\bm C|^{-1/2} \exp\left\{-\frac{1}{2}\bm y^T \bm C^{-1} \bm y\right\}
   \end{split}
-\end{equation}
+\end{equation*}
 where
 \begin{equation}
   \label{rvm:C}
@@ -219,10 +218,9 @@ We obtain the following update equations for $\bm\alpha$ and $\sigma^2$:
 \end{equation}
 where $\mu_j$ is the $j$th component of the posterior mean $\bm\mu$ (\ref{rvm:mu}).
 The quantities $\gamma_j$ are defined by 
-\begin{equation}
-  \label{rvm:gamma}
+\begin{equation*}
   \gamma_j = 1 - \alpha_j \Sigma_{jj}
-\end{equation}
+\end{equation*}
 where $\Sigma_{jj}$ is the $j$th diagonal element of the posterior covariance $\bm\Sigma$ (\ref{rvm:Sigma}).
 
 To train the model, we can start by giving $\bm\alpha$ and $\sigma^2$ some initial values and evaluate the mean and covariance of the weights posterior using equations (\ref{rvm:mu}) and (\ref{rvm:Sigma}), respectively.
@@ -230,7 +228,7 @@ Next we alternate between re-estimating the hyperparamaters $\bm\alpha$ and $\si
 We continue until a relevant convergence criterion is met.
 For example, we may choose to stop if the change in the marginal likelihood - or, alternatively, the change in the parameter values - between two iterations is below a certain pre-defined threshold.
 
-This procedure is summarised in Algorithm (\ref{rvm:alg1}).
+This procedure is summarised in Algorithm \ref{rvm:alg1}.
 \begin{algorithm}
   \caption{Sparse Bayesian Learning: Original Training Algorithm}
   \label{rvm:alg1}
@@ -293,6 +291,29 @@ This allows us to decompose the marginal likelihood:
 \end{equation}
 This conveniently seperates terms in $\alpha_j$ in $\ell(\alpha_j,\sigma^2)$ from the remaining terms in $\mathcal{L}(\bm\alpha_{-j},\sigma^2)$, which is the (log) marginal likelihood with the basis vector $\bm\phi_j$ excluded.
 
+\begin{figure}
+  \centering
+  \begin{tikzpicture}[scale=2]
+    \draw[thick,<-] (0,2) node [above] {$\ell(\alpha_j,\sigma^2)$} -- (0,0);
+    \draw[thick,->] (0,0) -- (3,0) node [below] {$\alpha_j$};
+    \draw[thick,<-] (4,2) node [above] {$\ell(\alpha_j,\sigma^2)$} -- (4,0);
+    \draw[thick,->] (4,0) -- (7,0) node [below] {$\alpha_j$};
+    \node at (1.9,0.8) {$q_j^2 > s_j$};
+    \node at (6,0.8) {$q_j^2 < s_j$};
+    \draw[thick] (0,0.2) to [out=60,in=230] (0.8,1.7) to [out=50,in=130] (1.2,1.7) to [out=310,in=170] (2,1.2) to [out=350,in=178] (2.8,1.1);
+    \draw[dashed] (0.95,1.75) -- (0.95,0) node [below] {$\frac{s^2_j}{q_j^2-s_j}$};
+    \draw[thick] (4,0.2) to [out=55,in=230] (5,1.4) to [out=50,in=183] (6.8,1.9);
+    \draw[thin] (0.15,0.05) -- (0.15,0) node[below] {$_{10^{-7}}$};
+    \draw[thin] (1.45,0.05) -- (1.45,0) node[below] {$_{10^0}$};
+    \draw[thin] (2.7,0.05) -- (2.7,0) node[below] {$_{10^7}$};
+    \draw[thin] (4.15,0.05) -- (4.15,0) node[below] {$_{10^{-7}}$};
+    \draw[thin] (5.45,0.05) -- (5.45,0) node[below] {$_{10^0}$};
+    \draw[thin] (6.7,0.05) -- (6.7,0) node[below] {$_{10^7}$};
+  \end{tikzpicture}
+  \caption[Plots of the Marginal Likelihood Function]{Example plots of $\ell(\alpha_j,\sigma^2)$ against $\alpha_j$ illustrating the stationary points when $q_j^2>s_j$ (left) and $q_j^2<s_j$ (based on \cite{tipping2002}).}
+  \label{fig:ml_plot}
+\end{figure}
+
 The quantity $s_j$ is the \emph{sparsity factor}, defined as
 \begin{equation*}
   s_j = \bm\phi_j^T\bm C_{-j}^{-1}\bm\phi_j.
@@ -310,7 +331,7 @@ We can see this more explicitly if we consider the first derivative of $\ell(\al
 \begin{equation*}
   \frac{\partial\ell(\alpha_j,\sigma^2)}{\partial\alpha_j} = \frac{\alpha_j^{-1}s_j^2 - (q_j^2 - s_j)}{2(\alpha_j+s_j)^2}
 \end{equation*}
-Equating it to zero (and noting that $\alpha_j$ is an inverse-variance and therefore positive), we obtain the following solution for $\alpha_j$
+Equating it to zero (and noting that $\alpha_j$ is an inverse-variance and therefore positive), we obtain the following solution for $\alpha_j$:
 \begin{equation}
   \label{rvm:solution}
   \alpha_j = \left\{\begin{array}{lr}
@@ -318,6 +339,53 @@ Equating it to zero (and noting that $\alpha_j$ is an inverse-variance and there
       +\infty & \mbox{otherwise}
     \end{array}\right..
 \end{equation}
+The solution (\ref{rvm:solution}) is illustrated in Figure \ref{fig:ml_plot}.
+
+It follows that, if, during training, the basis vector $\bm\phi_j$ is currently in the model (meaning $\alpha_j < \infty$) even though $q_j^2 \leq s_j$, then $\alpha_j$ should be set to $\infty$ and $\bm\phi_j$ should be pruned from the model.
+On the other hand, if $\bm\phi_j$ is currently excluded from the model (i.e. $\alpha_j=\infty$), but $q_j^2 > s_j$, then $\alpha_j$ should be set to $s_j^2/(q_j^2-s_j)$ and $\bm\phi_j$ should be added to the model.
+
+During the algorithm, we must maintain and update values of the quality factors and sparsity factors for all basis functions, as well as the posterior mean $\bm\mu$ and covariance $\bm\Sigma$ of the weights $\bm w$.
+In practice, it easier to keep track of the quantities $Q_m = \bm\phi_m^T\bm C^{-1}\bm\phi_m$ and $S_m = \bm\phi_m^T\bm C^{-1}\bm y$ which can also be written as
+\begin{equation}
+  \label{rvm:S}
+  S_m = \sigma^{-2}\bm\phi_m^T\bm\phi_m - \sigma^{-4}\bm\phi_m^T\bm\Phi\bm\Sigma\bm\Phi^T\bm\phi_m
+\end{equation}
+\begin{equation}
+  \label{rvm:Q}
+  Q_m = \sigma^{-2}\bm\phi_m^T\bm y - \sigma^{-4}\bm\phi_m^T\bm\Phi\bm\Sigma\bm\Phi^T\bm y
+\end{equation}
+where $\bm\Sigma$ and $\bm\Phi$ contain only the basis functions that are currently included in the model.
+
+\begin{algorithm}
+  \caption{Sequential Sparse Bayesian Learning Algorithm \cite{tipping2003}}
+  \label{rvm:alg2}
+  \begin{algorithmic}[1]
+    \State Initialise $\sigma^2$.
+    \State Add basis function $\bm\phi_j$ to the model, where $j = \argmax_m \left\{||\bm\phi_m^T\bm y||^2/||\bm\phi_m||^2\right\}$.
+    \Statex Set $\alpha_j = \frac{||\bm\phi_j||^2}{||\bm\phi_j^T\bm y||^2/||\bm\phi_j||^2 - \sigma^2}$. Set $\alpha_m = \infty$ for $m\neq j$.
+    \State Compute $\bm\Sigma = \left(\sigma^{-2}\bm\Phi^T\bm\Phi + \bm A\right)^{-1}$ and $\bm\mu = \sigma^{-2}\bm\Sigma\bm\Phi^T\bm y$ which are scalars initially.
+    \Statex Compute $S_m$, $Q_m$, $s_m$ and $q_m$ for $m = 1,\cdots,M$ using (\ref{rvm:S}) $-$ (\ref{rvm:q}). %(\ref{rvm:Q}),(\ref{rvm:s})
+    \Repeat
+    \State Select some candidate basis vector $\bm\phi_j$.
+    \IIf{ $q_j^2 > s_j$ and $\alpha_j = \infty$} \textbf{add} $\bm\phi_j$ to the model and update $\alpha_j$. \EndIIf
+    \IIf{ $q_j^2 > s_j$ and $\alpha_j < \infty$} \textbf{re-estimate} $\alpha_j$. \EndIIf
+    \IIf{ $q_j^2 < s_j$ and $\alpha_j < \infty$} \textbf{delete} $\bm\phi_j$ from the model and set $\alpha_j=\infty$. \EndIIf
+    \State Update $\bm\Sigma$, $\bm\mu$ and $S_m$, $Q_m$, $s_m$, $q_m$ for $m = 1,\cdots, M$.
+    \Until Convergence
+  \end{algorithmic}
+\end{algorithm}
+
+The factors $s_m$ and $q_m$ can by obtained from $S_m$ and $Q_m$ as follows:
+\begin{equation}
+  \label{rvm:s}
+  s_m = \frac{\alpha_m S_m}{\alpha_m - S_m}
+\end{equation}
+\begin{equation}
+  \label{rvm:q}
+  q_m = \frac{\alpha_m Q_m}{\alpha_m - S_m}
+\end{equation}
+Note that if $\alpha_m = \infty$, then $q_m = Q_m$ and $s_m = S_m$.
+
 
 
 \section{Making Predictions}
