@@ -178,7 +178,11 @@ where
   \bm C = \sigma^2 \bm I_N + \bm\Phi\bm A^{-1}\bm\Phi^T.
 \end{equation}
 
-The posterior distribution for $\bm w$ is a also a Gaussian, $p(\bm w\,|\,\bm y,\bm\alpha,\sigma^2) = \mathcal{N}(\bm w\,|\,\bm\mu,\bm\Sigma)$.
+The posterior distribution for $\bm w$ is a also a Gaussian:
+\begin{equation}
+  \label{rvm:posterior}
+  p(\bm w\,|\,\bm y,\bm\alpha,\sigma^2) = \mathcal{N}(\bm w\,|\,\bm\mu,\bm\Sigma).
+\end{equation}
 Its mean $\bm \mu$ and covariance matrix $\bm\Sigma$ are given by
 \begin{equation}
   \label{rvm:Sigma}
@@ -206,6 +210,8 @@ Maximising $p(\bm\alpha,\sigma^2\,|\,\bm y)$ is then equivalent to maximising th
 The procedure of finding $\bm\alpha$ and $\sigma^2$ that maximise the (log) marginal likelihood (\ref{rvm:ML}) is also known as \emph{type-II Maximum likelihood} and \emph{evidence approximation}.
 
 \subsection{Original Training Algorithm}
+\label{sect:rvm_orig}
+%\subsection{Iterative Type-II ML Maximization}
 The original training algorithm in \cite{tipping2001} is derived by setting the derivatives of (\ref{rvm:ML}) to zero.
 We obtain the following update equations for $\bm\alpha$ and $\sigma^2$:
 \begin{equation}
@@ -262,6 +268,7 @@ Nevertheless, if $M$ is very large, the procedure can be very expensive to run.
 
 An alternative strategy of maximising the marginal likelihood (\ref{rvm:ML}) was developed by \cite{tipping2003}, resulting in a highly accelerated training algorithm: the \emph{Sequential Sparse Bayesian Learning Algorithm}.
 It starts with a single basis function and maximises the marginal likelihood by sequentially adding and deleting candidate basis functions.
+This significantly reduces the computational complexity of the algorithm.
 
 To derive the algorithm, we follow the analysis in \cite{tipping2002} and consider the dependence of the marginal likelihood $\mathcal{L}(\bm\alpha,\sigma^2)$ on a single hyperparameter $\alpha_j$.
 First, we decompose the matrix $\bm C$, defined in (\ref{rvm:C}), as follows:
@@ -341,11 +348,14 @@ Equating it to zero (and noting that $\alpha_j$ is an inverse-variance and there
 \end{equation}
 The solution (\ref{rvm:solution}) is illustrated in Figure \ref{fig:ml_plot}.
 
-It follows that, if, during training, the basis vector $\bm\phi_j$ is currently in the model (meaning $\alpha_j < \infty$) even though $q_j^2 \leq s_j$, then $\alpha_j$ should be set to $\infty$ and $\bm\phi_j$ should be pruned from the model.
+It follows that, if, during training, a candidate basis vector $\bm\phi_j$ is currently included in the model (meaning $\alpha_j < \infty$) even though $q_j^2 \leq s_j$, then $\alpha_j$ should be set to $\infty$ and $\bm\phi_j$ should be pruned from the model.
 On the other hand, if $\bm\phi_j$ is currently excluded from the model (i.e. $\alpha_j=\infty$), but $q_j^2 > s_j$, then $\alpha_j$ should be set to $s_j^2/(q_j^2-s_j)$ and $\bm\phi_j$ should be added to the model.
+Furthermore, if $\bm\phi_j$ is included and $q_j^2 > s_j$, then we may also re-estimate $\alpha_j$.
+Each step in the algorithm (weakly) increases the marginal likelihood. 
+Thus we are guaranteed to find a maximum.
 
 During the algorithm, we must maintain and update values of the quality factors and sparsity factors for all basis functions, as well as the posterior mean $\bm\mu$ and covariance $\bm\Sigma$ of the weights $\bm w$.
-In practice, it easier to keep track of the quantities $Q_m = \bm\phi_m^T\bm C^{-1}\bm\phi_m$ and $S_m = \bm\phi_m^T\bm C^{-1}\bm y$ which can also be written as
+In practice, it easier to keep track of the quantities $Q_m = \bm\phi_m^T\bm C^{-1}\bm\phi_m$ and $S_m = \bm\phi_m^T\bm C^{-1}\bm y$ which can also be written as (using the Woodbury Identity)
 \begin{equation}
   \label{rvm:S}
   S_m = \sigma^{-2}\bm\phi_m^T\bm\phi_m - \sigma^{-4}\bm\phi_m^T\bm\Phi\bm\Sigma\bm\Phi^T\bm\phi_m
@@ -355,22 +365,23 @@ In practice, it easier to keep track of the quantities $Q_m = \bm\phi_m^T\bm C^{
   Q_m = \sigma^{-2}\bm\phi_m^T\bm y - \sigma^{-4}\bm\phi_m^T\bm\Phi\bm\Sigma\bm\Phi^T\bm y
 \end{equation}
 where $\bm\Sigma$ and $\bm\Phi$ contain only the basis functions that are currently included in the model.
-
+                                                 
 \begin{algorithm}
   \caption{Sequential Sparse Bayesian Learning Algorithm \cite{tipping2003}}
   \label{rvm:alg2}
   \begin{algorithmic}[1]
-    \State Initialise $\sigma^2$.
-    \State Add basis function $\bm\phi_j$ to the model, where $j = \argmax_m \left\{||\bm\phi_m^T\bm y||^2/||\bm\phi_m||^2\right\}$.
+    \State Initialise $\sigma^2$.\label{rvm:initSig}
+    \State Add basis function $\bm\phi_j$ to the model, where $j = \argmax_m \left\{||\bm\phi_m^T\bm y||^2/||\bm\phi_m||^2\right\}$.\label{rvm:initPhi}
     \Statex Set $\alpha_j = \frac{||\bm\phi_j||^2}{||\bm\phi_j^T\bm y||^2/||\bm\phi_j||^2 - \sigma^2}$. Set $\alpha_m = \infty$ for $m\neq j$.
-    \State Compute $\bm\Sigma = \left(\sigma^{-2}\bm\Phi^T\bm\Phi + \bm A\right)^{-1}$ and $\bm\mu = \sigma^{-2}\bm\Sigma\bm\Phi^T\bm y$ which are scalars initially.
+    \State Compute $\bm\Sigma = \left(\sigma^{-2}\bm\Phi^T\bm\Phi + \bm A\right)^{-1}$ and $\bm\mu = \sigma^{-2}\bm\Sigma\bm\Phi^T\bm y$ which are scalars initially.\label{rvm:fullStats}
     \Statex Compute $S_m$, $Q_m$, $s_m$ and $q_m$ for $m = 1,\cdots,M$ using (\ref{rvm:S}) $-$ (\ref{rvm:q}). %(\ref{rvm:Q}),(\ref{rvm:s})
-    \Repeat
-    \State Select some candidate basis vector $\bm\phi_j$.
-    \IIf{ $q_j^2 > s_j$ and $\alpha_j = \infty$} \textbf{add} $\bm\phi_j$ to the model and update $\alpha_j$. \EndIIf
-    \IIf{ $q_j^2 > s_j$ and $\alpha_j < \infty$} \textbf{re-estimate} $\alpha_j$. \EndIIf
-    \IIf{ $q_j^2 < s_j$ and $\alpha_j < \infty$} \textbf{delete} $\bm\phi_j$ from the model and set $\alpha_j=\infty$. \EndIIf
-    \State Update $\bm\Sigma$, $\bm\mu$ and $S_m$, $Q_m$, $s_m$, $q_m$ for $m = 1,\cdots, M$.
+    \Repeat\label{rvm:bigLoop}
+    \State Select some candidate basis vector $\bm\phi_j$.\label{rvm:select}
+    \IIf{ $q_j^2 > s_j$ and $\alpha_j = \infty$} \textbf{add} $\bm\phi_j$ to the model and update $\alpha_j$. \EndIIf\label{rvm:add}
+    \IIf{ $q_j^2 > s_j$ and $\alpha_j < \infty$} \textbf{re-estimate} $\alpha_j$. \EndIIf\label{rvm:reestimate}
+    \IIf{ $q_j^2 < s_j$ and $\alpha_j < \infty$} \textbf{delete} $\bm\phi_j$ from the model and set $\alpha_j=\infty$. \EndIIf\label{rvm:delete}
+    \State Update $\sigma^2 = ||\bm y - \bm\Phi\bm w||/(N-M+\sum_m\alpha_m\bm\Sigma_{mm})$\label{rvm:noise}\cite{tipping2001}.
+    \State Update $\bm\Sigma$, $\bm\mu$ and $S_m$, $Q_m$, $s_m$, $q_m$ for $m = 1,\cdots, M$.\label{rvm:update}
     \Until Convergence
   \end{algorithmic}
 \end{algorithm}
@@ -386,11 +397,54 @@ The factors $s_m$ and $q_m$ can by obtained from $S_m$ and $Q_m$ as follows:
 \end{equation}
 Note that if $\alpha_m = \infty$, then $q_m = Q_m$ and $s_m = S_m$.
 
+We have summarized the procedure in Algorithm \ref{rvm:alg2}.
+After initializing the standard deviation $\sigma^2$ in step \ref{rvm:initSig}, we add the first basis function $\bm\phi_j$ to the model. 
+We could initialize with any basis vector, but in step \ref{rvm:initPhi}, we pick the one with the largest normalized projection on the target vector $\bm y$, i.e. we choose  $j = \argmax_m \left\{||\bm\phi_m^T\bm y||^2/||\bm\phi_m||^2\right\}$.
+In step \ref{rvm:fullStats} we compute the model statistics and in step \ref{rvm:bigLoop} we begin the large loop of the algorithm.
+There are two things to note here. 
+First, in step \ref{rvm:select}, we need to select a candidate basis vector $\bm\phi_j$. 
+We are free to pick one at random. 
+Alternatively, it is possible to compute the change in the marginal likelihood for each ccandidate basis vector and choose the one that would give us the largest increase.
+Second, we would usually like to estimate the noise variance $\sigma^2$ from the data, as is done in step \ref{rvm:noise}.
+However, in practice, we may decide to set $\sigma^2$ in advance in step \ref{rvm:initSig} and keep it fixed throughout the algorithm.
+If we decide to do so, then we can perform the updates in step \ref{rvm:update} using very efficient update formulae that do not require matrix inversions.
+The formulae can be found in the appendix of \cite{tipping2003}.
+If we do decide to update $\sigma^2$ in step \ref{rvm:noise}, then we must use the full equations (\ref{rvm:Sigma}), (\ref{rvm:mu}) and (\ref{rvm:S})-(\ref{rvm:q}).
 
 
 \section{Making Predictions}
-sparse mu
-predictive distribution
+Once we have trained the model, we may use it to predict the target $y^*$ for a new input vector $\bm x^*$.
+To do so, we would like to compute the \emph{predictive distribution}
+\begin{equation*}
+  p(y^*\,|\,\bm y) = \int p(y^*\,|\,\bm w, \bm\alpha,\sigma^2) p(\bm w,\bm\alpha,\sigma^2\,|\,\bm y)\,d\bm w \,d\bm\alpha \,d\sigma^2.
+\end{equation*}
 
-For details on the RVM and its implementation see \cite{pilikos2014,tipping2003,tipping2001}.
+We cannot compute this integral analytically, nor do we actually know the posterior of all the model parameters.
+Instead, we use the type-II maximum likelihood solutions for $\bm\alpha$ and $\sigma^2$ that we obtained during training and base our predictions on the posterior distribution of the weights conditioned on $\bm\alpha$ and $\sigma^2$. 
+The predictive distribution for $\bm x^*$ is then:
+\begin{equation}
+  \label{rvm:predictive}
+  p(y^*\,|\,\bm y,\bm\alpha, \sigma^2) = \int p(y^*\,|\,\bm w, \sigma^2) p(\bm w\,|\,\bm y,\bm\alpha,\sigma^2)\,d\bm w
+\end{equation}
+
+Both factors in the integrand are Gaussians, and we can therefore readily compute the integral to get
+\begin{equation}
+  p(y^*\,|\,\bm y, \bm\alpha,\sigma^2) = \mathcal{N}(y^*\,|\,\mu^*,(\sigma^2)^*)
+\end{equation}
+The predictive mean is given by
+\begin{equation}
+  \label{rvm:pred_mean}
+  \mu^* = \bm\mu^T\bm\phi(\bm x^*)
+\end{equation}
+and the predictive variance is given by
+\begin{equation}
+  \label{rvm:pred_var}
+  (\sigma^2)^* = \sigma^2 + \bm\phi(\bm x^*)^T\bm\Sigma\bm\phi(\bm x^*)
+\end{equation}
+
+Equation (\ref{rvm:pred_mean}) implies that, if we want to produce point predictions, we may simply set the weights $\bm w$ equal to posterion mean $\bm\mu$ which is typically very sparse.
+If we are also interested in error bars for our predictions, we can obtain them using Equation (\ref{rvm:pred_var}).
+The error bars consist of two parts, the noise in the data $\sigma^2$ and the uncertainty in the weights.
+
+For more details and derivations on Sparse Bayesian Learning, see \cite{tipping2001,tipping2002,tipping2003}.
 
