@@ -1,4 +1,19 @@
 \chapter{Compressive Sensing}
+
+\section{The Compressive Sensing Problem}
+\emph{
+\begin{itemize}
+\item Intro to CS. Outline main ideas
+\item Conventional Sampling, Conversion
+\item Problem Statement for discrete. Img, Vids as unrolled vec. Sparsity -> Compression (adaptive). Why wasteful.
+\item CS is NON-ADAPTIVE. Sensing Matrix. Much fewer measurements.
+\item Against Fund Thm of LA -> resolve by sparsity (show a graphic).
+\item What Sensing matrix? We've only done masks, so maybe no point in talking about RIP etc -> just reference.
+\item Signal Recovery. L2 vs L0 vs L1 + Geometry?.
+\item We focus on Reconstruction. Side note to single-px cam (in \@ sensing). Perhaps this should go in Ch1:Background
+\end{itemize}
+}
+
 This section is based on \cite{pilikos2014}. 
 The problem to be solved can be formulated as follows: Let $\bs x \in \mathbb{R}^N$ be a signal of interest.
 We do not measure $\bs x$ directly and it is thus unknown.
@@ -38,6 +53,13 @@ The CS problem can then be expressed as follows:
 \min||\bs w||_0 \qquad\mbox{subject to}\qquad \bs\Omega\bs\Psi\bs w = \bs y
 \end{equation}
 where $||.||$ denotes the $l_0$ norm, i.e. the number of nonzero components.
+
+
+\section{The Solution}
+\subsection{Stable Measurement Matrix}
+\emph{Matrices}
+\subsection{Reconstruction Algorithms}
+\emph{L0, L1, L2, Deterministic, Geometry}
 
 For a more detailed review of the CS framework, see \cite{candes2008}.
 
