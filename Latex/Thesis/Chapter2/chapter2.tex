@@ -6,7 +6,6 @@
 % \item Problem Statement for discrete. Img, Vids as unrolled vec. Sparsity -> Compression (adaptive). Why wasteful.
 % \item CS is NON-ADAPTIVE. Sensing Matrix. Much fewer measurements.
 % \item Against Fund Thm of LA -> resolve by sparsity (show a graphic).
-% \item What Sensing matrix? We've only done masks, so maybe no point in talking about RIP etc -> just reference.
 % \item Signal Recovery. L2 vs L0 vs L1 + Geometry?.
 % \item We focus on Reconstruction. Side note to single-px cam (in \@ sensing). Perhaps this should go in Ch1:Background
 % \item Bayesian CS (or put it in Ch5?)
@@ -15,7 +14,6 @@
 
 % \emph{
 %   \begin{enumerate}
-%   \item Conventional DSP + Promise of CS
 %   \item CS Problem
 %   \item CS Solution Strategy
 %     \begin{enumerate}
@@ -67,6 +65,7 @@ The sampling rate is therefore $f_s = 1/T_s$.
   \node at (2*pi,0) [below right] {$1.0$};
   \node at (pi,0) [below left] {$0.5$};
   \node at (0,0) [below right] {$0$};
+  \draw [<->, thin, dashed] (pi/3,0.2) -- (pi/2,0.2) node[above] {$T_s$} --(2*pi/3,0.2);
 \end{tikzpicture}
 \caption[Illustration of Nyquist Sampling]{Illustration of the Shannon/Nyquist Sampling Theorem. The orange curve is the original signal $x(t)$ which is a sinusoid with frequency $f = 7$ Hz. The blue points are discrete samples $x^{(i)}$ taken from $x(t)$ at a sampling rate $f_s = 7$ Hz, which is below the Nyquist Rate $2f = 14$ Hz. Thus, aliasing occurs and interpolation algorithms will reconstruct an alias $z(t)$ of $x(t)$.}
 \label{fig:nyquist}
@@ -158,11 +157,13 @@ Thus, a viable method for lossy compression of the signal $\bm v \in \mathbb{R}^
 \item Discard all the $(M-K)$ small coefficients
 \item Store the values and locations of the $K$ large coefficients
 \end{enumerate}
+In order to view the compressed signal in the original domain, we perform the transform: $\bm\Psi\bm{\hat w} = \bm{\hat v}$, where $\bm{\hat w}$ is $\bm w$ with the $(M-K)$ smallest coefficients replaced by zero.
+
 It is possible to find basis matrices $\bm\Psi$ that result in very high compression ratios for a wide range of natural signals without any noticable reduction in the signal quality.
 Furthermore, many of the commonly used basis transforms can be computed very efficiently.
 
 Audio signals and a wide class of communication signals are highly compressible in the localized Fourier basis.
-Images and video signals are often compressed via the \emph{Discrete Cosine Transform} (DCT) or the \emph{Discrete Wavelet Transform} (DWT).
+Images and video signals, on the other hand, can often be compressed via the \emph{Discrete Cosine Transform} (DCT) or the \emph{Discrete Wavelet Transform} (DWT).
 For instance, the JPEG standard for image compression is based on the DCT, while the more modern JPEG2000 format uses the CDF 9/7 wavelet transform or the CDF 5/3 wavelet transform \cite{taubman2012}.
 
 In Figure \ref{fig:ch2:dct}, we compress the standard test image ``Lenna'' via a DCT. 
@@ -171,52 +172,182 @@ Yet, the difference between the original image and the compressed image is hardl
 
 We will discuss the DCT and the DWT in more detail in Chapter \ref{ch:dwt}.
 
-\subsection{A Novel Approach: Compressed Sampling}
-Circumvent Shannon by non-uniform sampling or by using alternative sampling matrices.
 
+\section{A Novel Approach: Compressive Sensing}
+The conventional approach to data acquisition and compression is very effective and has been highly influential.
+However, it is also extremely wasteful.
+We acquire a huge amount of data at the signal sampling stage and then proceed to discard a large part of it at the compression stage.
 
-\section{The Compressive Sensing Problem}
+Compressive Sensing is a more general approach that lets us \emph{acquire signals directly in a compressed format}.
+This is clearly more efficient as it allows us to skip the intermediate stage of taking $N$ samples.
 
+In this section we will formulate the Compressive Sensing problem.
+For simplicity, the focus will be on discrete signals such as digital images or videos.
 
+\subsection{Problem Formulation}
+Let $\bm v \in\mathbb{R}^M$ be the signal of interest.
+As an example, $\bm v$ could be a digital photograph, such as Figure \ref{fig:ch2:lenna_orig}, that has been unrolled into a long vector of length $M$, where $M$ is the number of pixels.
 
-This section is based on \cite{pilikos2014}. 
-The problem to be solved can be formulated as follows: Let $\bs x \in \mathbb{R}^N$ be a signal of interest.
-We do not measure $\bs x$ directly and it is thus unknown.
-Instead, we have a measurement $\bs y \in \mathbb{R}^M$, with $M << N$, from which we want to reconstruct $\bs x$.
-The signals $\bs x$ and $\bs y$ are related as follows:
+Suppose $\bm v$ is currently unknown and we want to acquire a compressed representation of it without measuring $\bm v$ directly.
+To do so, consider the following linear sensing scheme:
+We measure inner products between the signal $\bm v$ and a collection of $M$-dimensional vectors $\{\bm\theta_i\}_{i=1}^N$ to obtain the measurements $y_j = \bm v^T\bm\theta_i$ for $i = 1,\cdots,N$. 
+This relation can be expressed more succinctly as%Alternatively, we can express equation (\ref{eqn:ch2:sensor1}) as
 \begin{equation}
-\label{eqn:CS}
-\bs \Omega \bs x = \bs y
+\label{eqn:cs_sensing}
+  \bm y = \bm\Theta\bm v
 \end{equation}
-where $\bs \Omega$ is a known $M\times N$ matrix referred to as the \emph{sensing matrix}.
-
-For example, in \cite{pilikos2014}, the signal of interest $\bs x$ is an image, so that $N$ is equal to the total number of pixels in the image and $x_i$ is equal to the intensity of the corresponding pixel.
-However, we imagine that we have only access to a corrupted version of $\bs x$ in which random pixel values have been deleted.
-This is our measurement $\bs y$.
-The sensing matrix $\bs\Omega$ corresponding to this scenario is obtained by taking the $N\times N$ identity matrix and deleting the rows that correspond to the missing entries in $\bs x$.
-
-Compressive Sensing (CS) is a collection of signal processing techniques that allow for efficient \emph{reconstruction} (and indeed \emph{aquisition}) of such signals by solving the underdetermined system (\ref{eqn:CS}).
-
-Of course, there are infinitely many solutions to an underdetermined system.
-In the CS framework, we seek to find a solution $\hat{\bs x}$ that is \emph{sparsest in some domain}.
-By that, we mean that we want to find $\hat{\bs x}$ that satisfies (\ref{eqn:CS}), such that there exists a basis transformation of $\hat{\bs x}$ in which it has the smallest number of nonzero entries.
-
-More concretely, we assume there exists a domain in which the desired signal $\bs x$ is sparse. 
-I.e. there exists a $N\times N$ basis matrix $\Psi$ such that $\bs x = \bs\Psi \bs w$ and $\bs w$ is sparse.
-
-The CS problem can then be expressed as follows:
+where $\bm y = (y_1,\cdots,y_N)^T$ and $\bm\Theta$ is the $N\times M$ \emph{sensing matrix} given by
 \begin{equation}
-\label{eqn:CSproblem}
-\min||\bs w||_0 \qquad\mbox{subject to}\qquad \bs\Omega\bs\Psi\bs w = \bs y
+\label{eqn:ch2:sensor2}
+  \bm\Theta = 
+  \begin{bmatrix} 
+    \bm \theta_1^T\\
+    \vdots\\
+    \bm \theta_N^T
+  \end{bmatrix}.
 \end{equation}
-where $||.||$ denotes the $l_0$ norm, i.e. the number of nonzero components.
+
+We are interested in the \emph{undersampled} situation where $N < M$.
+In particular, we would like to acquire a compressed representation $\bm y$ of $\bm v$ using as few measurements as possible, while still being able to recover the original signal.
+
+There are two problems that stand out at this point. 
+First, given that $N << M$, how can we ensure that, during the measurement process, we do not lose any information contained in $\bm v$.
+Second, given our measurements $\bm y$ and the sensing matrix $\bm\Theta$, how do we recover the signal of interest $\bm v$.
+
+Recovery of $\bm v$ corresponds to solving the underdetermined linear system (\ref{eqn:cs_sensing}).
+In general, this is i
 
 
-\section{The Solution}
-\subsection{Stable Measurement Matrix}
-\emph{Matrices}
-\subsection{Reconstruction Algorithms}
-\emph{L0, L1, L2, Deterministic, Geometry}
+\subsection{Sparsity}
+The crucial concept that enables us to address these problems is sparsity.
 
-For a more detailed review of the CS framework, see \cite{candes2008}.
+
+
+
+
+
+% As a concrete example, if $N = M$ and the sensing matrix $\bm\Theta$ is equal to the identity matrix $\bm I_M$, then $\bm y = \bm v$ so that the sensing scheme directly measures the desired signal.
+% \begin{figure}
+%   \centering
+%   \begin{subfigure}[b]{0.3\textwidth}
+%     \includegraphics[width=\textwidth]{Chapter2/Images/man_1024.png}
+%     \caption{Unknown signal $\bm v$}
+%     \label{fig:ch2:mask_a}
+%   \end{subfigure}
+%   \begin{subfigure}[b]{0.3\textwidth}
+%     \includegraphics[width=\textwidth]{Chapter2/Images/man_MASK.png}
+%     \caption{Signal Mask}
+%     \label{fig:ch2:mask_b}
+%   \end{subfigure}
+%   \begin{subfigure}[b]{0.3\textwidth}
+%     \includegraphics[width=\textwidth]{Chapter2/Images/man_CORRUPTED.png}
+%     \caption{Sensed signal $\bm y$}
+%     \label{fig:ch2:mask_c}
+%   \end{subfigure}
+%   \caption{(a) The unknown signal $\bm v$ that we wish to acquire directly in a compressed format. The image resolution is $1024\times 1024$ so that $M = 1024\times 1024 = 1048576$. (b)  representation of the sensing matrix $\bm R$ }
+%   \label{fig:ch2:mask}
+% \end{figure}
+
+% \begin{figure}
+%   \begin{tikzpicture}[scale=3]
+%     \foreach \y in {0.0,0.1,...,1} {
+%       \foreach \x in {0.0,0.1,...,1} {
+%         \pgfmathparse{rnd};
+%         \edef\tmpr{\pgfmathresult}
+%         \pgfmathparse{rnd};
+%         \edef\tmpg{\pgfmathresult}
+%         \pgfmathparse{rnd};
+%         \edef\tmpb{\pgfmathresult}
+%         \definecolor{MyColor}{rgb}{\tmpr,\tmpg,\tmpb}%\pgfmathresult};
+%         \path[fill=MyColor] (\x,\y) rectangle ++(0.1,0.1);
+%       }
+%     };   
+%     \draw[step=.1] (0,0) grid (1,1);
+%   \end{tikzpicture}
+%   \caption{MAT}
+% \end{figure}
+
+% \begin{figure}
+%   \begin{subfigure}[b]{0.2\textwidth}
+%     \begin{tikzpicture}[scale=4]
+%       \path[fill=white] (-.3,0) rectangle (0,0.5);
+%       \path[fill=blue] (0,.9) rectangle ++(0.1,0.1);
+%       \path[fill=red] (0,.8) rectangle ++(0.1,0.1);
+%       \path[fill=green] (0,.7) rectangle ++(0.1,0.1);
+%       \path[fill=pink] (0,.6) rectangle ++(0.1,0.1);
+%       \path[fill=orange] (0,.5) rectangle ++(0.1,0.1);
+%       \draw[step=.1] (0,0.5) grid (0,1);
+%       \node at (-0.2, 0.7) {$\bm y = $};
+%     \end{tikzpicture}
+%     \caption{}
+%     \label{fig:ch2:mask_a}
+%   \end{subfigure}
+%   \begin{subfigure}[b]{0.5\textwidth}
+%     \begin{tikzpicture}[scale=4]
+%       \path[fill=white] (-.5,0) rectangle (0,0.5);
+%       \path[fill=black] (0,.9) rectangle ++(0.1,0.1);
+%       \path[fill=black] (.1,.8) rectangle ++(0.1,0.1);
+%       \path[fill=black] (.4,.7) rectangle ++(0.1,0.1);
+%       \path[fill=black] (.5,.6) rectangle ++(0.1,0.1);
+%       \path[fill=black] (.8,.5) rectangle ++(0.1,0.1);
+%       \draw[step=.1] (0,0.5) grid (1,1); 
+%       \node at (-0.3, 0.7) {$\bm \Theta = \bm R =$};
+%     \end{tikzpicture}
+%     \caption{}
+%     \label{fig:ch2:mask_b}
+%   \end{subfigure}
+%   \begin{subfigure}[b]{0.2\textwidth}
+%     \begin{tikzpicture}[scale=4]
+%       \path[fill=white] (-.3,0) rectangle (0,0.5);
+%       \path[fill=pink] (0,0) rectangle ++(0.1,0.1);      
+%       \path[fill=orange] (0,0.1) rectangle ++(0.1,0.1);      
+%       \path[fill=blue] (0,0.2) rectangle ++(0.1,0.1);      
+%       \path[fill=magenta] (0,0.3) rectangle ++(0.1,0.1);      
+%       \path[fill=pink] (0,0.4) rectangle ++(0.1,0.1);      
+%       \path[fill=green] (0,0.5) rectangle ++(0.1,0.1);      
+%       \path[fill=cyan] (0,0.6) rectangle ++(0.1,0.1);      
+%       \path[fill=orange] (0,0.7) rectangle ++(0.1,0.1);      
+%       \path[fill=red] (0,0.8) rectangle ++(0.1,0.1);      
+%       \path[fill=blue] (0,0.9) rectangle ++(0.1,0.1);      
+%       \draw[step=.1] (0,0) grid (0,1);
+%       \node at (-0.2, 0.7) {$\bm v = $};
+%     \end{tikzpicture}
+%     \caption{}
+%     \label{fig:ch2:mask_c}
+%   \end{subfigure}
+%   \caption{We use the sensing matrix $\bm\Theta$ (b) to directly the signal of interest $\bm v$ (c) directly in a compressed representation $\bm y$ (a). 
+% If $\bm\Theta = \bm R$ such as in panel (b), then the acquired signal $\bm y$ is simply a subsampled version of the signal of interest $\bm v$.}
+%   \label{fig:ch2:mask}
+% \end{figure}
+
+% %*** Put this in the next section ?
+% To give a more relevant example, consider the 1-dimensional signal $\bm v$ of length $M=10$, illustrated in Figure \ref{fig:ch2:mask_c}.
+% We use the sensing matrix $\bm\theta = \bm R$ to get our CS measurements $\bm y$.
+% The $N\times M$ matrix $\bm R$ is obtained by removing $(M-N)$ rows from the identity $\bm I_M$. 
+% Figure \ref{fig:ch2:mask_b} depicts such a matrix with $N=5$. 
+% Using this particular acquisition scheme we essentially measure a downsampled version of $\bm v$, so that $\{y_1,\cdots,y_N\} \subset \{v_1,\cdots,v_M\}$. 
+
+% In general, the sensing matrix $\bm\Theta$ is of the form $\bm\Theta = \bm R \bm \Omega$, where $\bm R$ is as above and $\bm\Omega$ is a dense $M\times M$ matrix.
+
+% Of course, there are infinitely many solutions to an underdetermined system.
+% In the CS framework, we seek to find a solution $\hat{\bs x}$ that is \emph{sparsest in some domain}.
+% By that, we mean that we want to find $\hat{\bs x}$ that satisfies (\ref{eqn:CS}), such that there exists a basis transformation of $\hat{\bs x}$ in which it has the smallest number of nonzero entries.
+
+% More concretely, we assume there exists a domain in which the desired signal $\bs x$ is sparse. 
+% I.e. there exists a $N\times N$ basis matrix $\Psi$ such that $\bs x = \bs\Psi \bs w$ and $\bs w$ is sparse.
+
+% The CS problem can then be expressed as follows:
+% \begin{equation}
+% \label{eqn:CSproblem}
+% \min||\bs w||_0 \qquad\mbox{subject to}\qquad \bs\Omega\bs\Psi\bs w = \bs y
+% \end{equation}
+% where $||.||$ denotes the $l_0$ norm, i.e. the number of nonzero components.
+
+
+% \section{Compressive Sensing: Solution}
+% \subsection{Stable Measurement Matrix}
+% \subsection{Reconstruction Algorithms}
+% \emph{L0, L1, L2, Deterministic, Geometry}
+
+% For a more detailed review of the CS framework, see \cite{candes2008}.
 

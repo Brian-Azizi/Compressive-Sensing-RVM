@@ -17,7 +17,8 @@
 \ifsetCustomFont
   % Set your custom font here and use `customfont' in options. Leave empty to
   % load computer modern font (default LaTeX font).
-  \RequirePackage{helvet}
+  %  \RequirePackage{helvet}
+  \RequirePackage{lmodern}      % latin modern
 \fi
 
 % *****************************************************************************
@@ -204,6 +205,7 @@
 
 %% For creating pictures
 \usepackage{tikz}
+\usetikzlibrary{calc}
 %\usepackage{pgfplots}
 
 %% For making algorithms float
@@ -215,6 +217,8 @@
 %\SetWatermarkScale{1}
 
 \usepackage{amsmath}            % for split environment
+\newtheorem{example}{Example}
+
 \usepackage{bbm}                % for indicator function
 
 \usepackage{pdfpages}           % For including pdfs
