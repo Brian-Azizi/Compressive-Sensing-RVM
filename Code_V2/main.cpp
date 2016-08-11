@@ -63,8 +63,10 @@ int main(int argc, char* argv[])
 	    
 
 	    /*** Display host and user name ***/
-	    char hostname[HOST_NAME_MAX];
-	    gethostname(hostname,HOST_NAME_MAX);
+	    //char hostname[HOST_NAME_MAX];
+	    //gethostname(hostname,HOST_NAME_MAX);
+	    char hostname[128];	// uncomment for osx
+	    gethostname(hostname,128); // uncomment for osx
 	    std::cout << "Program was called from host: " << hostname << std::endl;
 	}
 
