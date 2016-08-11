@@ -17,7 +17,8 @@
 \ifsetCustomFont
   % Set your custom font here and use `customfont' in options. Leave empty to
   % load computer modern font (default LaTeX font).
-  \RequirePackage{helvet}
+  %  \RequirePackage{helvet}
+  \RequirePackage{lmodern}      % latin modern
 \fi
 
 % *****************************************************************************
@@ -199,8 +200,14 @@
 %% The algorithm defines the algorithm floating environment and the algpseudocode package is useful for constructing Pseudo code.
 \usepackage{algorithm}
 \usepackage{algpseudocode}
+\algnewcommand{\IIf}[1]{\State\algorithmicif #1\ \algorithmicthen}
+\algnewcommand{\EndIIf}{\unskip}
+
 %% For creating pictures
 \usepackage{tikz}
+\usetikzlibrary{calc}
+%\usepackage{pgfplots}
+
 %% For making algorithms float
 \usepackage{float}
 \newfloat{algorithm}{t}{lop}
@@ -210,6 +217,8 @@
 %\SetWatermarkScale{1}
 
 \usepackage{amsmath}            % for split environment
+\newtheorem{example}{Example}
+
 \usepackage{bbm}                % for indicator function
 
 \usepackage{pdfpages}           % For including pdfs
@@ -228,6 +237,7 @@
 \DeclareMathOperator*{\GEM}{GEM}
 \DeclareMathOperator*{\Stick}{Stick}
 \DeclareMathOperator*{\Uniform}{Uniform}
+\DeclareMathOperator*{\diag}{diag}
 %% shorthand for \boldsymbol and \overline
 \let\bs\boldsymbol
 \let\ol\overline

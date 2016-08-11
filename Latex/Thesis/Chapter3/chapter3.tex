@@ -1,4 +1,5 @@
 \chapter{Wavelets}
+\label{ch:dwt}
 In this chapter, we will introduce wavelet functions and the \emph{Discrete Wavelet Transform} (DWT).
 The DWT allows us to transform our signal into a new basis in which it is sparse.
 \begin{equation}
@@ -33,11 +34,11 @@ Note that most entries in $\bs w$ are near zero.
 In practice, we approximate these entries as zero and treat $\bs w$ as sparse.
 
 \begin{figure}
-\label{fig:haarlenna}
 \center
 \includegraphics{Images/128.png}
 \includegraphics{Images/haar.png}
 \caption{Original image $\bs x$ (left) and its Haar basis transformation $\bs w$ (right). See next chapter for more details on Haar wavelets.}
+\label{fig:haarlenna}
 \end{figure}
 
 \subsection{Daubechies Wavelets}
