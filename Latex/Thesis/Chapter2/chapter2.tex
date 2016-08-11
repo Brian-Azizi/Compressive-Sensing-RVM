@@ -1,40 +1,13 @@
 \chapter{Compressive Sensing}
 \label{ch:cs}
-
-% \emph{
-% \begin{itemize}
-% \item Problem Statement for discrete. Img, Vids as unrolled vec. Sparsity -> Compression (adaptive). Why wasteful.
-% \item CS is NON-ADAPTIVE. Sensing Matrix. Much fewer measurements.
-% \item Against Fund Thm of LA -> resolve by sparsity (show a graphic).
-% \item Signal Recovery. L2 vs L0 vs L1 + Geometry?.
-% \item We focus on Reconstruction. Side note to single-px cam (in \@ sensing). Perhaps this should go in Ch1:Background
-% \item Bayesian CS (or put it in Ch5?)
-% \end{itemize}
-% }
-
-% \emph{
-%   \begin{enumerate}
-%   \item CS Problem
-%   \item CS Solution Strategy
-%     \begin{enumerate}
-%     \item Sparsity
-%     \item Incoherence
-%     \end{enumerate}
-%   \item CS Reconstruction
-%   \end{enumerate}
-% }
-
-
 In this chapter we will outline the main ideas of the \emph{Compressive Sensing} framework (also known as \emph{Compressed Sensing, Compressed Sampling, Compressive Samping} or \emph{CS}).
-We begin by discussing conventional approaches to data acquisition and compression, and how CS differs from that.
-Next, formulate the CS Problem.
-Following that, we briefly discuss the general solution strategy.
-Lastly, give a brief overview of deterministic approaches to CS reconstruction (maybe).
-
+We begin by discussing conventional approaches to data acquisition and compression.
+Next, we explain an alternative approach based CS. 
+We formulate the CS problem and give insights as how it can be solved.
+Following that, we outline a general solution strategy.
 In Chapter \ref{ch:msce}, we will discuss a Bayesian approach to solving the Compressive Sensing Problem.
 
-
-\section{Signal Acquisition and Compression}
+\section{Coventional Signal Acquisition and Compression}
 \subsection{Acquisition}
 In order to work with information within analog signals (continuous streams of data) such as sounds, images or video, we rely on reducing the analog signals to digital (discrete) signals that can be processed with computers.
 This digitization is done by taking discrete measurements of the analog signal at certain points in time or space, a process known as \emph{sampling}.
@@ -92,6 +65,7 @@ Nyquist sampling underlies almost all signal acquisition protocols that are foun
 It is the basis of medical imaging devices, consumer electronics such as audio and video recorders, radio receivers, etc.
 
 \subsection{Compression}
+\label{sect:compression}
 The sampling theorem imposes a lower bound on the sampling rate above which we get are able to perfectly reconstruct the desired signal.
 This lower bound is often very high and we end up with a very large number of measurements.
 Storage and transfer of such signals becomes prohibitavely expensive as the size of the signal grows.
@@ -184,7 +158,7 @@ This is clearly more efficient as it allows us to skip the intermediate stage of
 In this section we will formulate the Compressive Sensing problem.
 For simplicity, the focus will be on discrete signals such as digital images or videos.
 
-\subsection{Problem Formulation}
+\subsection{The Compressive Sensing Problem}
 Let $\bm v \in\mathbb{R}^M$ be the signal of interest.
 As an example, $\bm v$ could be a digital photograph, such as Figure \ref{fig:ch2:lenna_orig}, that has been unrolled into a long vector of length $M$, where $M$ is the number of pixels.
 
@@ -211,143 +185,88 @@ We are interested in the \emph{undersampled} situation where $N < M$.
 In particular, we would like to acquire a compressed representation $\bm y$ of $\bm v$ using as few measurements as possible, while still being able to recover the original signal.
 
 There are two problems that stand out at this point. 
-First, given that $N << M$, how can we ensure that, during the measurement process, we do not lose any information contained in $\bm v$.
-Second, given our measurements $\bm y$ and the sensing matrix $\bm\Theta$, how do we recover the signal of interest $\bm v$.
+\begin{enumerate}
+\item Given that $N << M$, how can we ensure that, during the measurement process, we do not lose any information contained in $\bm v$ (i.e. $\bm y$ captures all the information in $\bm v$)?
+\item Given our measurements $\bm y$ and knowledge of the sensing matrix $\bm\Theta$, how do we recover the signal of interest $\bm v$?
+\end{enumerate}
 
-Recovery of $\bm v$ corresponds to solving the underdetermined linear system (\ref{eqn:cs_sensing}).
-In general, this is i
+At an intuitive level, we would expect at least some information to be destroyed during the measurement process, especially if the number of measurements, $N$, is substantially lower than the length of the desired signal, $M$.
+Moreover, even if $\bm y$ did contain the same information as $\bm v$, we are still faced with solving the linear system in equation (\ref{eqn:cs_sensing}).
+This system is underdetermined and hence there are infinitely many vectors $\bm v$ that satisfy $\bm\Theta\bm v=\bm y$. 
 
+\subsection{Sparse Signals}
+In general, we cannot resolve these issues.
+However, if we restrict ourselves to a certain class of signals, it is possible to make progress.
 
-\subsection{Sparsity}
-The crucial concept that enables us to address these problems is sparsity.
+In particular, we will focus on signals that have \emph{sparse representations}.
+A signal $\bm v \in\mathbb{R}^M$ has a sparse representation if there exists a $M\times M$ basis matrix $\bm\Psi$ so that the transformed signal $\bm w$, where $\bm v = \bm\Psi\bm w$, is \emph{sparse}.
 
+We say that $\bm w$ is \emph{$K$-sparse} if $\bm w$ has $K$ non-zero components.
+Equivalently, from (\ref{eqn:l0-norm}), $\bm w$ is $K$-sparse if $||\bm w||_0 = K$.
 
+In Section \ref{sect:compression} we noted that many manmade and natural signals are compressible.
+They have an almost-sparse representation in that, when expressed in the basis $\bm\Psi$, almost all of their energy is contained in only $K$ components and the remaining components are very close to zero.
+Such signals are well-approximated by $K$-sparse representations.
 
+\section{Solving the Compressive Sensing Problem}
+So let us suppose then, that the desired signal $\bm v$ is $K$-sparse when expressed in the $\bm\Psi$ basis, where $K$ is small ($K\leq M$).
+We can substitute $\bm v = \bm\Psi\bm w$ into (\ref{eqn:cs_sensing}) to get
+\begin{equation*}
+  \bm y = \bm\Theta\bm v = \bm\Theta\bm\Psi\bm w
+\end{equation*}
 
+Let us define $\bm\Phi = \bm\Theta\bm\Psi$, so that
+\begin{equation}
+  \label{eqn:cs}
+  \bm y = \bm\Phi\bm w .
+\end{equation}
+We have arrived at another underdetermined linear system.
+The CS measurements $\bm y$ are still the same as in (\ref{eqn:cs_sensing}), but the sensing matrix $\bm\Theta$ has been replaced by the new sensing matrix $\bm\Phi$.
 
+However, we now want to recover the signal $\bm w$ and we can abuse the fact that $\bm w$ is $K$-sparse for some $K$.
+This allows us to address to problems  above.
 
-% As a concrete example, if $N = M$ and the sensing matrix $\bm\Theta$ is equal to the identity matrix $\bm I_M$, then $\bm y = \bm v$ so that the sensing scheme directly measures the desired signal.
-% \begin{figure}
-%   \centering
-%   \begin{subfigure}[b]{0.3\textwidth}
-%     \includegraphics[width=\textwidth]{Chapter2/Images/man_1024.png}
-%     \caption{Unknown signal $\bm v$}
-%     \label{fig:ch2:mask_a}
-%   \end{subfigure}
-%   \begin{subfigure}[b]{0.3\textwidth}
-%     \includegraphics[width=\textwidth]{Chapter2/Images/man_MASK.png}
-%     \caption{Signal Mask}
-%     \label{fig:ch2:mask_b}
-%   \end{subfigure}
-%   \begin{subfigure}[b]{0.3\textwidth}
-%     \includegraphics[width=\textwidth]{Chapter2/Images/man_CORRUPTED.png}
-%     \caption{Sensed signal $\bm y$}
-%     \label{fig:ch2:mask_c}
-%   \end{subfigure}
-%   \caption{(a) The unknown signal $\bm v$ that we wish to acquire directly in a compressed format. The image resolution is $1024\times 1024$ so that $M = 1024\times 1024 = 1048576$. (b)  representation of the sensing matrix $\bm R$ }
-%   \label{fig:ch2:mask}
-% \end{figure}
+The information in $\bm w$ is highly localized.
+It is fully contained in only $K << M$ of its entries.
+Thus, as long as $N\geq K$, it should, at least in principle, be possible for a measurement vector $\bm y$ of length $N<<M$ to completely capture the information within $\bm w$.
 
-% \begin{figure}
-%   \begin{tikzpicture}[scale=3]
-%     \foreach \y in {0.0,0.1,...,1} {
-%       \foreach \x in {0.0,0.1,...,1} {
-%         \pgfmathparse{rnd};
-%         \edef\tmpr{\pgfmathresult}
-%         \pgfmathparse{rnd};
-%         \edef\tmpg{\pgfmathresult}
-%         \pgfmathparse{rnd};
-%         \edef\tmpb{\pgfmathresult}
-%         \definecolor{MyColor}{rgb}{\tmpr,\tmpg,\tmpb}%\pgfmathresult};
-%         \path[fill=MyColor] (\x,\y) rectangle ++(0.1,0.1);
-%       }
-%     };   
-%     \draw[step=.1] (0,0) grid (1,1);
-%   \end{tikzpicture}
-%   \caption{MAT}
-% \end{figure}
+Furthermore, since $(M-K)$ entries of $\bm w$ are zero, it follows that in (\ref{eqn:cs}), $\bm y$ is a actually linear combination of only $K$ columns of $\Phi$. 
+So, if $N\geq K$, we might expect to find suitable constraints that allow us to recover $\bm w$.
+Once $\bm w$ is recovered, we can compute $\bm v$ via $\bm v = \bm\Psi\bm w$.
 
-% \begin{figure}
-%   \begin{subfigure}[b]{0.2\textwidth}
-%     \begin{tikzpicture}[scale=4]
-%       \path[fill=white] (-.3,0) rectangle (0,0.5);
-%       \path[fill=blue] (0,.9) rectangle ++(0.1,0.1);
-%       \path[fill=red] (0,.8) rectangle ++(0.1,0.1);
-%       \path[fill=green] (0,.7) rectangle ++(0.1,0.1);
-%       \path[fill=pink] (0,.6) rectangle ++(0.1,0.1);
-%       \path[fill=orange] (0,.5) rectangle ++(0.1,0.1);
-%       \draw[step=.1] (0,0.5) grid (0,1);
-%       \node at (-0.2, 0.7) {$\bm y = $};
-%     \end{tikzpicture}
-%     \caption{}
-%     \label{fig:ch2:mask_a}
-%   \end{subfigure}
-%   \begin{subfigure}[b]{0.5\textwidth}
-%     \begin{tikzpicture}[scale=4]
-%       \path[fill=white] (-.5,0) rectangle (0,0.5);
-%       \path[fill=black] (0,.9) rectangle ++(0.1,0.1);
-%       \path[fill=black] (.1,.8) rectangle ++(0.1,0.1);
-%       \path[fill=black] (.4,.7) rectangle ++(0.1,0.1);
-%       \path[fill=black] (.5,.6) rectangle ++(0.1,0.1);
-%       \path[fill=black] (.8,.5) rectangle ++(0.1,0.1);
-%       \draw[step=.1] (0,0.5) grid (1,1); 
-%       \node at (-0.3, 0.7) {$\bm \Theta = \bm R =$};
-%     \end{tikzpicture}
-%     \caption{}
-%     \label{fig:ch2:mask_b}
-%   \end{subfigure}
-%   \begin{subfigure}[b]{0.2\textwidth}
-%     \begin{tikzpicture}[scale=4]
-%       \path[fill=white] (-.3,0) rectangle (0,0.5);
-%       \path[fill=pink] (0,0) rectangle ++(0.1,0.1);      
-%       \path[fill=orange] (0,0.1) rectangle ++(0.1,0.1);      
-%       \path[fill=blue] (0,0.2) rectangle ++(0.1,0.1);      
-%       \path[fill=magenta] (0,0.3) rectangle ++(0.1,0.1);      
-%       \path[fill=pink] (0,0.4) rectangle ++(0.1,0.1);      
-%       \path[fill=green] (0,0.5) rectangle ++(0.1,0.1);      
-%       \path[fill=cyan] (0,0.6) rectangle ++(0.1,0.1);      
-%       \path[fill=orange] (0,0.7) rectangle ++(0.1,0.1);      
-%       \path[fill=red] (0,0.8) rectangle ++(0.1,0.1);      
-%       \path[fill=blue] (0,0.9) rectangle ++(0.1,0.1);      
-%       \draw[step=.1] (0,0) grid (0,1);
-%       \node at (-0.2, 0.7) {$\bm v = $};
-%     \end{tikzpicture}
-%     \caption{}
-%     \label{fig:ch2:mask_c}
-%   \end{subfigure}
-%   \caption{We use the sensing matrix $\bm\Theta$ (b) to directly the signal of interest $\bm v$ (c) directly in a compressed representation $\bm y$ (a). 
-% If $\bm\Theta = \bm R$ such as in panel (b), then the acquired signal $\bm y$ is simply a subsampled version of the signal of interest $\bm v$.}
-%   \label{fig:ch2:mask}
-% \end{figure}
+\subsection{Constructing the Sensing Mechanism}
+In practice, we do not know the locations of the $K$ nonzero entries in $\bm w$.
+So the first challenge in a compressive sensing system is to design a $N\times M$ sensing matrix $\bm\Theta$ that ensures we measure all the information \emph{for any} signal $\bm v$ that has a $K$-sparse representation in the basis $\bm\Psi$.
 
-% %*** Put this in the next section ?
-% To give a more relevant example, consider the 1-dimensional signal $\bm v$ of length $M=10$, illustrated in Figure \ref{fig:ch2:mask_c}.
-% We use the sensing matrix $\bm\theta = \bm R$ to get our CS measurements $\bm y$.
-% The $N\times M$ matrix $\bm R$ is obtained by removing $(M-N)$ rows from the identity $\bm I_M$. 
-% Figure \ref{fig:ch2:mask_b} depicts such a matrix with $N=5$. 
-% Using this particular acquisition scheme we essentially measure a downsampled version of $\bm v$, so that $\{y_1,\cdots,y_N\} \subset \{v_1,\cdots,v_M\}$. 
+We will not go into the theoretical details of designing an optimal CS measurement process, Instead we will refer the reader to \cite{candes2008} and simply state three particular sensing matrices that have been used successfully:
+\begin{enumerate}
+\item Form $\bm\Theta$ by sampling its entries $\theta_{ij}$ independently from the Gaussian distribution with mean zero and variance $1/M$: $\theta_{ij}\, \stackrel{iid}{\sim}\, \mathcal{N}(0,1/M)$.
+\item Sample the entries $\theta_{ij}$ independently from a symmetric Bernoulli distribution, $P(\theta_{ij} = \pm 1/\sqrt{M}) = 1/2$. 
+\item Form $\bm\Theta$ by starting with the $M\times M$ identity matrix $I_M$ and deleting $M-N$ of its rows at random. This sensing matrix corresponds to measuring a down-sampled version of the signal $\bm v$ directly. If the signal of interest $\bm v$ is a digital image, then $\bm\Theta$ measures $\bm v$ after an \emph{image mask} has been applied to it. This sensing mechanism has been succesfully used in \cite{pilikos2014}.
+\end{enumerate}
 
-% In general, the sensing matrix $\bm\Theta$ is of the form $\bm\Theta = \bm R \bm \Omega$, where $\bm R$ is as above and $\bm\Omega$ is a dense $M\times M$ matrix.
+\subsection{Signal Recovery}
+Using the sensing mechanisms outlined above, we are able to measure a signal $\bm v$ directly in a compressed format $\bm y$.
+The final part of a Compressive Sensing system is a signal reconstruction algorithm that decompresses $\bm y$ and recovers $\bm v$ or, equivalently, its sparse representation $\bm w$.
 
-% Of course, there are infinitely many solutions to an underdetermined system.
-% In the CS framework, we seek to find a solution $\hat{\bs x}$ that is \emph{sparsest in some domain}.
-% By that, we mean that we want to find $\hat{\bs x}$ that satisfies (\ref{eqn:CS}), such that there exists a basis transformation of $\hat{\bs x}$ in which it has the smallest number of nonzero entries.
+This can be achieved by searching for the sparsest solution $\bm w$ that satisfies equation (\ref{eqn:cs}) \cite{baraniuk2007}.
+That is, the desired signal is the solution to the optimization problem:
+\begin{equation}
+\label{eqn:cs_l0}
+  \min_{\bm w} ||\bm w||_0 \qquad \mbox{subject to} \qquad \bm\Phi\bm w = \bm y
+\end{equation}
+Unfortunately, (\ref{eqn:cs_l0}) is an NP-complete problem that can only be solved by an exhaustive search through all possible combinations for the locations of the non-zero entries in $\bm w$.
 
-% More concretely, we assume there exists a domain in which the desired signal $\bs x$ is sparse. 
-% I.e. there exists a $N\times N$ basis matrix $\Psi$ such that $\bs x = \bs\Psi \bs w$ and $\bs w$ is sparse.
+Luckily, and surprisingly, it can be shown that, if $N = O(K\log(M/K))$, it is possible to reconstruct $K$-sparse signals exactly by solving the $\ell_1$ -optimization problem \cite{baraniuk2007,candes2008}
+\begin{equation}
+\label{eqn:cs_l1}
+  \min_{\bm w} ||\bm w||_1 \qquad \mbox{subject to} \qquad \bm\Phi\bm w = \bm y
+\end{equation}
+The solution $\bm{\hat w}$ can be expressed in the original domain via $\bm{\hat v} = \Psi\bm{\hat w}$.
 
-% The CS problem can then be expressed as follows:
-% \begin{equation}
-% \label{eqn:CSproblem}
-% \min||\bs w||_0 \qquad\mbox{subject to}\qquad \bs\Omega\bs\Psi\bs w = \bs y
-% \end{equation}
-% where $||.||$ denotes the $l_0$ norm, i.e. the number of nonzero components.
+In practice, signals $\bm v$ usually only have an almost-sparse representation.
+Thus, the reconstruction is not completely exact and and the solution $\bm{\hat v}$ will be a close approximation to $\bm v$.
 
+A large part of the CS literature is focused on developing algorithms that recover a signal $\bm v$ from a set CS measurement $\bm y$, either by solving (\ref{eqn:cs_l1}) or through some alternative route.
 
-% \section{Compressive Sensing: Solution}
-% \subsection{Stable Measurement Matrix}
-% \subsection{Reconstruction Algorithms}
-% \emph{L0, L1, L2, Deterministic, Geometry}
-
-% For a more detailed review of the CS framework, see \cite{candes2008}.
-
+For a discussion and comparison of some of the most widely used algorithms, see \cite{pilikos2014}.

@@ -4,4 +4,16 @@ There are three parts: A signal processing framework called \emph{Compressive Se
 
 The key notion that ties in these three areas is the notion of \emph{sparsity}.
 
+The $\ell_p$ -norm of a vector $\bm z \mathbb{R}^n$ is defined as follows for $p>0$:
+\begin{equation}
+\label{eqn:lp-norm}
+  ||\bm z||_p \equiv \left( \sum_{i=1}^n |z_i|^p \right)^\frac{1}{p}.
+\end{equation}
+If $p=0$ we can define the $\ell_0$ ``norm'' of $\bm z$ to be the number of its non-zero entries:
+\begin{equation}
+\label{eqn:l0-norm}
+  ||\bm z||_0 \equiv  \sum_{i=1}^n \mathbbm{1}\{z_j \neq 0\}
+\end{equation}
+
+
 \section*{Background}
