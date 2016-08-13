@@ -1,5 +1,5 @@
-#ifndef GUARD_CORRUPTER_TPP
-#define GUARD_CORRUPTER_TPP
+#ifndef GUARD_MASK_TPP
+#define GUARD_MASK_TPP
 
 #include <ostream>
 #include <string>
@@ -7,42 +7,42 @@
 #include "Errors.hpp"
 
 // static data
-const std::string Corrupter::modeString[] = {"uniform", "timeRays", "verticalFlicker", "horizontalFlicker", "missingFrames", "verticalLines", "horizontalLines"};
+const std::string Mask::modeString[] = {"uniform", "timeRays", "verticalFlicker", "horizontalFlicker", "missingFrames", "verticalLines", "horizontalLines"};
 
 // Constructers
-Corrupter::Corrupter(std::string s, double p) 
-    : m_perc(p), m_setting(strToCorrMode(s))
+Mask::Mask(std::string s, double p) 
+    : m_perc(p), m_setting(strToMaskMode(s))
 {
     check();
 }
 
-Corrupter::Corrupter(double p, std::string s)    
-    : m_perc(p), m_setting(strToCorrMode(s))
+Mask::Mask(double p, std::string s)    
+    : m_perc(p), m_setting(strToMaskMode(s))
 {
     check();
 }
 
 // print member data
-std::string Corrupter::settingString() const 
+std::string Mask::settingString() const 
 { 
     return modeToString(m_setting);
 }
 
 // set member data
-void Corrupter::setPercentage(double perc) 
+void Mask::setPercentage(double perc) 
 {
     if (perc < 0 || perc > 100) error("percentage must be in range [0,100]");
     m_perc = perc;
 }
 
-void Corrupter::setMode(const std::string& ss) 
+void Mask::setMode(const std::string& ss) 
 {
-    Corrupter::mode m = strToCorrMode(ss);
+    Mask::mode m = strToMaskMode(ss);
     m_setting = m;
 }
 
 // check validity of member data
-void Corrupter::check() const
+void Mask::check() const
 {
     if (m_perc < 0 || m_perc > 100) error("Percentage must be in the range [0, 100]");
 }
@@ -50,25 +50,25 @@ void Corrupter::check() const
 
 // Helper functions
 
-std::string modeToString(const Corrupter::mode& setting) 
+std::string modeToString(const Mask::mode& setting) 
 {
-    return Corrupter::modeString[setting];
+    return Mask::modeString[setting];
 }
 
-Corrupter::mode strToCorrMode(const std::string& ss) 
+Mask::mode strToMaskMode(const std::string& ss) 
 {
     int idx;
-    for (idx = 0; idx < Corrupter::numModes; ++idx)
-	if (ss == Corrupter::modeString[idx] || ss == ("Corrupter::" + Corrupter::modeString[idx])) 
-	    return Corrupter::mode(idx);
+    for (idx = 0; idx < Mask::numModes; ++idx)
+	if (ss == Mask::modeString[idx] || ss == ("Mask::" + Mask::modeString[idx])) 
+	    return Mask::mode(idx);
     
     error("invalid argument ", ss);
 }
 
-std::ostream& operator<<(std::ostream& os, const Corrupter& corr)
+std::ostream& operator<<(std::ostream& os, const Mask& mask)
 {
-    os << "Corruption Mode:\t" << corr.settingString()
-       << "\nCorruption Percentage:\t" << corr.percentage() << "%\n" << std::flush;
+    os << "Mask Mode:\t" << mask.settingString()
+       << "\nMask Cover Percentage:\t" << mask.percentage() << "%\n" << std::flush;
     return os;
 }
 

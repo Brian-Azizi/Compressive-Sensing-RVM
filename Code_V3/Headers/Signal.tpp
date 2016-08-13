@@ -10,7 +10,7 @@
 #include <stdexcept>
 
 #include "Errors.hpp"
-#include "Corrupter.hpp"
+#include "Mask.hpp"
 #include "SignalBasis.hpp"
 #include "Dim.hpp"
 #include "SignalSettings.hpp"
@@ -357,7 +357,7 @@ template <typename T> std::ostream& operator<<(std::ostream& os, const Signal<T>
 }
 
 template <typename T> 
-Signal<T> corruptSignal(const Signal<T>& orig, Signal<bool>& sensed, const Corrupter& corr)
+Signal<T> applyMask(const Signal<T>& orig, Signal<bool>& sensed, const Mask& mask)
 {
     if (orig.height() != sensed.height() || 
 	orig.width() != sensed.width() ||
@@ -369,13 +369,13 @@ Signal<T> corruptSignal(const Signal<T>& orig, Signal<bool>& sensed, const Corru
     int f = orig.frames();
     double randNum;
     Signal<bool> filterBlock(h,w,f); // initialized to bool(0) == false
-    Signal<T> corrSignal(h,w,f);     // initialized to 0
+    Signal<T> maskSignal(h,w,f);     // initialized to 0
 
     for (int i = 0; i < h; ++i) {
 	for (int j = 0; j < w; ++j) {
 	    for (int k = 0; k < f; ++k) {
 		randNum = ((double) rand()) / RAND_MAX; //between 0 and 1
-		if (randNum < corr.percentage()/100) filterBlock(i,j,k) = false;
+		if (randNum > mask.percentage()/100) filterBlock(i,j,k) = false;
 		else filterBlock(i,j,k) = true;
 	    }
 	}
@@ -384,41 +384,41 @@ Signal<T> corruptSignal(const Signal<T>& orig, Signal<bool>& sensed, const Corru
     for (int k = 0; k < f; ++k) {
 	for (int i = 0; i < h; ++i) {
 	    for (int j = 0; j < w; ++j) {
-		switch (corr.setting()) {
-		case Corrupter::uniform:
+		switch (mask.setting()) {
+		case Mask::uniform:
 		    sensed(i,j,k) = filterBlock(i,j,k);
 		    break;
-		case Corrupter::timeRays:
+		case Mask::timeRays:
 		    sensed(i,j,k) = filterBlock(i,j,0);
 		    break;
-		case Corrupter::verticalFlicker:
+		case Mask::verticalFlicker:
 		    sensed(i,j,k) = filterBlock(0,j,k);
 		    break;
-		case Corrupter::horizontalFlicker:
+		case Mask::horizontalFlicker:
 		    sensed(i,j,k) = filterBlock(i,0,k);
 		    break;
-		case Corrupter::missingFrames:
+		case Mask::missingFrames:
 		    sensed(i,j,k) = filterBlock(0,0,k);
 		    break;
-		case Corrupter::verticalLines:
+		case Mask::verticalLines:
 		    sensed(i,j,k) = filterBlock(0,j,0);
 		    break;
-		case Corrupter::horizontalLines:
+		case Mask::horizontalLines:
 		    sensed(i,j,k) = filterBlock(i,0,0);
 		    break;
 		}
 
-		if (sensed(i,j,k)) corrSignal(i,j,k) = orig(i,j,k);
-		else corrSignal(i,j,k) = 0;
+		if (sensed(i,j,k)) maskSignal(i,j,k) = orig(i,j,k);
+		else maskSignal(i,j,k) = 0;
 	    }
 	}
     }
 
-    return corrSignal;
+    return maskSignal;
 }
 
 template<class T>
-Signal<T> corruptSignal(const Signal<T>& orig, const Signal<bool>& mask)
+Signal<T> applyMask(const Signal<T>& orig, const Signal<bool>& mask)
 {
     if (orig.dim() != mask.dim()) error("orig and mask must have the same dimensions");
 
@@ -1060,7 +1060,7 @@ std::string outputSignal(const Signal<T>& S, const std::string& label, const Sig
 	outputName << "_blockDim-" << cfg.blockDim.height() << "-" 
 		   << cfg.blockDim.width() << "-" << cfg.blockDim.frames() << "_";
 	
-	if (cfg.simulateCorruption) outputName << cfg.corr.settingString() << "-" << cfg.corr.percentage() << "%";
+	if (cfg.simulateCorruption) outputName << cfg.mask.settingString() << "-" << cfg.mask.percentage() << "%";
 	else {
 	    std::string maskName = cfg.maskFile;
 	    maskName.erase(0, maskName.find_last_of('/')+1);
@@ -1150,6 +1150,21 @@ Signal<double> gaussianSamples(const Dim& dim, double mean, double stddev)
     return ret;
 }
 
+Signal<double> getSensingMatrix(int size, Sensor::mode setting)
+{
+    Signal<double> ret(size,size);
+    switch(setting) {
+    case Sensor::mask:
+	return eye(size);
+    case Sensor::gaussian:
+	return gaussianSamples(Dim(size,size), 0, 1/std::sqrt(size));
+    case Sensor::bernoulli:
+	return bernoulliSamples(Dim(size,size), 0.5, -1/std::sqrt(size), 1/std::sqrt(size));
+    default:
+	error("Sensing Matrix: invalid setting");
+	return Signal<double>();
+    }
+}
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 #endif

@@ -11,18 +11,20 @@
 
 #include "SignalSettings.hpp"
 #include "SignalBasis.hpp"
-#include "Corrupter.hpp"
+#include "Mask.hpp"
 #include "Signal.hpp"
 #include "RVM.hpp"
 
 
 class Interpolator {
 private:
-    typedef unsigned int signalType; // Specify C++ type of input
+    typedef double signalType; // Specify C++ type of input
     Signal<signalType> signal;
     Signal<signalType> block;
 
-    Signal<signalType> corruptedSignal;
+    //Signal<signalType> sensingMatrices;
+    Signal<signalType> maskedSignal;
+    Signal<signalType> allTargets; // save the measurements
     Signal<bool> sensedEntries;
     Signal<signalType> signalPatch;
     Signal<bool> sensedPatch;
@@ -33,7 +35,7 @@ private:
     Signal<signalType> initialSignalVector;
     Signal<double> recoveredVector;
     Signal<double> recoveredPatch;
-
+    
     std::vector<Signal<double> > cascadeRecoveredSignals;
     std::vector<Signal<double> > cascadeBasis;
 
@@ -73,17 +75,19 @@ void Interpolator::run()
     signal.read(cfg.inputFile);
 
     /*** apply corruption ***/
-
-    if (cfg.simulateCorruption) corruptedSignal = corruptSignal(signal, sensedEntries, cfg.corr);
+    if (cfg.simulateCorruption) maskedSignal = applyMask(signal, sensedEntries, cfg.mask);
     else {
 	sensedEntries.read(cfg.maskFile);
-	corruptedSignal = corruptSignal(signal, sensedEntries);
+	maskedSignal = applyMask(signal, sensedEntries);
     }
     
+    /*** Init allTargets ***/
+    allTargets = Signal<double>(signal.dim(),false);
+    //    sensingMatrices = Signal<double>(blc.dim(),false);
+
     /*** Get basis matrices for various scales ***/
     for (int scale = 0; scale < cfg.endScale; ++scale)
 	cascadeBasis.push_back(getBasis(block.dim(), cfg.basisMode, scale+1));
-
 
     /*** Reconstruct the signal ***/
     if (cfg.printProgress) std::cout << "\t*** Start Reconstruction ***\n";
@@ -94,7 +98,6 @@ void Interpolator::run()
 
     /*** Write the output to disk and store the output file names in the fls file ***/
     if (cfg.printProgress) std::cout<< "\n\t *** Output Files ***";        
-    //std::string outNames = "./rvmOutputFilenames.txt";
     std::ofstream flsFile(cfg.flsFileName.c_str());
     if (!flsFile) { 
 	if (cfg.printProgress) std::cerr << "\nCould not save names of output files in " << cfg.flsFileName << std::endl;;
@@ -106,15 +109,17 @@ void Interpolator::run()
     if (flsFile) flsFile << "original\t\t" << name << std::endl;
     if (cfg.printProgress) std::cout << "\nOriginal signal file:\t\t\t" << name;
 
-    // corrupted
-    name = outputSignal(corruptedSignal, "_CORRUPTED", cfg); // writes to disk and returns filename
-    if (flsFile) flsFile << "corrupted\t\t" << name << std::endl;
-    if (cfg.printProgress) std::cout << "\nCorrupted signal saved at:\t\t" << name;
-    
-    // mask
-    name = outputSignal(sensedEntries, "_MASK", cfg);
-    if (flsFile) flsFile << "mask\t\t\t" << name << std::endl;
-    if (cfg.printProgress) std::cout << "\nSignal mask saved at:\t\t\t" << name;
+    // masked signal
+    if (cfg.sensor.setting() == Sensor::mask) {
+	name = outputSignal(maskedSignal, "_MASKED", cfg); // writes to disk and returns filename
+	if (flsFile) flsFile << "masked\t\t" << name << std::endl;
+	if (cfg.printProgress) std::cout << "\nMasked signal saved at:\t\t\t" << name;
+    }
+
+    // targets
+    name = outputSignal(allTargets, "_MEASUREMENTS", cfg);
+    if (flsFile) flsFile << "measurements\t\t\t" << name << std::endl;
+    if (cfg.printProgress) std::cout << "\nMeasurements saved at:\t\t\t" << name;
     
     // recovered
     for (int scale = 0; scale < cfg.endScale; ++scale) {
@@ -154,68 +159,34 @@ void Interpolator::reconstruct()
 			      << numBlocksHeight << "," << numBlocksWidth
 			      << "," << numBlocksFrames << ")\t";
 
-		signalPatch = corruptedSignal
-		    .getPatch(rowIdx*block.height(), colIdx*block.width(), 
-			      frameIdx*block.frames(), block.height(), block.width(),
-			      block.frames());
+		// signalPatch = maskedSignal
+		//     .getPatch(rowIdx*block.height(), colIdx*block.width(), 
+		// 	      frameIdx*block.frames(), block.height(), block.width(),
+		// 	      block.frames());
 		sensedPatch = sensedEntries
 		    .getPatch(rowIdx*block.height(), colIdx*block.width(), 
 			      frameIdx*block.frames(), block.height(), block.width(),
 			      block.frames());
-		signalPatchVector = vectorize(signalPatch);
+		//signalPatchVector = vectorize(signalPatch);
 		sensedPatchVector = vectorize(sensedPatch);
-		initialSignalVector = vectorize(signalPatch);
+		// initialSignalVector = vectorize(signalPatch);
 		initialSensedVector = vectorize(sensedPatch);
 
     // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    // NEW FEATURE: RANDOM SENSING MATRIX 
-		// create sensing matrix Theta (Gaussian or Bernoulli) with dim dictSize x dictSize
-		// -> Theta; dim = blockSize x blockSize
-		// get Theta * origSignalPatchVector
-		// -> origSignalPatch = signal.getPatch(...); dim = blockDim		     
-		// -> origSignalPatchVector = vectorize(origSignalPatch); dim = blockSize
-		// -> mangledSignalVector = Theta * origSignalPatchVector; dim = blockSize		
-		// -> mangledSignal = devectorize(mangledSignalVector); dim = blockDim		
-		// apply mask		
-		// -> corruptedSignalPatch = corrupt(mangledSignal, sensedPatch); dim = blockDim
-		// -> corruptedSignalPatchVector = vectorize(/\); dim = blockSize
-		// targets and basis
-		// -> targets = getTargets(corruptedSignalPatchVector, sensedPatchVector); dim = measurements
-		// -> mangledBasis = Theta * cascadeBasis[scale]; dim = blockSize x blockSize
-		// -> designMatrix = getDesignMatrix(mangledBasis, sensedPatchVector); dim = measurements x blockSize
-		// std::cout << "\nblockDim = " << block.dim() << "\nblockSize = " << block.size() 
-		// 	  << "\norigSigPatch = \n"<< origSignalPatch << "\ntheta =\n " << theta
-		// 	  << "\norig vector =\n " << origSignalPatchVector
-		// 	  << "\nmangledSignalVecto =\n " << mangledSignalVector
-		// 	  << "\nmangledSignal = \n" << mangledSignal
-		// 	  << "\nsensedEntries = \n" << sensedPatch
-		// 	  << "\nsensedPatchVector = \n" << sensedPatchVector
-		// 	  << "\ncorruptedSignalPatch =\n " << corruptedSignalPatch
-		// 	  << "\ncorruptedSignalPatchVector =\n " << corruptedSignalPatchVector << "\n"
-		// 	  << "\ntargets = \n " << targets
-		// 	  << "\nbasis = \n " << cascadeBasis[0]
-		// 	  << "\nmangledBasis = \n" << mangledBasis
-		// 	  << "\ndesignMatrix = \n" << designMatrix
-		//     ;
-		// assert(false);
-
-		Signal<double> theta = bernoulliSamples(Dim(block.size(),block.size()), 0.5, std::sqrt(block.size()), 1/std::sqrt(block.size()));	 
-		//Signal<double> theta = gaussianSamples(Dim(block.size(),block.size()), 0, 1/std::sqrt(block.size()));
-		//Signal<double> theta = eye(block.size());
-
+		Signal<double> theta = getSensingMatrix(block.size(), cfg.sensor.setting());
 		Signal<double> origSignalPatch = signal.getPatch(rowIdx*block.height(), colIdx*block.width(),
 								 frameIdx*block.frames(), block.height(),
 								 block.width(), block.frames());		
 		Signal<double> origSignalPatchVector = vectorize(origSignalPatch);		
-		Signal<double> mangledSignalVector = matMult(theta,origSignalPatchVector);		
+		Signal<double> mangledSignalVector;
+		if (cfg.sensor.setting() == Sensor::mask) mangledSignalVector = origSignalPatchVector;
+		else mangledSignalVector = matMult(theta,origSignalPatchVector);				
+		
+		Signal<double> initialMangledVector = mangledSignalVector;
 		Signal<double> mangledSignal = reshape(mangledSignalVector, block.dim());
-		Signal<double> corruptedSignalPatch = corruptSignal(mangledSignal, sensedPatch);
-		Signal<double> corruptedSignalPatchVector = vectorize(corruptedSignalPatch);
-		Signal<double> targetPatch(block.dim());
+		Signal<double> targetPatch(block.dim()); // set to zero
     // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-		
-		
-
+			       
 		for (int scale = 0; scale < cfg.endScale; ++scale) {
 		    int measurements = countSensed(sensedPatchVector);
 		    if (measurements == 0) {
@@ -226,13 +197,15 @@ void Interpolator::reconstruct()
 			continue;
 		    }
 		    
-		    /*** Declare and define RVM variables ***/
-    		    // Signal<double> targets = getTargets(signalPatchVector, sensedPatchVector);
-    		    // Signal<double> designMatrix = getDesignMatrix(cascadeBasis[scale], sensedPatchVector);	
-
 		    //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-		    Signal<double> targets = getTargets(corruptedSignalPatchVector, sensedPatchVector);
-		    Signal<double> mangledBasis = matMult(theta,cascadeBasis[scale]);
+		    Signal<double> measuredSignalPatchVector = applyMask(mangledSignalVector, sensedPatchVector);
+		    //Signal<double> measuredSignalPatchVector = vectorize(measuredSignalPatch);
+
+		    /*** Declare and define RVM variables ***/
+		    Signal<double> targets = getTargets(measuredSignalPatchVector, sensedPatchVector);
+		    Signal<double> mangledBasis;
+		    if (cfg.sensor.setting() == Sensor::mask) mangledBasis = cascadeBasis[scale];
+		    else mangledBasis = matMult(theta,cascadeBasis[scale]);
 		    Signal<double> designMatrix = getDesignMatrix(mangledBasis, sensedPatchVector);
 		    //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -251,7 +224,7 @@ void Interpolator::reconstruct()
 		    recoveredVector = rvm.predict(cascadeBasis[scale]);		    		    		    
 		    predictTime += (GetTimeMs64() - predictTimeStart); predictTimeCount++;
 
-		    //recoveredvector.fill(initialSignalVector, initialSensedVector); // DEL %%%%%
+		    if (cfg.maskFill) recoveredVector.fill(origSignalPatchVector, initialSensedVector);
 		    
     		    /*** Save recovered patch ***/
     		    recoveredPatch = reshape(recoveredVector, block.height(), block.width(), block.frames());
@@ -259,18 +232,36 @@ void Interpolator::reconstruct()
     			.putPatch(recoveredPatch, rowIdx*block.height(),
 				  colIdx*block.width(), frameIdx*block.frames());
 		    
-		    //%%%%%%%%%%%%%%%% NEEDS TO BE MODIFIED %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+		    /*** Save original target patch ***/
+		    if (scale == 0) {
+			for (int i = 0; i < measurements; ++i) 
+			    targetPatch.data()[i] = targets(i);
+			allTargets.putPatch(targetPatch, rowIdx*block.height(),
+					    colIdx*block.width(), frameIdx*block.frames());
+			//allTargets.putPatch(measuredSignalPatch, rowIdx*block.height(),
+			// 			colIdx*block.width(), frameIdx*block.frames());
+		    }
+
+		    //%%%%%%%%%%%%%%%% NEEDS TO BE MODIFIED. Okay, I modified it. %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     		    /*** Prepare for next part of cascade ***/
     		    if (useCascade) {			
 			uint64 errorTimeStart = GetTimeMs64();
-			Signal<double> errors = rvm.predictionErrors(cascadeBasis[scale]);
+			//Signal<double> errors = rvm.predictionErrors(cascadeBasis[scale]);
+			Signal<double> errors = rvm.predictionErrors(mangledBasis);
     			errorTime += (GetTimeMs64() - errorTimeStart); ++errorTimeCount;
 			for (int i = 0; i < block.size(); ++i) { 
-    			    if (errors(i) != 0) sensedPatchVector(i) = true; // get new mask
-    			    else sensedPatchVector(i) = false;
-			    
+    			    if (cfg.sensor.setting() == Sensor::mask) { 
+				if (errors(i) != 0) sensedPatchVector(i) = true; // get new mask
+				else sensedPatchVector(i) = false;
+			    } else {	 // %%%%%%% Temporary Hack. Other sensors don't work with Cascade yet. %%%%%%%%%%%
+				if (initialSensedVector(i) != 0) sensedPatchVector(i) = true;
+				else sensedPatchVector(i) = false;
+			    }
     			    // Recovered becomes new signal Patch to get targets for next stage
-    			    signalPatchVector(i) = recoveredVector(i); 
+    			    //signalPatchVector(i) = recoveredVector(i); 
+			    mangledSignalVector = rvm.predict(mangledBasis);
+			    mangledSignalVector.fill(initialMangledVector,initialSensedVector);
     			}
 			if (cfg.printProgress) std::cout << "\t\t\t\t\t\t";
     		    }

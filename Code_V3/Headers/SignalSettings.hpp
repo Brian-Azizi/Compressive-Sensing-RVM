@@ -7,7 +7,8 @@
 #include <string>
 
 #include "ConfigFile.hpp"
-#include "Corrupter.hpp"
+#include "Mask.hpp"
+#include "Sensor.hpp"
 #include "Dim.hpp"
 #include "SignalBasis.hpp"
 
@@ -18,9 +19,15 @@ struct SignalSettings {
     std::string outputName;	// label for the output files
     bool simulateCorruption;	// if yes, we simulate a mask file
     int rngSeed;		// if undefined, we use the current time as seed
-    
-    Corrupter corr;		// contains information on corrupter
+
+    Sensor sensor;
+    double percentage;
+
+    Mask mask;			// contains information on mask
+    bool maskFill;		// if true and using mask, we fill recovered signal with original sensed data
+
     SignalBasis::mode basisMode; 
+    int startScale;
     int endScale;		// final scale of basis functions (ignored if basisMode == dct)
     Dim blockDim;		// hold dimensions of the signal blocks
     Dim signalDim;		// holds dimensions of input signal
