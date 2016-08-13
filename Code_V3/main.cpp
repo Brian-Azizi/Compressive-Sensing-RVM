@@ -45,9 +45,9 @@ int main(int argc, char* argv[])
 	successfulRead = true;
 
 	/*** Redirect std::cout and std::cerr to the log file ***/
-	// if (cfg.printProgress) std::cout << "Redirecting output messages to '" << cfg.logFileName << "' from here on." << std::endl;
-	// std::freopen(cfg.logFileName.c_str(), "w", stdout);
-	// std::freopen(cfg.logFileName.c_str(), "w", stderr);
+	if (cfg.printProgress) std::cout << "Redirecting output messages to '" << cfg.logFileName << "' from here on." << std::endl;
+	std::freopen(cfg.logFileName.c_str(), "w", stdout);
+	std::freopen(cfg.logFileName.c_str(), "w", stderr);
 	
 	/*** Run the Interpolator ***/
 	interpol.run();	

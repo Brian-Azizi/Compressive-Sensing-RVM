@@ -5,9 +5,10 @@
 
 #include "Dim.hpp"
 #include "Errors.hpp"
-#include "Corrupter.hpp"
+#include "Mask.hpp"
 #include "SignalBasis.hpp"
 #include "SignalSettings.hpp"
+#include "Sensor.hpp"
 
 /*** Signal class ***/
 template <typename T> class Signal{
@@ -90,8 +91,8 @@ template <typename T, typename V> Signal<V> operator*(V factor, const Signal<T>&
 template <typename T> Signal<T> vectorize(const Signal<T>& arg);
 template <typename T> Signal<T> transpose(const Signal<T>& arg);
 template <typename T> std::ostream& operator<<(std::ostream& os, const Signal<T>& s);
-template <typename T> Signal<T> corruptSignal(const Signal<T>& orig, Signal<bool>& sensed, const Corrupter& corr);
-template <typename T> Signal<T> corruptSignal(const Signal<T>& orig, const Signal<bool>& mask);
+template <typename T> Signal<T> applyMask(const Signal<T>& orig, Signal<bool>& sensed, const Mask& mask);
+template <typename T> Signal<T> applyMask(const Signal<T>& orig, const Signal<bool>& mask);
 Signal<double> haarPhiMatrixTranspose(int rows);
 Signal<double> haarPsiMatrixTranspose(int rows);
 template<typename T> Signal<T> kronecker(const Signal<T>& A, const Signal<T>& B);
@@ -125,6 +126,7 @@ Signal<double> bernoulliSamples(const Dim& dim, double prob = 0.5, double min = 
 Signal<double> eye(const Dim& dim);
 Signal<double> eye(int N);
 Signal<double> gaussianSamples(const Dim& dim, double mean = 0, double stddev = 1);
+Signal<double> getSensingMatrix(int size, Sensor::mode mode);
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 // Implementation

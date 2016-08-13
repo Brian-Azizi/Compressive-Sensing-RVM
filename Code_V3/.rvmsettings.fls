@@ -1,4 +1,4 @@
 original		Data/InputFiles/lenna_512-512-1.txt
-corrupted		Data/ResultsDump/test_CORRUPTED.txt
-mask			Data/ResultsDump/test_MASK.txt
+masked		Data/ResultsDump/test_MASKED.txt
+measurements			Data/ResultsDump/test_MEASUREMENTS.txt
 recovered_1		Data/ResultsDump/test_RECOVERED_1_OF_1.txt

@@ -23,7 +23,7 @@ function convertSignal(FLS_file,frameRate)
   for i = 1:N    
     file = files{i};
     eval([var{i} '= loadSignal(file);']);    
-    if strcmp(var{i}, 'corrupted')
+    if strcmp(var{i}, 'measurements')
       corridx = i;
     end
   end
@@ -54,9 +54,13 @@ function convertSignal(FLS_file,frameRate)
     
     if frames == 1			% image
       name = strcat(outputDir, stem, '.png');
-      if strcmp(var{i}, 'mask')                
+      if strcmp(var{i}, 'measurements')
+	if abs(min(measurements(:)) - max(measurements(:))) > 1e-12
+	  measurements = (measurements - min(measurements(:))) / (max(measurements(:)) - ...
+						      min(measurements(:)));
+	end
 	eval(['imwrite(' var{i} ', name);']);
-      else
+      else				
 	eval(['imwrite(uint8(' var{i} '), name);']);                                
       end            
     else				% video
@@ -65,7 +69,11 @@ function convertSignal(FLS_file,frameRate)
       vid.FrameRate = frameRate;
       open(vid);
       for j = 1:frames
-	if strcmp(var{i}, 'mask')
+	if strcmp(var{i}, 'measurements')
+	  if abs(min(measurements(:)) - max(measurements(:))) > 1e-12
+	    measurements = (measurements - min(measurements(:))) / (max(measurements(:)) - ...
+							min(measurements(:)));
+	  end
 	  eval(['writeVideo(vid,' var{i} '(:,:,j));']);	  
 	else
 	  eval(['writeVideo(vid, uint8(' var{i} '(:,:,j)));']);	  

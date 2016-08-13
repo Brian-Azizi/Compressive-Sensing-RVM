@@ -12,8 +12,9 @@
 #include <unistd.h>
 
 #include "ConfigFile.hpp"
-#include "Corrupter.hpp"
+#include "Mask.hpp"
 #include "Dim.hpp"
+#include "Sensor.hpp"
 #include "Errors.hpp"
 #include "SignalBasis.hpp"
 
@@ -60,20 +61,35 @@ void SignalSettings::initParameters() {
 	try {					      // try to open the specified file and check basic validity
 	    Dim maskDim = dim_from_Signal_file(maskFile);
 	    if(maskDim != signalDim) error("maskFile and inputFile must have the same dimensions");
-	    if(printProgress) std::cout << "CFG: Using a mask file - corrupterMode and corrupterPercentage will be ignored\n";
+	    sensor.setMode(Sensor::mask);
+	    maskFill = cfg.getValueOfKey<bool>("maskFill", true);
+	    if(printProgress) std::cout << "CFG: Using a mask file - maskMode, sensorMode and percentage will be ignored\n";
 	} catch(...) {
 	    std::cerr << "CFG: Error in opening mask file '" << maskFile << "'." << std::endl;
 	    throw;
 	}
     } 
-    if(simulateCorruption) {			// Read corrupter settings and instantiate corrupter
-	std::string corrupterMode = cfg.getValueOfKey<std::string>("corrupterMode", "uniform");
-	double corrupterPercentage = cfg.getValueOfKey<double>("corrupterPercentage", 30);
+    if(simulateCorruption) {			// Read corrupter settings and instantiate corrupter	
+	std::string sensorMode = cfg.getValueOfKey<std::string>("sensorMode", "mask");
+	percentage = cfg.getValueOfKey<double>("percentage", 50);
+	sensor = Sensor(sensorMode, percentage);
+	
+	std::string maskMode;
+	if (sensor.setting() == Sensor::mask) {
+	    maskMode = cfg.getValueOfKey<std::string>("maskMode", "uniform");	    	
+	    maskFill = cfg.getValueOfKey<bool>("maskFill", true);
+	}
+	else {
+	    maskMode = "uniform";
+	    maskFill = false;
+	    if(printProgress) std::cout << "CFG: sensor mode != mask => maskMode and maskFill will be ignored" << std::endl;
+	}
+
 	try {
-	    corr = Corrupter(corrupterMode, corrupterPercentage);	
+	    mask = Mask(maskMode, percentage);	
 	    if(printProgress) std::cout << "CFG: Simulating corruption - maskFile will be ignored\n";
 	} catch(...) {
-	    std::cerr << "CFG: Error in instantiating corrupter.\n";
+	    std::cerr << "CFG: Error in instantiating Mask.\n";
 	    throw;
 	}
     }
@@ -198,15 +214,24 @@ std::ostream& operator<<(std::ostream& os, const SignalSettings& setting)
     
     os << "\nSimulating Corruption:\t" << (setting.simulateCorruption ? "yes" : "no");    
     if (!setting.cfg.keyExists("simulateCorruption")) os << "\t\t(default)";
-    if (!setting.simulateCorruption)
+    if (!setting.simulateCorruption) {
 	os << "\nMask File:\t\t" << setting.maskFile;
-    else {
-	os << "\nCorruption Mode:\t" << setting.corr.settingString();
-	if (!setting.cfg.keyExists("corrupterMode")) os << "\t\t(default)";
-	os << "\nCorruption Percentage:\t" << setting.corr.percentage();
-	if (!setting.cfg.keyExists("corrupterPercentage")) os << "\t\t(default)";
+	os << "\nMask Fill:\t\t" << (setting.maskFill ? "yes" : "no");
+	if (!setting.cfg.keyExists("maskFill")) os << "\t\t(default)";
     }
-        
+    else {
+	os << "\nSensor Mode:\t\t" << setting.sensor.settingString();
+	if (!setting.cfg.keyExists("sensorMode")) os << "\t\t(default)";
+	os << "\nPercentage:\t\t" << setting.percentage;
+	if (!setting.cfg.keyExists("percentage")) os << "\t\t(default)";
+	if (setting.sensor.setting() == Sensor::mask) {
+	    os << "\nMask Mode:\t\t" << setting.mask.settingString();
+	    if (!setting.cfg.keyExists("maskMode")) os << "\t\t(default)";
+	    os << "\nMask Fill:\t\t" << (setting.maskFill ? "yes" : "no");
+	    if (!setting.cfg.keyExists("maskFill")) os << "\t\t(default)";
+	}
+    }
+    
     os << "\nSignal Basis Mode:\t" << modeToString(setting.basisMode);
     if (!setting.cfg.keyExists("basisMode")) os << "\t\t(default)";
     
@@ -256,10 +281,12 @@ std::string helpMessage(const std::string& argv_0)
        << "  blockHeight\t\tHeight of signal blocks (default: 2)\n"
        << "  blockWidth\t\tWidth signal blocks (default: 2)\n"
        << "  blockFrames\t\tDepth of signal blocks (default: 1)\n"
-       << "  simulateCorruption\tIf 1, simulate corrupted signal, else mask file is used (default: 1)\n"
+       << "  simulateCorruption\tIf 1, simulate corrupted signal via a sensor, else mask file is used (default: 1)\n"
        << "  maskFile\t\tFile name of signal mask. (No default; must be specified if we don't simulate corruption)\n"
-       << "  corrupterMode\t\tDecimation pattern of simulated mask. Possible values: uniform, timeRays, verticalFlicker, horizontalFlicker, missingFrames, verticalLines, horizontalLines (default: uniform; ignored if we are not simulating corruption)\n"
-       << "  corrupterPercentage\tProportion of masked measurements (default: 30; ignored if we are not simulating corruption)\n"
+       << "  percentage\tPercentage of measurements to full signal length (default: 50; ignored if we are not simulating corruption)\n"
+       << "  sensorMode\t\tType of sensing matrix. Possible values: mask, gaussian, bernoulli (default: mask; ignored if we are not simulating corruption)"
+       << "  maskMode\t\tDecimation pattern of simulated mask. Possible values: uniform, timeRays, verticalFlicker, horizontalFlicker, missingFrames, verticalLines, horizontalLines (default: uniform; ignored if we are not simulating corruption or not using 'mask' as sensor mode)\n"       
+       << "  maskFill\t\tIf 1 and simulating a sensormode = mask, we fill up the recovered signals with original measurements where available\n"
        << "  basisMode\t\tForm of basis functions used to represent the signal. Possible values: haar, dct (default: dct)\n"
        << "  basisEndScale\t\tMaximum scale of basis functions (default: 1; ignored if using dct)\n"
        << "  stdDev\t\tStandard deviation of the noise in the RVM (default: 1.0)\n"

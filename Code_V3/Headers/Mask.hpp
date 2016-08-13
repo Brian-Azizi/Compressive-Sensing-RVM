@@ -1,20 +1,20 @@
-#ifndef GUARD_CORRUPTER_HPP
-#define GUARD_CORRUPTER_HPP
+#ifndef GUARD_MASK_HPP
+#define GUARD_MASK_HPP
 
 #include <ostream>
 #include <string>
 
 // simple class for holding settings for Signal masks
-class Corrupter{
+class Mask{
 public:
     enum mode {uniform, timeRays, verticalFlicker, horizontalFlicker, missingFrames, verticalLines, horizontalLines};
 
     // Constructers
-    Corrupter() : m_perc(0), m_setting(uniform) { check(); }
-    Corrupter(double p, mode m) : m_perc(p), m_setting(m) { check(); }
-    Corrupter(mode m, double p) : m_perc(p), m_setting(m) { check(); }
-    Corrupter(std::string s, double p);
-    Corrupter(double p, std::string s);
+    Mask() : m_perc(0), m_setting(uniform) { check(); }
+    Mask(double p, mode m) : m_perc(p), m_setting(m) { check(); }
+    Mask(mode m, double p) : m_perc(p), m_setting(m) { check(); }
+    Mask(std::string s, double p);
+    Mask(double p, std::string s);
 
     // print member data
     double percentage() const { return m_perc; }
@@ -39,12 +39,12 @@ private:
 };
 
 // helper functions
-std::string modeToString(const Corrupter::mode& setting);
-Corrupter::mode strToCorrMode(const std::string& ss);
-std::ostream& operator<<(std::ostream&, const Corrupter&);
+std::string modeToString(const Mask::mode& setting);
+Mask::mode strToMaskMode(const std::string& ss);
+std::ostream& operator<<(std::ostream&, const Mask&);
 
 
 // implementation file
-#include "Corrupter.tpp"
+#include "Mask.tpp"
 
 #endif
