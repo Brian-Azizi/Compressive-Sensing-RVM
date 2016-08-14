@@ -1,4 +1,5 @@
-original		Data/InputFiles/lenna_512-512-1.txt
-masked		Data/ResultsDump/test_MASKED.txt
-measurements			Data/ResultsDump/test_MEASUREMENTS.txt
-recovered_1		Data/ResultsDump/test_RECOVERED_1_OF_1.txt
+original		Data/InputFiles/foreman_128-128-64.txt
+measurements			Data/Simulations/foreman_128-128-64/mpi_MEASUREMENTS.txt
+recovered_1		Data/Simulations/foreman_128-128-64/mpi_RECOVERED_1_OF_3.txt
+recovered_2		Data/Simulations/foreman_128-128-64/mpi_RECOVERED_2_OF_3.txt
+recovered_3		Data/Simulations/foreman_128-128-64/mpi_RECOVERED_3_OF_3.txt

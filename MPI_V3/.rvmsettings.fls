@@ -1,0 +1,4 @@
+original		Data/InputFiles/foreman_128-128-64.txt
+masked		Data/Simulations/foreman_128-128-64/mpi_MASKED.txt
+measurements			Data/Simulations/foreman_128-128-64/mpi_MEASUREMENTS.txt
+recovered_1		Data/Simulations/foreman_128-128-64/mpi_RECOVERED_1_OF_1.txt

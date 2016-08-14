@@ -1,0 +1,5 @@
+original		Data/InputFiles/foreman_128-128-64.txt
+corrupted		Data/ResultsDump/fibi_CORRUPTED.txt
+mask			Data/ResultsDump/fibi_MASK.txt
+recovered_1		Data/ResultsDump/fibi_RECOVERED_1_OF_2.txt
+recovered_2		Data/ResultsDump/fibi_RECOVERED_2_OF_2.txt
