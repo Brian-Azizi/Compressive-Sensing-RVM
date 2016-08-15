@@ -5,6 +5,7 @@
 #include <string>
 
 #include "Mask.hpp"
+#include "Signal.hpp"
 
 class Sensor{
 public:
@@ -16,7 +17,7 @@ public:
     Sensor(mode m, double p) : m_perc(p), m_setting(m), m_mask(Mask(p,Mask::uniform)) { check(); }
     Sensor(std::string s, double p);
     Sensor(double p, std::string s);
-
+    
     // print member data
     double percentage() const { return m_perc; }
     mode setting() const { return m_setting; }

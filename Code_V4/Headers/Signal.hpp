@@ -7,7 +7,6 @@
 #include "Errors.hpp"
 #include "Mask.hpp"
 #include "SignalBasis.hpp"
-#include "SignalSettings.hpp"
 #include "Sensor.hpp"
 
 /*** Signal class ***/
@@ -88,18 +87,48 @@ public:
 };
 
 
-// helper functions
+// Mask
+template <typename T> Signal<T> applyMask(const Signal<T>& orig, Signal<bool>& sensed, const Mask& mask);
+template <typename T> Signal<T> applyMask(const Signal<T>& orig, const Signal<bool>& mask);
+int countSensed(const Signal<bool>& sensed);
+
+
+// rvm
+template <typename T> Signal<T> getTargets (const Signal<T>& corrSignal, const Signal<bool>& sensed);
+template <typename T> Signal<T> getDesignMatrix(const Signal<T>& orig, const Signal<bool>& sensed);
+
+
+// sensor
+Signal<double> bernoulliSamples(const Dim& dim, double prob = 0.5, double min = 0, double max = 1);
+Signal<double> eye(const Dim& dim);
+Signal<double> eye(int N);
+Signal<double> gaussianSamples(const Dim& dim, double mean = 0, double stddev = 1);
+Signal<double> getSensingMatrix(int size, Sensor::mode mode);
+
+// helpers
+template <typename T> std::ostream& operator<<(std::ostream& os, const Signal<T>& s);
+template <typename T> Signal<T> reshape(Signal<T> orig, int h, int w, int f = 1);
+template <typename T> Signal<T> reshape(Signal<T> orig, Dim dim);
+Signal<double> read(const std::string& inputFile, int numFrames = 1);
+Signal<double> readSignal(const std::string& inputFile); // reads a signal from a file. Assumes frames are seperated by empty lines
+
+// linear algebra
 template <typename T, typename V> Signal<V> operator*(V factor, const Signal<T>& A);
 template <typename T> Signal<T> vectorize(const Signal<T>& arg);
 template <typename T> Signal<T> transpose(const Signal<T>& arg);
-template <typename T> std::ostream& operator<<(std::ostream& os, const Signal<T>& s);
-template <typename T> Signal<T> applyMask(const Signal<T>& orig, Signal<bool>& sensed, const Mask& mask);
-template <typename T> Signal<T> applyMask(const Signal<T>& orig, const Signal<bool>& mask);
-Signal<double> haarPhiMatrixTranspose(int rows);
-Signal<double> haarPsiMatrixTranspose(int rows);
 template<typename T> Signal<T> kronecker(const Signal<T>& A, const Signal<T>& B);
 template<typename T> Signal<T> matMult(const Signal<T>& A, const Signal<T>& B, double alpha = 1); // returns alpha*(A*B)
 template<typename T> Signal<T> add(const Signal<T>& A, const Signal<T>& B);
+double norm(const Signal<double>& A);
+double dot(const Signal<double>& a, const Signal<double>& b);
+Signal<double> cholesky(const Signal<double>& A);
+Signal<double> inversed(const Signal<double>& A);
+Signal<double> inverse(const Signal<double>& A);
+
+
+// basis
+Signal<double> haarPhiMatrixTranspose(int rows);
+Signal<double> haarPsiMatrixTranspose(int rows);
 Signal<double> generateLL(int scale, int currentScale, int h, int w, Signal<double> rPreFactor, Signal<double> cPreFactor);
 Signal<double> haarBasis2D(int h, int w, int scale);
 Signal<double> generateLLL(int scale, int currentScale, int h, int w, int f, Signal<double> rPreFactor, Signal<double> cPreFactor, Signal<double> sPreFactor);
@@ -109,27 +138,8 @@ Signal<double> dctBasis2D(int h, int w);
 Signal<double> dctBasis(int h, int w, int f);
 Signal<double> getBasis(int height, int width, int frames, SignalBasis::mode basisMode, int scale = 1);
 Signal<double> getBasis(Dim dim, SignalBasis::mode basisMode, int scale = 1);
-int countSensed(const Signal<bool>& sensed);
-template <typename T> Signal<T> getTargets (const Signal<T>& corrSignal, const Signal<bool>& sensed);
-template <typename T> Signal<T> getDesignMatrix(const Signal<T>& orig, const Signal<bool>& sensed);
-template <typename T> Signal<T> reshape(Signal<T> orig, int h, int w, int f = 1);
-template <typename T> Signal<T> reshape(Signal<T> orig, Dim dim);
-Signal<double> read(const std::string& inputFile, int numFrames = 1);
-double norm(const Signal<double>& A);
-double dot(const Signal<double>& a, const Signal<double>& b);
-Signal<double> cholesky(const Signal<double>& A);
-Signal<double> inversed(const Signal<double>& A);
-Signal<double> readSignal(const std::string& inputFile); // reads a signal from a file. Assumes frames are seperated by empty lines
-template<class T> std::string outputSignal(const Signal<T>& S, const std::string& label, const SignalSettings& cfg);
-Signal<double> inverse(const Signal<double>& A);
 
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Signal<double> bernoulliSamples(const Dim& dim, double prob = 0.5, double min = 0, double max = 1);
-Signal<double> eye(const Dim& dim);
-Signal<double> eye(int N);
-Signal<double> gaussianSamples(const Dim& dim, double mean = 0, double stddev = 1);
-Signal<double> getSensingMatrix(int size, Sensor::mode mode);
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 // Implementation
 #include "Signal.tpp"

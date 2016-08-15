@@ -1,7 +1,0 @@
-original		Data/InputFiles/foreman_256-256-256.txt
-corrupted		Data/ResultsDump/Foreman_L4_95_CORRUPTED.txt
-mask			Data/ResultsDump/Foreman_L4_95_MASK.txt
-recovered_1		Data/ResultsDump/Foreman_L4_95_RECOVERED_1_OF_4.txt
-recovered_2		Data/ResultsDump/Foreman_L4_95_RECOVERED_2_OF_4.txt
-recovered_3		Data/ResultsDump/Foreman_L4_95_RECOVERED_3_OF_4.txt
-recovered_4		Data/ResultsDump/Foreman_L4_95_RECOVERED_4_OF_4.txt

@@ -8,7 +8,9 @@
 #include <map>
 #include <vector>
 
-// requires mpi.h if USE_MPI
+#ifdef USE_MPI
+#include <mpi.h>
+#endif
 
 #include "Timer.hpp"
 
@@ -44,35 +46,33 @@ private:
 
     SignalSettings cfg;
 
-    bool m_printProgress;
+    //    bool m_printProgress;
 
-    //%% MPI %%
     int rank, nproc;
     Signal<int> grid;
     std::map<int, std::vector<Signal<int> > > gridMap;
-    int m_DUMMY;
-    //%%%%%%%%%%
-    
+    int m_DUMMY;   
     void reconstruct();
-public:
-    Interpolator(const SignalSettings& settingsFile);//std::string settingsFile); // construct from settings file name
-    bool printProgress() const { return m_printProgress; }
-    void run();				    // run interpolator
-
     int getIntRange(double input, int min = 0, int max = 255);
     double computeMSE(const Signal<double>& original, const Signal<double>& reconstructed);
     double MSEtoPSNR(double mse);
-};
 
-Interpolator::Interpolator(const SignalSettings& settingsFile)//std::string fileName)
-    : cfg(settingsFile) //: cfg(fileName)
+
+public:
+    Interpolator(const SignalSettings& settingsFile);
+    //bool printProgress() const { return m_printProgress; }
+    void run();				    // run interpolator
+    };
+
+Interpolator::Interpolator(const SignalSettings& settingsFile)
+    : cfg(settingsFile)
 {
     signal = Signal<signalType>(cfg.signalDim, false); // 'false' here means 'do not initialize'
     block = Signal<signalType>(cfg.blockDim, false);        
     sensedEntries = Signal<bool>(signal.dim()); // initialized to false
     cascadeRecoveredSignals = 
 	std::vector<Signal<double> >(cfg.endScale, Signal<double>(signal.dim(), false));
-    m_printProgress = cfg.printProgress;
+    //m_printProgress = cfg.printProgress;
     m_DUMMY = 9999;
 }
 
@@ -80,7 +80,7 @@ void Interpolator::run()
 {
     /*** set rng seed, print settings ***/
     std::srand(cfg.rngSeed);
-    if (cfg.printProgress && cfg.rank==0) std::cout << cfg << std::endl;
+    if (cfg.rank==0) std::cout << cfg << std::endl;
 
     /*** input original signal ***/
     signal.read(cfg.inputFile);
@@ -93,8 +93,7 @@ void Interpolator::run()
     }
     
     /*** Init allTargets ***/
-    allTargets = Signal<double>(signal.dim(),false);
-    //    sensingMatrices = Signal<double>(blc.dim(),false);
+    allTargets = Signal<double>(signal.dim(),false);    
 
     /*** Get basis matrices for various scales ***/
     for (int scale = 0; scale < cfg.endScale; ++scale)
@@ -103,8 +102,7 @@ void Interpolator::run()
     /*** Reconstruct the signal ***/
     if (cfg.printProgress && cfg.rank==0) std::cout << "\t*** Start Reconstruction ***\n";
     
-    //%%%%%%%%%%%%%%%%%%%%%%% Define grid and gird map %%%%%%%%%%
-    // rank, nproc declared in class internals
+    // Define grid and gird map
     rank = cfg.rank;
     nproc = cfg.nproc;
     grid = Signal<int> ( signal.height()/block.height(), signal.width()/block.width(), signal.frames()/block.frames());
@@ -112,10 +110,11 @@ void Interpolator::run()
     for (int i = 0; i < grid.size(); ++i) gridMap[grid.data()[i]].push_back(grid.index(i));
     int rootCalc = 0;
     for (int i = 0; i < grid.size(); ++i) if (grid.data()[i] == 0) ++rootCalc;
-
+    
+    // run the big loop
     reconstruct();
 
-    //%%%%%%%%%%%%%%%%%%%%%%% MPI Send&Recv %%%%%%%%%%%%%%%%%%%%%%%%%    
+    // MPI: Collect the results on rank 0
 #ifdef USE_MPI
     MPI_Status st;
     Signal<double> buffer(block.dim(),false);
@@ -150,17 +149,16 @@ void Interpolator::run()
 	    if (rank == 0) {
 		std::cout << "Gathering Result_" << scale+1 <<": " << i << "\tof " << grid.size() << "\t...\n";
 		if (grid.data()[i] != 0) {
-		MPI_Recv(buffer.data(), buffer.size(), MPI_DOUBLE, grid.data()[i], i, MPI_COMM_WORLD, &st);
-		cascadeRecoveredSignals[scale]
-		    .putPatch(buffer, grIdx(0)*block.height(), grIdx(1)*block.width(), grIdx(2)*block.frames());
+		    MPI_Recv(buffer.data(), buffer.size(), MPI_DOUBLE, grid.data()[i], i, MPI_COMM_WORLD, &st);
+		    cascadeRecoveredSignals[scale]
+			.putPatch(buffer, grIdx(0)*block.height(), grIdx(1)*block.width(), grIdx(2)*block.frames());
 		}				   	    
 	    } 	
 	    else {	    
-		if (grid.data()[i] == rank) {
-		    // send
+		if (grid.data()[i] == rank) {		   
 		    buffer = cascadeRecoveredSignals[scale]
 			.getPatch(grIdx(0)*block.height(), grIdx(1)*block.width(), grIdx(2)*block.frames(),
-						 block.height(), block.width(), block.frames());
+				  block.height(), block.width(), block.frames());
 		    MPI_Send(buffer.data(), buffer.size(), MPI_DOUBLE, 0, i, MPI_COMM_WORLD);
 		}
 	    }	
@@ -168,7 +166,8 @@ void Interpolator::run()
 	MPI_Barrier(MPI_COMM_WORLD);    	
     }
 #endif    
-    //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
+    /*** Post-proccessing ***/
     if (rank == 0) {
 	/*** Arrange allTargets Matrix for measurements to be consecutive ***/
 	Signal<double> allT2(allTargets.dim()); // init to zero
@@ -181,33 +180,35 @@ void Interpolator::run()
 	}
 
 	/*** Print settings again ***/
-	if (cfg.printProgress) std::cout << cfg;
+	std::cout << cfg;
 	
 	/*** Write the output to disk and store the output file names in the fls file ***/
-	if (cfg.printProgress) std::cout<< "\n\t *** Output Files ***";        
+	std::cout << "\n\t *** Output Files ***";        
 	std::ofstream flsFile(cfg.flsFileName.c_str());
 	if (!flsFile) { 
 	    if (cfg.printProgress) std::cerr << "\nCould not save names of output files in " << cfg.flsFileName << std::endl;;
-	} else if(cfg.printProgress) std::cout << "\nRelevant file names for interfacing with Matlab have been saved in:\t" << cfg.flsFileName << std::endl;
-	std::string name;
+	} else
+	    std::cout << "\nRelevant file names for interfacing with Matlab have been saved in:\t" << cfg.flsFileName << std::endl;
+
 	
+	std::string name;	
+
 	// original
 	name = cfg.inputFile;
 	if (flsFile) flsFile << "original\t\t" << name << std::endl;
-	if (cfg.printProgress) std::cout << "\nOriginal signal file:\t\t\t" << name;
+	std::cout << "\nOriginal signal file:\t\t\t" << name;
 	
 	// masked signal
 	if (cfg.sensor.setting() == Sensor::mask) {
 	    name = outputSignal(maskedSignal, "_MASKED", cfg); // writes to disk and returns filename
 	    if (flsFile) flsFile << "masked\t\t" << name << std::endl;
-	    if (cfg.printProgress) std::cout << "\nMasked signal saved at:\t\t\t" << name;
+	    std::cout << "\nMasked signal saved at:\t\t\t" << name;
 	}
 	
-	// targets
-	//name = outputSignal(allTargets, "_MEASUREMENTS", cfg);
+	// targets	
 	name = outputSignal(allT2, "_MEASUREMENTS", cfg);
 	if (flsFile) flsFile << "measurements\t\t\t" << name << std::endl;
-	if (cfg.printProgress) std::cout << "\nMeasurements saved at:\t\t\t" << name;
+	std::cout << "\nMeasurements saved at:\t\t\t" << name;
 	
 	// recovered
 	for (int scale = 0; scale < cfg.endScale; ++scale) {
@@ -215,16 +216,15 @@ void Interpolator::run()
 	    label << "_RECOVERED_" << scale+1 << "_OF_" << cfg.endScale;
 	    name = outputSignal(cascadeRecoveredSignals[scale], label.str(), cfg);
 	    if (flsFile) flsFile << "recovered_" << scale+1 << "\t\t" << name << std::endl;
-	    if(cfg.printProgress) std::cout << "\nRecovered Signal (scale " << scale+1 << ") saved at:\t" << name;
+	    std::cout << "\nRecovered Signal (scale " << scale+1 << ") saved at:\t" << name;
 	}
 	
 	/*** Output MSE and PSNR for each stage ***/
 	if (cfg.computePSNR) {
-	    if (cfg.printProgress) {
-		std::cout << "\n\n\n\n\n";
-		std::cout << "\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n"
-			  << "%%%%%%%%%%%%%%% Accuracy of Reconstruction %%%%%%%%%%%%%%\n\n";
-	    }
+	    std::cout << "\n\n\n\n\n";
+	    std::cout << "\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n"
+		      << "%%%%%%%%%%%%%%% Accuracy of Reconstruction %%%%%%%%%%%%%%\n\n";
+	    
 	    for (int scale = 0; scale < cfg.endScale; ++scale) {
 		double mse = computeMSE(signal, cascadeRecoveredSignals[scale]);
 		double psnr = MSEtoPSNR(mse);
@@ -235,7 +235,7 @@ void Interpolator::run()
 	    }
 	    std::cout << "\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%";
 	    std::cout << "\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\n\n\n\n";
-	}    
+	}		
     }    
 }
 
@@ -252,26 +252,20 @@ void Interpolator::reconstruct()
 		
 		if (rank != grid(rowIdx, colIdx, frameIdx)) continue;
 		
-		if (cfg.printProgress && rank == 0)
+		if (rank == 0)
 		    std::cout << "Block (" << rowIdx+1 << "," << colIdx+1
 			      << "," << frameIdx+1 << ")   \tof\t("
 			      << numBlocksHeight << "," << numBlocksWidth
 			      << "," << numBlocksFrames << ")\t";
 
-		// signalPatch = maskedSignal
-		//     .getPatch(rowIdx*block.height(), colIdx*block.width(), 
-		// 	      frameIdx*block.frames(), block.height(), block.width(),
-		// 	      block.frames());
 		sensedPatch = sensedEntries
 		    .getPatch(rowIdx*block.height(), colIdx*block.width(), 
 			      frameIdx*block.frames(), block.height(), block.width(),
 			      block.frames());
-		//signalPatchVector = vectorize(signalPatch);
 		sensedPatchVector = vectorize(sensedPatch);
-		// initialSignalVector = vectorize(signalPatch);
 		initialSensedVector = vectorize(sensedPatch);
 
-    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 		Signal<double> theta = getSensingMatrix(block.size(), cfg.sensor.setting());
 		Signal<double> origSignalPatch = signal.getPatch(rowIdx*block.height(), colIdx*block.width(),
 								 frameIdx*block.frames(), block.height(),
@@ -285,21 +279,19 @@ void Interpolator::reconstruct()
 		Signal<double> mangledSignal = reshape(mangledSignalVector, block.dim());
 		Signal<double> targetPatch(block.dim()); // set to zero
 		targetPatch.fill(m_DUMMY);
-    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 			       
 		for (int scale = 0; scale < cfg.endScale; ++scale) {
 		    int measurements = countSensed(sensedPatchVector);
 		    if (measurements == 0) {
-			if (cfg.printProgress && cfg.rank==0) {
+			if (cfg.rank==0) {
 			    if (scale == 0) std::cout << "(empty)" << std::endl;
 			    else std::cout << "\t\t\t\t\t\t(empty)" << std::endl;
 			}
 			continue;
 		    }
 		    
-		    //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-		    Signal<double> measuredSignalPatchVector = applyMask(mangledSignalVector, sensedPatchVector);
-		    //Signal<double> measuredSignalPatchVector = vectorize(measuredSignalPatch);
+		    Signal<double> measuredSignalPatchVector = applyMask(mangledSignalVector, sensedPatchVector);		    
 
 		    /*** Declare and define RVM variables ***/
 		    Signal<double> targets = getTargets(measuredSignalPatchVector, sensedPatchVector);
@@ -307,15 +299,14 @@ void Interpolator::reconstruct()
 		    if (cfg.sensor.setting() == Sensor::mask) mangledBasis = cascadeBasis[scale];
 		    else mangledBasis = matMult(theta,cascadeBasis[scale]);
 		    Signal<double> designMatrix = getDesignMatrix(mangledBasis, sensedPatchVector);
-		    //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     		    /*** Start the RVM ***/
     		    bool useCascade;
     		    if (scale+1 < cfg.endScale) useCascade = true;
     		    else useCascade = false;
 		    
-		    RVM rvm(cfg.stdDev, cfg.deltaML_threshold, cfg.printProgress);
-		    if (rank != 0) rvm.setPrint(false); 
+		    
+		    RVM rvm(cfg.stdDev, cfg.deltaML_threshold, rank==0); // Third arg is "RVM prints progress?"
 
 		    uint64 trainTimeStart = GetTimeMs64();
 		    rvm.train(designMatrix, targets);	
@@ -340,17 +331,14 @@ void Interpolator::reconstruct()
 			    targetPatch.data()[i] = targets(i);
 			allTargets.putPatch(targetPatch, rowIdx*block.height(),
 					    colIdx*block.width(), frameIdx*block.frames());
-			//allTargets.putPatch(measuredSignalPatch, rowIdx*block.height(),
-			// 			colIdx*block.width(), frameIdx*block.frames());
 		    }
 
-		    //%%%%%%%%%%%%%%%% NEEDS TO BE MODIFIED. Okay, I modified it. %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     		    /*** Prepare for next part of cascade ***/
     		    if (useCascade) {			
-			uint64 errorTimeStart = GetTimeMs64();
-			//Signal<double> errors = rvm.predictionErrors(cascadeBasis[scale]);
+			uint64 errorTimeStart = GetTimeMs64();			
 			Signal<double> errors = rvm.predictionErrors(mangledBasis);
     			errorTime += (GetTimeMs64() - errorTimeStart); ++errorTimeCount;
+			
 			for (int i = 0; i < block.size(); ++i) { 
     			    if (cfg.sensor.setting() == Sensor::mask) { 
 				if (errors(i) != 0) sensedPatchVector(i) = true; // get new mask
@@ -360,13 +348,11 @@ void Interpolator::reconstruct()
 				else sensedPatchVector(i) = false;
 			    }
     			    // Recovered becomes new signal Patch to get targets for next stage
-    			    //signalPatchVector(i) = recoveredVector(i); 
 			    mangledSignalVector = rvm.predict(mangledBasis);
 			    mangledSignalVector.fill(initialMangledVector,initialSensedVector);
     			}
 			if (cfg.printProgress && cfg.rank==0) std::cout << "\t\t\t\t\t\t";
     		    }
-		    //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 		}
 	    }
 }

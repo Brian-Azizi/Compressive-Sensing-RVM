@@ -6,6 +6,7 @@
 #include <ostream>
 #include <string>
 
+#include "Signal.hpp"
 #include "ConfigFile.hpp"
 #include "Mask.hpp"
 #include "Sensor.hpp"
@@ -31,7 +32,7 @@ struct SignalSettings {
     int endScale;		// final scale of basis functions (ignored if basisMode == dct)
     Dim blockDim;		// hold dimensions of the signal blocks
     Dim signalDim;		// holds dimensions of input signal
-    bool printProgress;		// if yes, we print to cout (deprecated)
+    bool printProgress;		// if yes, we print direct output to a log file instead of stdout
     double stdDev;		// standard deviation of noise variable in the RVM
     double deltaML_threshold;	// convergence criterion for the RVM
     std::string outputDirectory; // directory in which to save the output files
@@ -63,6 +64,9 @@ struct SignalSettings {
 std::ostream& operator<<(std::ostream& os, const SignalSettings& cfg);
 
 std::string helpMessage(const std::string& argv_0); // print help message containing info on the format of .cfg files
+std::string longHelpMessage(const std::string& argv_0); // more verbose help message
+
+template<class T> std::string outputSignal(const Signal<T>& S, const std::string& label, const SignalSettings& cfg);
 
 #include "SignalSettings.tpp"
 

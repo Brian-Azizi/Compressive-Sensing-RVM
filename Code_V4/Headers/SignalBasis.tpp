@@ -3,8 +3,9 @@
 
 #include <string>
 
+#include "SignalBasis.hpp"
 #include "Errors.hpp"
-
+#include "Signal.hpp"
 
 // static data
 const std::string SignalBasis::modeString[] = {"dct", "haar"};
@@ -73,6 +74,5 @@ std::ostream& operator<<(std::ostream& os, const SignalBasis& bas)
 
     return os;
 }
-
 
 #endif

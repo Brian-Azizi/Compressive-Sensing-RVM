@@ -383,6 +383,381 @@ template <typename T> std::ostream& operator<<(std::ostream& os, const Signal<T>
     return os;
 }
 
+
+
+template<typename T>
+Signal<T> kronecker(const Signal<T>& A, const Signal<T>& B)
+{
+    if (A.frames() != 1) error("A needs to be at most 2D");
+    if (B.frames() != 1) error("B needs to be at most 2D");
+
+    Signal<T> C(A.height()*B.height(), A.width()*B.width());
+    for (int i = 0; i < A.height(); ++i) 
+	for (int j = 0; j < A.width(); ++j)
+	    for (int p = 0; p < B.height(); ++p) 
+		for (int q = 0; q < B.width(); ++q) 
+		    C(i*B.height()+p,j*B.width()+q) = A(i,j) * B(p,q);
+    return C;
+}
+
+template<typename T>
+Signal<T> matMult(const Signal<T>& A, const Signal<T>& B, double alpha) // does NOT modify A and B. const would be incompatible with blas call
+{
+    if (A.frames() != 1 || B.frames() != 1) 
+	error("multiplication not defined for 3D signals");
+    if (A.width() != B.height())
+	error("inner matrix dimensions must agree");
+    Signal<T> ret(A.height(), B.width(),false);
+    blasMatrixMultiplication(A.height(), A.width(), A.data(), B.height(), B.width(),
+			     B.data(), ret.height(), ret.width(), ret.data(), alpha);
+    
+    // for (int i = 0; i < A.height(); ++i)
+    // 	for (int j = 0; j < B.width(); ++j)
+    // 	    for (int k = 0; k < A.width(); ++k)
+    // 		ret(i,j) += A(i,k) * B(k,j);
+
+    return ret;
+}
+
+template<typename T>
+Signal<T> add(const Signal<T>& A, const Signal<T>& B)
+{
+    if (A.dim() != B.dim()) 
+	error("ADD: Signals must have the same dimensions");
+    
+    Signal<T> ret(A.dim(),false);
+    int sz = A.size();
+    for (int i = 0; i < sz; ++i)
+	ret.data()[i] = A.data()[i] + B.data()[i];
+
+    return ret;
+}
+
+
+template <typename T>
+Signal<T> getTargets (const Signal<T>& corrSignal,
+		      const Signal<bool>& sensed)
+{
+    Signal<T> target(countSensed(sensed));
+    int currentIdx = 0;
+    int sz = corrSignal.size();
+    for (int i = 0; i < sz; ++i) {
+	if (sensed(i)) {	// Assumes Signals are vectorized
+	    target(currentIdx) = corrSignal(i);
+	    ++currentIdx;
+	}
+    }
+    return target;
+}
+
+
+template <typename T>
+Signal<T> getDesignMatrix(const Signal<T>& orig,
+			  const Signal<bool>& sensed)
+{
+    int currentIdx = 0;
+    int h = orig.height();
+    int w = orig.width();
+    Signal<T> designMatrix(countSensed(sensed), w);
+    
+    for (int i = 0; i < h; ++i) {
+	if (sensed(i)) {	// assumes vectorized
+	    for (int j = 0; j < w; ++j) {		
+		designMatrix(currentIdx, j) = orig(i,j); // assumes orig is 2D
+	    }
+	    ++currentIdx;
+	}
+    }
+
+    return designMatrix;
+}
+
+template<typename T>
+Signal<T> reshape(Signal<T> orig, int h, int w, int f) 
+{
+    int sz = h*w*f;
+    if (orig.size() != sz) error("number of elements must not change");
+
+    Signal<T> ret(h, w, f, false);
+    for (int i = 0; i < sz; ++i) ret.data()[i] = orig.data()[i];
+    return ret;
+}
+
+template<typename T>
+Signal<T> reshape(Signal<T> orig, Dim dim) 
+{
+    return reshape(orig, dim.height(), dim.width(), dim.frames());
+}
+
+Signal<double> read(const std::string& inputFile, int numFrames)
+{
+    if (numFrames < 1) error("numFrames must be positive");
+    std::ifstream in(inputFile.c_str());
+    if(!in) error("couldn't open file ", inputFile);
+    
+    std::string line;
+    double entry;
+    
+    int rows = 0;
+    int cols = 0;
+    int prevCols = 0;		// for checking if all rows have same #cols
+    bool firstLine = true;
+    
+    while(std::getline(in, line)) {
+	++rows;
+
+	std::istringstream os(line);
+	cols = 0;
+	while(os >> entry) {
+	    ++cols;
+	}
+	if (firstLine) firstLine = false;
+	else 
+	    if (cols != prevCols) 
+		error("rows must have same number of entries in file ", inputFile);
+	
+	prevCols = cols;
+    }
+
+    // initialize Signal and go back to beginning of the file
+    if (rows % numFrames != 0) {
+	std::cerr << "numFrames does not divide number of rows in file "
+		  << inputFile << ": Setting numFrames == 1 (default)\n\n";
+	numFrames = 1;
+    }
+    
+    rows /= numFrames;
+
+    Signal<double> ret(rows,cols, numFrames,false);
+    in.clear();
+    in.seekg(0, std::ios::beg);
+
+    int idx = 0;
+    while(in >> entry) {
+	ret.data()[idx] = entry;
+	++idx;
+    }
+
+    return ret;
+}
+
+double norm(const Signal<double>& A)
+{
+    if (A.width() != 1 || A.frames() != 1) error("can only take norm of a vector");
+
+    double p = 0;    
+    int length = A.height();
+    for (int i = 0; i < length; ++i) p += A(i)*A(i);
+	
+    return std::sqrt(p);
+}
+
+double dot(const Signal<double>& a, const Signal<double>& b)
+{
+    if (a.width() != 1 || a.frames() != 1 || b.width() != 1 || b.frames() != 1
+	|| a.height() != b.height()) error("arguments must be vectors of the same length");
+    double ret = blasDot(a.height(), a.data(), b.height(), b.data());
+    // int length = a.height();
+    // for (int i = 0; i < length; ++i) ret += a(i)*b(i);
+
+    return ret;
+}
+
+
+Signal<double> cholesky(const Signal<double>& A)
+{
+    if (A.frames() != 1 || A.height() != A.width()) error("input must be square matrix");
+    int N = A.height();
+
+    Signal<double> chol(N,N);
+    for (int i = 0; i < N; ++i) {
+	chol(i,i) = A(i,i);
+	for (int k = 0; k < i; ++k) chol(i,i) -= chol(k,i)*chol(k,i);
+	chol(i,i) = std::sqrt(chol(i,i));
+
+	for (int j = i+1; j < N; ++j) {
+	    chol(i,j) = A(i,j);
+	    for (int k = 0; k < i; ++k) chol(i,j) -= chol(k,i)*chol(k,i);
+	    chol(i,j) /= chol(i,i);
+	}
+    }
+    
+    return chol;
+}
+
+Signal<double> inversed(const Signal<double>& A)
+{
+   if (A.frames() != 1 || A.height() != A.width()) error("input must be square matrix");
+   int N = A.height();
+
+   Signal<double> inv(N,N);
+   for (int j = 0; j < N; ++j) {
+       inv(j,j) = 1.0/A(j,j);
+       
+       for (int i = 0; i < j; ++i)
+	   for (int k = 0; k < j; ++k) 
+	       inv(i,j) += inv(i,k)*A(k,j);
+       for (int k = 0; k < j; ++k)
+	   inv(k,j) /= -A(j,j);
+   }
+
+   return inv;
+}
+
+Signal<double> readSignal(const std::string& inputFile) // reads a signal from a file. Assumes frames are seperated by empty lines
+{
+    std::ifstream in(inputFile.c_str());
+    if(!in) error("couldn't open file ", inputFile);
+    
+    std::string line;
+    double entry;
+    
+    int rows = 0;
+    int cols = 0;
+    int frames = 0;
+    int prevCols = 0; // for checking if all rows have same #cols
+    int prevFramesCols = 0; // for checking if all frames have same width
+    int prevRows = 0;		// for checking all frames have same #rows
+    bool firstRow = true;
+    bool firstFrame = true;
+    bool lastLineEmpty = true;
+
+    while(std::getline(in, line)) {
+       	if (line.empty()) {
+	    if (!lastLineEmpty) { // we've finished a frame
+		if (!firstFrame) {
+		    if (prevRows != rows) error("frames do not have consistent height in file ", inputFile);
+		    if (prevFramesCols != cols) error("frames do not have consistent width in file ", inputFile);
+		} else firstFrame = false;
+		prevRows = rows;
+		prevFramesCols = cols;		
+	    }
+	    lastLineEmpty = true;
+	    continue;
+	} else if (lastLineEmpty) { // we've hit a frames
+	    frames++;
+	    rows = 0;
+	    firstRow = true;
+	    lastLineEmpty = false;
+	}
+	++rows;
+	std::istringstream os(line);
+	cols = 0;
+	while(os >> entry) {
+	    ++cols;
+	}
+	    
+	// check that frame has consistent width
+	if (firstRow) firstRow = false;
+	else {
+	    if (cols != prevCols) 
+		error("rows must have same number of entries in file ", inputFile);
+	}
+	prevCols = cols;	
+    }
+
+    Signal<double> ret(rows, cols, frames,false);
+    in.clear();
+    in.seekg(0, std::ios::beg);
+
+    int idx = 0;
+    while(in >> entry) {
+    	ret.data()[idx] = entry;
+    	++idx;
+    }
+
+    return ret;
+}
+
+
+// returns inverse of an NxN matrix A
+// uses Lapack
+Signal<double> inverse(const Signal<double>& A)
+{
+    int N = A.height();
+    if (A.dim() != Dim(N,N,1)) error("input has invalid dimensions");
+
+    Signal<double> invA = A;
+    
+    int errorCode;
+    lapackInverse(invA.data(), N, errorCode);
+    //if(errorCode != 0) error("Inverse: matrix inversion failed! Error code", errorCode);
+
+    return invA;
+}
+
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+// Generate a random matrix by drawing Bernoulli Samples
+Signal<double> bernoulliSamples(const Dim& dim, double p, double min, double max)
+{
+    if (p < 0 || p > 1) error("Bernoulli parameter must be in [0,1]");
+
+    Signal<double> ret(dim, false);
+    for (int i = 0; i < dim.size(); ++i) {
+	double rnd = rand()/ (double) RAND_MAX;
+	if (rnd < p) ret.data()[i] = min;
+	else ret.data()[i] = max;
+    }
+    return ret;
+}
+Signal<double> eye(const Dim& dim)
+{
+    if (dim.frames() != 1 || dim.height() != dim.width()) error("eye: dimensions must be for square matrices");
+
+    Signal<double> ret(dim);	// init to zero;
+    for (int i = 0; i < ret.size(); i += (ret.width()+1))
+	ret.data()[i] = 1;
+	
+    return ret;
+}
+Signal<double> eye(int N)
+{
+    return eye(Dim(N,N));
+}
+Signal<double> gaussianSamples(const Dim& dim, double mean, double stddev)
+{
+    std::random_device rd;
+    std::mt19937 g(rd());
+
+    std::normal_distribution<double> d(mean, stddev);
+    
+    Signal<double> ret(dim, false);
+    for (int i = 0; i < ret.size(); ++i)
+	ret.data()[i] = d(g);
+
+    return ret;
+}
+
+Signal<double> getSensingMatrix(int size, Sensor::mode setting)
+{
+    Signal<double> ret(size,size);
+    switch(setting) {
+    case Sensor::mask:
+	return eye(size);
+    case Sensor::gaussian:
+	return gaussianSamples(Dim(size,size), 0, 1/std::sqrt(size));
+    case Sensor::bernoulli:
+	return bernoulliSamples(Dim(size,size), 0.5, -1/std::sqrt(size), 1/std::sqrt(size));
+    default:
+	error("Sensing Matrix: invalid setting");
+	return Signal<double>();
+    }
+}
+
+
+// Mask Helper Functions
+
+int countSensed(const Signal<bool>& sensed)
+{
+    int count = 0; 
+    int sz = sensed.size();
+    for (int i = 0; i < sz; ++i) 
+	if (sensed.data()[i]) ++count;
+
+    return count;	
+}
+
+
 template <typename T> 
 Signal<T> applyMask(const Signal<T>& orig, Signal<bool>& sensed, const Mask& mask)
 {
@@ -457,7 +832,6 @@ Signal<T> applyMask(const Signal<T>& orig, const Signal<bool>& mask)
     return ret;
 }
 
-
 Signal<double> haarPhiMatrixTranspose(int rows)
 {
     if (rows < 1) error("need positive number of rows");
@@ -490,55 +864,6 @@ Signal<double> haarPsiMatrixTranspose(int rows)
 
     return psiT;
 }
-
-template<typename T>
-Signal<T> kronecker(const Signal<T>& A, const Signal<T>& B)
-{
-    if (A.frames() != 1) error("A needs to be at most 2D");
-    if (B.frames() != 1) error("B needs to be at most 2D");
-
-    Signal<T> C(A.height()*B.height(), A.width()*B.width());
-    for (int i = 0; i < A.height(); ++i) 
-	for (int j = 0; j < A.width(); ++j)
-	    for (int p = 0; p < B.height(); ++p) 
-		for (int q = 0; q < B.width(); ++q) 
-		    C(i*B.height()+p,j*B.width()+q) = A(i,j) * B(p,q);
-    return C;
-}
-
-template<typename T>
-Signal<T> matMult(const Signal<T>& A, const Signal<T>& B, double alpha) // does NOT modify A and B. const would be incompatible with blas call
-{
-    if (A.frames() != 1 || B.frames() != 1) 
-	error("multiplication not defined for 3D signals");
-    if (A.width() != B.height())
-	error("inner matrix dimensions must agree");
-    Signal<T> ret(A.height(), B.width(),false);
-    blasMatrixMultiplication(A.height(), A.width(), A.data(), B.height(), B.width(),
-			     B.data(), ret.height(), ret.width(), ret.data(), alpha);
-    
-    // for (int i = 0; i < A.height(); ++i)
-    // 	for (int j = 0; j < B.width(); ++j)
-    // 	    for (int k = 0; k < A.width(); ++k)
-    // 		ret(i,j) += A(i,k) * B(k,j);
-
-    return ret;
-}
-
-template<typename T>
-Signal<T> add(const Signal<T>& A, const Signal<T>& B)
-{
-    if (A.dim() != B.dim()) 
-	error("ADD: Signals must have the same dimensions");
-    
-    Signal<T> ret(A.dim(),false);
-    int sz = A.size();
-    for (int i = 0; i < sz; ++i)
-	ret.data()[i] = A.data()[i] + B.data()[i];
-
-    return ret;
-}
-
 Signal<double> generateLL(int scale, int currentScale, int h, int w, 
 			  Signal<double> rPreFactor, Signal<double> cPreFactor)
 {
@@ -824,375 +1149,5 @@ Signal<double> getBasis(Dim dim, SignalBasis::mode basisMode, int scale)
     return getBasis(dim.height(), dim.width(), dim.frames(), basisMode, scale);
 }
 
-int countSensed(const Signal<bool>& sensed)
-{
-    int count = 0; 
-    int sz = sensed.size();
-    for (int i = 0; i < sz; ++i) 
-	if (sensed.data()[i]) ++count;
 
-    return count;	
-}
-
-template <typename T>
-Signal<T> getTargets (const Signal<T>& corrSignal,
-		      const Signal<bool>& sensed)
-{
-    Signal<T> target(countSensed(sensed));
-    int currentIdx = 0;
-    int sz = corrSignal.size();
-    for (int i = 0; i < sz; ++i) {
-	if (sensed(i)) {	// Assumes Signals are vectorized
-	    target(currentIdx) = corrSignal(i);
-	    ++currentIdx;
-	}
-    }
-    return target;
-}
-
-
-template <typename T>
-Signal<T> getDesignMatrix(const Signal<T>& orig,
-			  const Signal<bool>& sensed)
-{
-    int currentIdx = 0;
-    int h = orig.height();
-    int w = orig.width();
-    Signal<T> designMatrix(countSensed(sensed), w);
-    
-    for (int i = 0; i < h; ++i) {
-	if (sensed(i)) {	// assumes vectorized
-	    for (int j = 0; j < w; ++j) {		
-		designMatrix(currentIdx, j) = orig(i,j); // assumes orig is 2D
-	    }
-	    ++currentIdx;
-	}
-    }
-
-    return designMatrix;
-}
-
-template<typename T>
-Signal<T> reshape(Signal<T> orig, int h, int w, int f) 
-{
-    int sz = h*w*f;
-    if (orig.size() != sz) error("number of elements must not change");
-
-    Signal<T> ret(h, w, f, false);
-    for (int i = 0; i < sz; ++i) ret.data()[i] = orig.data()[i];
-    return ret;
-}
-
-template<typename T>
-Signal<T> reshape(Signal<T> orig, Dim dim) 
-{
-    return reshape(orig, dim.height(), dim.width(), dim.frames());
-}
-
-Signal<double> read(const std::string& inputFile, int numFrames)
-{
-    if (numFrames < 1) error("numFrames must be positive");
-    std::ifstream in(inputFile.c_str());
-    if(!in) error("couldn't open file ", inputFile);
-    
-    std::string line;
-    double entry;
-    
-    int rows = 0;
-    int cols = 0;
-    int prevCols = 0;		// for checking if all rows have same #cols
-    bool firstLine = true;
-    
-    while(std::getline(in, line)) {
-	++rows;
-
-	std::istringstream os(line);
-	cols = 0;
-	while(os >> entry) {
-	    ++cols;
-	}
-	if (firstLine) firstLine = false;
-	else 
-	    if (cols != prevCols) 
-		error("rows must have same number of entries in file ", inputFile);
-	
-	prevCols = cols;
-    }
-
-    // initialize Signal and go back to beginning of the file
-    if (rows % numFrames != 0) {
-	std::cerr << "numFrames does not divide number of rows in file "
-		  << inputFile << ": Setting numFrames == 1 (default)\n\n";
-	numFrames = 1;
-    }
-    
-    rows /= numFrames;
-
-    Signal<double> ret(rows,cols, numFrames,false);
-    in.clear();
-    in.seekg(0, std::ios::beg);
-
-    int idx = 0;
-    while(in >> entry) {
-	ret.data()[idx] = entry;
-	++idx;
-    }
-
-    return ret;
-}
-
-double norm(const Signal<double>& A)
-{
-    if (A.width() != 1 || A.frames() != 1) error("can only take norm of a vector");
-
-    double p = 0;    
-    int length = A.height();
-    for (int i = 0; i < length; ++i) p += A(i)*A(i);
-	
-    return std::sqrt(p);
-}
-
-double dot(const Signal<double>& a, const Signal<double>& b)
-{
-    if (a.width() != 1 || a.frames() != 1 || b.width() != 1 || b.frames() != 1
-	|| a.height() != b.height()) error("arguments must be vectors of the same length");
-    double ret = blasDot(a.height(), a.data(), b.height(), b.data());
-    // int length = a.height();
-    // for (int i = 0; i < length; ++i) ret += a(i)*b(i);
-
-    return ret;
-}
-
-
-Signal<double> cholesky(const Signal<double>& A)
-{
-    if (A.frames() != 1 || A.height() != A.width()) error("input must be square matrix");
-    int N = A.height();
-
-    Signal<double> chol(N,N);
-    for (int i = 0; i < N; ++i) {
-	chol(i,i) = A(i,i);
-	for (int k = 0; k < i; ++k) chol(i,i) -= chol(k,i)*chol(k,i);
-	chol(i,i) = std::sqrt(chol(i,i));
-
-	for (int j = i+1; j < N; ++j) {
-	    chol(i,j) = A(i,j);
-	    for (int k = 0; k < i; ++k) chol(i,j) -= chol(k,i)*chol(k,i);
-	    chol(i,j) /= chol(i,i);
-	}
-    }
-    
-    return chol;
-}
-
-Signal<double> inversed(const Signal<double>& A)
-{
-   if (A.frames() != 1 || A.height() != A.width()) error("input must be square matrix");
-   int N = A.height();
-
-   Signal<double> inv(N,N);
-   for (int j = 0; j < N; ++j) {
-       inv(j,j) = 1.0/A(j,j);
-       
-       for (int i = 0; i < j; ++i)
-	   for (int k = 0; k < j; ++k) 
-	       inv(i,j) += inv(i,k)*A(k,j);
-       for (int k = 0; k < j; ++k)
-	   inv(k,j) /= -A(j,j);
-   }
-
-   return inv;
-}
-
-Signal<double> readSignal(const std::string& inputFile) // reads a signal from a file. Assumes frames are seperated by empty lines
-{
-    std::ifstream in(inputFile.c_str());
-    if(!in) error("couldn't open file ", inputFile);
-    
-    std::string line;
-    double entry;
-    
-    int rows = 0;
-    int cols = 0;
-    int frames = 0;
-    int prevCols = 0; // for checking if all rows have same #cols
-    int prevFramesCols = 0; // for checking if all frames have same width
-    int prevRows = 0;		// for checking all frames have same #rows
-    bool firstRow = true;
-    bool firstFrame = true;
-    bool lastLineEmpty = true;
-
-    while(std::getline(in, line)) {
-       	if (line.empty()) {
-	    if (!lastLineEmpty) { // we've finished a frame
-		if (!firstFrame) {
-		    if (prevRows != rows) error("frames do not have consistent height in file ", inputFile);
-		    if (prevFramesCols != cols) error("frames do not have consistent width in file ", inputFile);
-		} else firstFrame = false;
-		prevRows = rows;
-		prevFramesCols = cols;		
-	    }
-	    lastLineEmpty = true;
-	    continue;
-	} else if (lastLineEmpty) { // we've hit a frames
-	    frames++;
-	    rows = 0;
-	    firstRow = true;
-	    lastLineEmpty = false;
-	}
-	++rows;
-	std::istringstream os(line);
-	cols = 0;
-	while(os >> entry) {
-	    ++cols;
-	}
-	    
-	// check that frame has consistent width
-	if (firstRow) firstRow = false;
-	else {
-	    if (cols != prevCols) 
-		error("rows must have same number of entries in file ", inputFile);
-	}
-	prevCols = cols;	
-    }
-
-    Signal<double> ret(rows, cols, frames,false);
-    in.clear();
-    in.seekg(0, std::ios::beg);
-
-    int idx = 0;
-    while(in >> entry) {
-    	ret.data()[idx] = entry;
-    	++idx;
-    }
-
-    return ret;
-}
-
-template<class T>		
-std::string outputSignal(const Signal<T>& S, const std::string& label, const SignalSettings& cfg)
-{
-    std::stringstream ss;
-    std::stringstream outputName;
-
-    std::string inputName = cfg.inputFile;
-    inputName.erase(0, inputName.find_last_of('/')+1);
-    
-    if (cfg.cfg.keyExists("outputName")) {
-	std::string name = cfg.outputName;
-	name.erase(0, name.find_last_of('/')+1);
-	outputName << name << label << ".txt";
-    } else {
-	outputName << modeToString(cfg.basisMode);
-	outputName << "_blockDim-" << cfg.blockDim.height() << "-" 
-		   << cfg.blockDim.width() << "-" << cfg.blockDim.frames() << "_";
-	
-	if (cfg.simulateCorruption) outputName << cfg.mask.settingString() << "-" << cfg.mask.percentage() << "%";
-	else {
-	    std::string maskName = cfg.maskFile;
-	    maskName.erase(0, maskName.find_last_of('/')+1);
-	    outputName << maskName;
-	}
-	outputName << "_stdDev-" << cfg.stdDev << "_threshold-" << cfg.deltaML_threshold;
-	outputName << label << "_" << inputName;
-    }
-
-
-    ss << cfg.outputDirectory << outputName.str();	
-    std::string ret = ss.str();
-
-    std::ofstream out;
-    out.open(ss.str().c_str());
-    if(!out) {
-	if (cfg.printProgress)
-	    std::cerr << "Warning: could not open output file '" + ss.str() + "'!"
-		      << "\nAttempting output in current directory...";
-	ret = outputName.str();
-	out.open(outputName.str().c_str());
-	if (!out) error("could not open output file '" + outputName.str());
-	else 
-	    if (cfg.printProgress) std::cerr << "OK!\n\n";
-    }
-    out << S;
-    out.close();
-
-    return ret;		// return name of output file
-}
-
-// returns inverse of an NxN matrix A
-// uses Lapack
-Signal<double> inverse(const Signal<double>& A)
-{
-    int N = A.height();
-    if (A.dim() != Dim(N,N,1)) error("input has invalid dimensions");
-
-    Signal<double> invA = A;
-    
-    int errorCode;
-    lapackInverse(invA.data(), N, errorCode);
-    //if(errorCode != 0) error("Inverse: matrix inversion failed! Error code", errorCode);
-
-    return invA;
-}
-
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-// Generate a random matrix by drawing Bernoulli Samples
-Signal<double> bernoulliSamples(const Dim& dim, double p, double min, double max)
-{
-    if (p < 0 || p > 1) error("Bernoulli parameter must be in [0,1]");
-
-    Signal<double> ret(dim, false);
-    for (int i = 0; i < dim.size(); ++i) {
-	double rnd = rand()/ (double) RAND_MAX;
-	if (rnd < p) ret.data()[i] = min;
-	else ret.data()[i] = max;
-    }
-    return ret;
-}
-Signal<double> eye(const Dim& dim)
-{
-    if (dim.frames() != 1 || dim.height() != dim.width()) error("eye: dimensions must be for square matrices");
-
-    Signal<double> ret(dim);	// init to zero;
-    for (int i = 0; i < ret.size(); i += (ret.width()+1))
-	ret.data()[i] = 1;
-	
-    return ret;
-}
-Signal<double> eye(int N)
-{
-    return eye(Dim(N,N));
-}
-Signal<double> gaussianSamples(const Dim& dim, double mean, double stddev)
-{
-    std::random_device rd;
-    std::mt19937 g(rd());
-
-    std::normal_distribution<double> d(mean, stddev);
-    
-    Signal<double> ret(dim, false);
-    for (int i = 0; i < ret.size(); ++i)
-	ret.data()[i] = d(g);
-
-    return ret;
-}
-
-Signal<double> getSensingMatrix(int size, Sensor::mode setting)
-{
-    Signal<double> ret(size,size);
-    switch(setting) {
-    case Sensor::mask:
-	return eye(size);
-    case Sensor::gaussian:
-	return gaussianSamples(Dim(size,size), 0, 1/std::sqrt(size));
-    case Sensor::bernoulli:
-	return bernoulliSamples(Dim(size,size), 0.5, -1/std::sqrt(size), 1/std::sqrt(size));
-    default:
-	error("Sensing Matrix: invalid setting");
-	return Signal<double>();
-    }
-}
-
-
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 #endif
