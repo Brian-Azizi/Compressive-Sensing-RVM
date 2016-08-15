@@ -8,7 +8,7 @@
 #include <map>
 #include <vector>
 
-#include <mpi.h>
+// requires mpi.h if USE_MPI
 
 #include "Timer.hpp"
 
@@ -116,6 +116,7 @@ void Interpolator::run()
     reconstruct();
 
     //%%%%%%%%%%%%%%%%%%%%%%% MPI Send&Recv %%%%%%%%%%%%%%%%%%%%%%%%%    
+#ifdef USE_MPI
     MPI_Status st;
     Signal<double> buffer(block.dim(),false);
     
@@ -166,7 +167,7 @@ void Interpolator::run()
 	}
 	MPI_Barrier(MPI_COMM_WORLD);    	
     }
-    
+#endif    
     //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     if (rank == 0) {
 	/*** Arrange allTargets Matrix for measurements to be consecutive ***/
@@ -232,7 +233,7 @@ void Interpolator::run()
 		record << "\t  PSNR = " << psnr << "\n";
 		std::cout << record.str();
 	    }
-	    std::cout << "\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n";
+	    std::cout << "\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%";
 	    std::cout << "\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\n\n\n\n";
 	}    
     }    

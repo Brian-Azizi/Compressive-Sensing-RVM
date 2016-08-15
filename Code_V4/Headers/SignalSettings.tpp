@@ -153,8 +153,10 @@ void SignalSettings::initParameters() {
 	rngSeed = cfg.getValueOfKey<int>("rngSeed", 1); 
     }
 
+#ifdef USE_MPI
     // Make sure all processes use the same RNG seed
     MPI_Bcast(&rngSeed, 1, MPI_INT, 0, MPI_COMM_WORLD);
+#endif
 
     /*** Check if we convert output to media file ***/
     convertToMedia = cfg.getValueOfKey<bool>("convertToMedia", true); // default is true
@@ -276,6 +278,7 @@ std::ostream& operator<<(std::ostream& os, const SignalSettings& setting)
     os << "\nSettings File:\t\t" << setting.cfgFile;
     os << "\nLog file:\t\t" << setting.logFileName;
     os << "\nFLS file:\t\t" << setting.flsFileName;
+    os << "\nNumber of Process:\t" << setting.nproc;
     os << "\n";
     return os;
 }

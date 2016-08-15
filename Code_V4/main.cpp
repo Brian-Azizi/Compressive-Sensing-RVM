@@ -1,3 +1,5 @@
+#define USE_MPI
+
 #include <stdexcept>
 #include <fstream>
 #include <cstdlib>
@@ -5,6 +7,9 @@
 #include <climits>
 #include "Headers/Timer.hpp"
 
+#ifdef USE_MPI
+ #include <mpi.h>
+#endif
 
 uint64 startTime = 0;
 uint64 trainTime = 0; int trainTimeCount = 0;
@@ -15,11 +20,13 @@ uint64 errorTime = 0; int errorTimeCount = 0;
 
 int main(int argc, char* argv[]) 
 {
-    int rank,nproc;
+    int rank = 0, nproc = 1; 
+    
+    #ifdef USE_MPI
     MPI_Init(&argc, &argv);
     MPI_Comm_size(MPI_COMM_WORLD, &nproc);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    
+    #endif
 
     uint64 startTime = GetTimeMs64(); // start timer
       
@@ -53,15 +60,18 @@ int main(int argc, char* argv[])
 	successfulRead = true;
 
 	/*** Redirect std::cout and std::cerr to the log file ***/
-	// if (cfg.printProgress) std::cout << "Redirecting output messages to '" << cfg.logFileName << "' from here on." << std::endl;
-	// std::freopen(cfg.logFileName.c_str(), "w", stdout);
-	// std::freopen(cfg.logFileName.c_str(), "w", stderr);
+	if (cfg.printProgress) std::cout << "Redirecting output messages to '" << cfg.logFileName << "' from here on." << std::endl;
+	FILE* cout_ff = std::freopen(cfg.logFileName.c_str(), "w", stdout);
+	FILE* cerr_ff = std::freopen(cfg.logFileName.c_str(), "w", stderr);
 	
 	/*** Run the Interpolator ***/
 	interpol.run();	
 	successfulRun = true;
 	
+#ifdef USE_MPI
 	MPI_Barrier(MPI_COMM_WORLD);
+#endif
+
 	/*** Display Time ***/
 	if (cfg.printProgress && rank == 0) {
 	    // Display host and user name 
@@ -79,9 +89,11 @@ int main(int argc, char* argv[])
 	    std::cout << sco.str();
 	}
 	
+#ifdef USE_MPI
 	MPI_Barrier(MPI_COMM_WORLD);
 	MPI_Finalize();
-	
+#endif	
+
 	if (rank == 0) {
 	/*** Run Matlab Script ***/
 	if (cfg.convertToMedia) {

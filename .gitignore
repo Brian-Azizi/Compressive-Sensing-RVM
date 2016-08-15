@@ -16,3 +16,8 @@ Code_V2/host_file
 Code_V2/ConfigFiles
 *.DS_STORE
 Papers/*
+host_file
+*~
+largeRun.sh
+smallRun.sh
+batchSimulation.sh
