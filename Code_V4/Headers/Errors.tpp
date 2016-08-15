@@ -2,6 +2,7 @@
 #define GUARD_ERRORS_TPP
 
 #include <cstdlib>
+#include <iostream>
 #include <sstream>
 #include <stdexcept>
 #include <string>

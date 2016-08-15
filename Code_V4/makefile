@@ -6,4 +6,4 @@ serial : main.cpp Headers/ConfigFile.hpp Headers/ConfigFile.tpp Headers/Convert.
 
 
 clean :
-	rm leaf leaf_serial *.fls *.log
+	rm leaf leaf_serial *.fls *.log .rvmsettings.fls .rvmsettings.log
