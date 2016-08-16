@@ -1,21 +1,19 @@
-\chapter{Compressive Sensing}
+\chapter{Background}
 \label{ch:cs}
-In this chapter we will outline the main ideas of the \emph{Compressive Sensing} framework (also known as \emph{Compressed Sensing, Compressed Sampling, Compressive Samping} or \emph{CS}).
-We begin by discussing conventional approaches to data acquisition and compression.
-Next, we explain an alternative approach based CS. 
-We formulate the CS problem and give insights as how it can be solved.
-Following that, we outline a general solution strategy.
-In Chapter \ref{ch:msce}, we will discuss a Bayesian approach to solving the Compressive Sensing Problem.
+In this chapter, we will introduce the theory of \emph{Compressive Sensing} (also known as \emph{Compressed Sensing, Compressive Sampling} or simply, \emph{CS}).
+CS is a framework within signal processing that allows for acquiring signals (i.e. measure or \emph{sense}) directly in a \emph{compressed} format.
 
-\section{Coventional Signal Acquisition and Compression}
-\subsection{Acquisition}
+To motivate the discussion, we will first review the conventional approach to signal acquisition and compression.
+
+\section{Coventional Signal Processing}
+\subsection{Signal Acquisition}
 In order to work with information within analog signals (continuous streams of data) such as sounds, images or video, we rely on reducing the analog signals to digital (discrete) signals that can be processed with computers.
 This digitization is done by taking discrete measurements of the analog signal at certain points in time or space, a process known as \emph{sampling}.
 
 Conventional approaches to sampling are based on the \emph{Shannon/Nyquist Sampling Theorem} \cite{shannon1949}:
 When sampling a band-limited signal uniformly, we are able to \emph{perfectly reconstruct} the signal from its samples if the sampling rate is at least twice the bandwidth of the signal.
 
-We briefly illustrate this in Figure \ref{fig:nyquist}.
+%We briefly illustrate this in Figure \ref{fig:nyquist}.
 Consider an analog signal $x(t)$ that varies with time, such as an audio wave.
 Let $f$ be the highest frequency present in $x(t)$.
 
@@ -47,7 +45,7 @@ The sampling rate is therefore $f_s = 1/T_s$.
 Suppose we wish to reconstruct $x(t)$ by interpolating the samples.
 There is an infinite number of continuous functions that fit this set of samples.
 However, it can be shown that only one of them has a bandwidth of no more than $f_s/2$.
-Thus, if $f < f_s/2$ (the \emph{Nyquist Criterion}), then $x(t)$ is the unique function that will be approximated by interpolation algorithm such as the \emph{Whittaker-Shannon interpolation formula}\cite{shannon1949}.
+Thus, if $f < f_s/2$ (the \emph{Nyquist Criterion}), then $x(t)$ is the unique function that will be approximated by interpolation algorithm such as the \emph{Whittaker-Shannon interpolation formula} \cite{shannon1949}.
 
 In Figure \ref{fig:nyquist}, we have a sinusoidal signal $x(t)$ with frequency $f$.
 The sampling rate is $f_s=f$ and therefore below the signal's \emph{Nyquist rate} $2f$. 
@@ -59,20 +57,20 @@ We have illustrated Nyquist sampling in the 1-dimensional case.
 The same principles hold for higher dimensional signals such as images and videos.
 
 For signals that vary with space, the sampling rate is governed by the desired spatial resolution.
-In order to recover the finer details (the high-frequency components) of an image, we require higher pixel density (i.e. more pixels per 
+In order to recover the finer details (the high-frequency components) of an image, we require higher pixel density (i.e. a larger number of pixels per centimeter (ppcm)).
 
 Nyquist sampling underlies almost all signal acquisition protocols that are found in practice. 
-It is the basis of medical imaging devices, consumer electronics such as audio and video recorders, radio receivers, etc.
+It is the basis of medical imaging, audio and video recording and radio receivers.
 
-\subsection{Compression}
+\subsection{Signal Compression}
 \label{sect:compression}
-The sampling theorem imposes a lower bound on the sampling rate above which we get are able to perfectly reconstruct the desired signal.
+The sampling theorem imposes a lower bound on the sampling rate above which we are able to perfectly reconstruct the desired signal.
 This lower bound is often very high and we end up with a very large number of measurements.
 Storage and transfer of such signals becomes prohibitavely expensive as the size of the signal grows.
 Thus, a need for \emph{data compression} arises.
 
-We will discuss a particular type data compression known as \emph{transform coding}.
-It is the standard compression method for ``natural'' and manmade signals such as audio, photos, and video and is the basis of many common signal formats such as JPEG for images, MPEG for videos and MP3 for audio.
+We will discuss a particular type compression algorithm known as \emph{transform coding}.
+It is the standard compression method for ``natural'' and manmade signals such as audio, photos, and video and is the basis of many common signal formats such as JPEG (images), MPEG (video) and MP3 (audio).
 
 Let $\bm v$ by a real-valued digital signal of length $M$, $\bm v \in \mathbb{R}^M$.
 Without loss of generality, $\bm v$ is assumed to be a one-dimensional signals.
@@ -96,17 +94,16 @@ Thus, the coefficient $w_j$ is given by $w_j = \bm v^T\bm\psi_j$.
 
 We now have two equivalent representations of the same signal, $\bm v$ in the original basis and $\bm w$ in the $\bm\Psi$ basis.
 Since $\bm\Psi$ is orthogonal, $\bm v$ and $\bm w$ have the same $\ell_2$-norm, $||\bm v||_2 = ||\bm\Psi\bm w||_2 = ||\bm w||_2$.
-
-While in the original signal $\bm v$ the energy is spread over many of its components, it is possible to find a basis $\bm\Psi$ such that the energy of the transformed signal $\bm w$ is concentrated in only a few large components $w_j$.
-Thus a large fraction of the entries in $\bm w$ are very close to zero.
+However, in the original signal, $\bm v$, the energy is typically spread over many of its components.
+On the other, it is possible to find a basis $\bm\Psi$ such that the energy of the transformed signal, $\bm w$, is concentrated in only a few large components $w_j$ and a large fraction of its entries are very close to zero.
 
 Suppose that we delete the entries $w_j$ that are very small and replace them with zero to obtain $\bm{\hat w}$.
 Let $\bm{\hat v} = \bm\Psi\hat{\bm w}$ the approximate signal in the original domain.
-Since $\bm{\hat w}$ is very close to $\bm w$, so that $||\bm{\hat w} - \bm w||_2$ is very small, it follows that
+Since $\bm{\hat w}$ is very close to $\bm w$, it follows that
 \begin{equation*}
-  ||\bm{\hat v} - \bm v||_2 = ||\Psi\bm{\hat w} - \Psi\bm w||_2 = ||\Psi (\bm{\hat w} - \bm w||_2 = ||\bm{\hat w} - \bm w)||_2
+  ||\bm{\hat v} - \bm v||_2 = ||\Psi\bm{\hat w} - \Psi\bm w||_2 = ||\Psi (\bm{\hat w} - \bm w)||_2 = ||\bm{\hat w} - \bm w||_2
 \end{equation*}
-is also very small.
+is very small.
 
 \begin{figure}
   \centering
@@ -131,7 +128,7 @@ Thus, a viable method for lossy compression of the signal $\bm v \in \mathbb{R}^
 \item Discard all the $(M-K)$ small coefficients
 \item Store the values and locations of the $K$ large coefficients
 \end{enumerate}
-In order to view the compressed signal in the original domain, we perform the transform: $\bm\Psi\bm{\hat w} = \bm{\hat v}$, where $\bm{\hat w}$ is $\bm w$ with the $(M-K)$ smallest coefficients replaced by zero.
+In order to view the compressed signal in the original domain, we reconstruct it via the transform: $\bm\Psi\bm{\hat w} = \bm{\hat v}$, where $\bm{\hat w}$ is $\bm w$ with the $(M-K)$ smallest coefficients replaced by zero.
 
 It is possible to find basis matrices $\bm\Psi$ that result in very high compression ratios for a wide range of natural signals without any noticable reduction in the signal quality.
 Furthermore, many of the commonly used basis transforms can be computed very efficiently.
@@ -146,8 +143,7 @@ Yet, the difference between the original image and the compressed image is hardl
 
 We will discuss the DCT and the DWT in more detail in Chapter \ref{ch:dwt}.
 
-
-\section{A Novel Approach: Compressive Sensing}
+\section{Compressive Sensing}
 The conventional approach to data acquisition and compression is very effective and has been highly influential.
 However, it is also extremely wasteful.
 We acquire a huge amount of data at the signal sampling stage and then proceed to discard a large part of it at the compression stage.
@@ -202,10 +198,10 @@ In particular, we will focus on signals that have \emph{sparse representations}.
 A signal $\bm v \in\mathbb{R}^M$ has a sparse representation if there exists a $M\times M$ basis matrix $\bm\Psi$ so that the transformed signal $\bm w$, where $\bm v = \bm\Psi\bm w$, is \emph{sparse}.
 
 We say that $\bm w$ is \emph{$K$-sparse} if $\bm w$ has $K$ non-zero components.
-Equivalently, from (\ref{eqn:l0-norm}), $\bm w$ is $K$-sparse if $||\bm w||_0 = K$.
+Equivalently, from (\ref{eqn:l0-norm})\footnote{Definition of $\ell_0$-norm.}, $\bm w$ is $K$-sparse if $||\bm w||_0 = K$.
 
 In Section \ref{sect:compression} we noted that many manmade and natural signals are compressible.
-They have an almost-sparse representation in that, when expressed in the basis $\bm\Psi$, almost all of their energy is contained in only $K$ components and the remaining components are very close to zero.
+They have an almost-sparse representation, meaning that, when expressed in the basis $\bm\Psi$, almost all of their energy is contained in only $K$ components and the remaining components are very close to zero.
 Such signals are well-approximated by $K$-sparse representations.
 
 \section{Solving the Compressive Sensing Problem}
@@ -257,7 +253,7 @@ That is, the desired signal is the solution to the optimization problem:
 \end{equation}
 Unfortunately, (\ref{eqn:cs_l0}) is an NP-complete problem that can only be solved by an exhaustive search through all possible combinations for the locations of the non-zero entries in $\bm w$.
 
-Luckily, and surprisingly, it can be shown that, if $N = O(K\log(M/K))$, it is possible to reconstruct $K$-sparse signals exactly by solving the $\ell_1$ -optimization problem \cite{baraniuk2007,candes2008}
+Luckily, and somewhat surprisingly, it can be shown that, if $N = O(K\log(M/K))$, it is possible to reconstruct $K$-sparse signals exactly by solving the $\ell_1$-optimization problem \cite{baraniuk2007,candes2008}
 \begin{equation}
 \label{eqn:cs_l1}
   \min_{\bm w} ||\bm w||_1 \qquad \mbox{subject to} \qquad \bm\Phi\bm w = \bm y
@@ -270,3 +266,5 @@ Thus, the reconstruction is not completely exact and and the solution $\bm{\hat 
 A large part of the CS literature is focused on developing algorithms that recover a signal $\bm v$ from a set CS measurement $\bm y$, either by solving (\ref{eqn:cs_l1}) or through some alternative route.
 
 For a discussion and comparison of some of the most widely used algorithms, see \cite{pilikos2014}.
+In Chapter \ref{ch:msce} we will discuss a particular framework for CS signal reconstruction known as \emph{Bayesian Compressive Sensing}.
+
