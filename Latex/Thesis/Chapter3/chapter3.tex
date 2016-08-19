@@ -1,17 +1,30 @@
 \chapter{Wavelets}
 \label{ch:dwt}
-In this chapter, we will introduce wavelet functions and the \emph{Discrete Wavelet Transform} (DWT).
-The DWT allows us to transform our signal into a new basis in which it is sparse.
-\begin{equation}
-\bs x = \bs \Psi \bs w
-\end{equation}
-that takes the dense signal $\bs x$ and sends it into a domain in which its transformation $\bs w = \bs \Psi^T \bs x$ is sparse.
+
+\emph{
+\begin{itemize}
+\item Focus of thesis is on Images and in particular Videos
+\item Why is transform coding effective for images and videos
+\item Intuition on why DCT/DWT leads to sparse representations (spatial and temporal correlations, etc?)
+\item Explain MSE, PSNR
+\end{itemize}
+}
+
+
+An important choice in any data analysis is how to represent the data. 
+In this chapter we will introduce two particular ways of representing data, the \emph{Discrete Cosine Transform} (DCT) and the \emph{Discrete Wavelet Transform} (DWT). 
+Applying such a transform to a raw a signal in the time or space domain results in a representation of that same signal in an alternative domain.
+The focus is on DWT and DCT since, when transforming image and video data, these two transforms tend to output sparse (or near-sparse
+) representations of the data.
+
+The main objective of this chapter is to explain how to construct the basis matrix for the DCT and the DWT. 
+
 
 \section{Discrete Cosine Transform}
 \emph{An aside on the DCT. Used in old JPEG standard (ref). Formulae. Interpretations. Pictures.}
-However, before we discuss wavelets, we will briefly introduce the \emph{Discrete Cosine Transform} (DCT)
+ 
 
-\section{Wavelet transforms}
+\section{Discrete Wavelet Transform}
 \subsection{Haar wavelets}
 Finding a set of basis functions $\bs\Psi$ that achieve such a transformation lies at the heart of many lossy compression techniques.
 For instance, in image processing the JPEG 2000 standard is a widely used lossy compression technique that relies on this principle.
@@ -50,4 +63,6 @@ In practice, we approximate these entries as zero and treat $\bs w$ as sparse.
 
 For a deeper introduction into wavelets see \cite{stollnitz1995}.
 For more information on wavelet compression techniques, see \cite{devore1992}.
+
+
 
