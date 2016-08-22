@@ -6,6 +6,12 @@
 \item Masks vs Gaussian vs Rademacher
 \item Haar vs DCT (vs Daub)
 \item What't the best performance I can achieve? How does it compare to the lit?
+\item .
+\item MSCE was done to solve the signal interpolation. In particular, to fix the problem with small support of wavelets while still using their power.
+\item Problem: Slow. Solution: Parallelization.
+\item Problem: Limited to signal interpolation. Solution: Use CS sensing matrices (but Cascade don't work yet.}
+\item Do we even need the cascade? What if we jump straight to the third scale.
+\item Can we improve the performance of the interpolator? 
 \end{enumerate}
 
 We have obtained some results with our current implementation.
