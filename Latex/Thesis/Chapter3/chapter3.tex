@@ -189,13 +189,14 @@ Wavelet functions can be constructed by scaling and shifting a so-called \emph{m
 \end{equation*}
 
 For the Haar wavelets, the mother wavelet is given by:
-\begin{equation*}
+\begin{equation}
+\label{eqn:haar_mother}
   \psi(x) = \left\{\begin{array}{rl}
   1&\qquad 0 \leq x < 1/2\\
   -1&\qquad 1/2 \leq x < 1\\
   0&\qquad\mbox{otherwise}
   \end{array}\right.
-\end{equation*}
+\end{equation}
 The Haar mother wavelet is shown in Figure \ref{fig:haar_mother}.
 
 Note that, since the scaling functions $\phi_k^j$ form a basis of $V^j$ and the wavelet functions $\psi_k^j$ form a basis of $W^k$, and since $W^j$ is the orthogonal complement to $V^j$ in $V^{j+1}$, it follows that the set $\{\phi_k^j, \psi_k^j: k=0,\cdots,2^j-1\}$ forms a basis of the vector space $V^{j+1}$.
@@ -224,7 +225,7 @@ The full DWT of $\bm v$ consists of the coefficients $\{c_0^0, d_k^j:\,j=0,\cdot
   \centering
   \begin{tikzpicture}
     \draw (0,0) rectangle (12,4);
-    \draw (1,3) node[left]{$\bm v$} -- (1.5,3);
+    \draw (1,3) node[left]{$v$} -- (1.5,3);
     \draw (1.5,1) -- (1.5,3);
     \draw [->](1.5,3) -- (2,3);
     \draw [->](1.5,1) -- (2,1);
@@ -235,14 +236,14 @@ The full DWT of $\bm v$ consists of the coefficients $\{c_0^0, d_k^j:\,j=0,\cdot
     \draw [->](3,1) -- (3.5,1);
     \draw (3.5,0.5) rectangle (4.5,1.5);
     \node at (4,1) {$\downarrow 2$};
-    \draw (4.5,1) -- (5,1) node [below] {\small$\bm d^{q-1}$};
+    \draw (4.5,1) -- (5,1) node [below] {\small$d^{q-1}$};
     \node at (4.9,1)[shape=circle, fill=black, inner sep=2pt, minimum size=2pt] {};
     \draw [->](3,3) -- (3.5,3);
     \draw (3.5,2.5) rectangle (4.5,3.5);
     \node at (4,3) {$\downarrow 2$};
     \draw [->](4.5,3) -- (6,3);
     \draw [->](5.5,3) -- (5.5,1) -- (6,1);
-    \node at (5,3) [above] {\small$\bm c^{q-1}$};
+    \node at (5,3) [above] {\small$c^{q-1}$};
     \node at (4.9,3) [shape=circle, fill=black, inner sep=2pt, minimum size=2pt] {};
     \draw (6,2.5) rectangle (7,3.5);
     \node at (6.5,3){$h$};
@@ -254,23 +255,56 @@ The full DWT of $\bm v$ consists of the coefficients $\{c_0^0, d_k^j:\,j=0,\cdot
     \draw [->] (7,1) -- (7.5,1);
     \draw (7.5,0.5) rectangle (8.5,1.5);
     \node at (8,1) {$\downarrow 2$};
-    \draw (8.5,1) -- (9,1) node [below] {\small$\bm d^{q-2}$};
+    \draw (8.5,1) -- (9,1) node [below] {\small$d^{q-2}$};
     \node at (8.9,1) [shape=circle, fill=black, inner sep=2pt, minimum size=2pt] {};
     \draw (8.5,3) -- (9.2,3);
     \draw [->,dotted](9.2,3) -- (9.9,3);
     \draw [->,dotted](9.5,3) -- (9.5,1.7);
     \node at (8.9,3) [shape=circle, fill=black, inner sep=2pt, minimum size=2pt] {};
-    \node at (9,3) [above] {\small$\bm c^{q-2}$};
+    \node at (9,3) [above] {\small$c^{q-2}$};
   \end{tikzpicture}
   \caption{The first two levels of the DWT of the signal $\bm v$ of length $2^q$ via a filter bank.}
   \label{fig:filterbank}
 \end{figure}
 
-In practice, we can compute one level of the DWT coefficients by passing the signal $\bm v$ through a \emph{low-pass filter} $\bm h$ and a high-pass filter $\bm g$, respectively, and then downsampling the results by a factor of two.
+In practice, we can compute one level of the DWT coefficients by passing the signal $v$ through a \emph{low-pass filter} $h$ and a high-pass filter $g$, respectively, and then downsampling the results by a factor of two.
+Passing $v$ through the filters $h$ and $g$ results in the \emph{convolutions}:
+\begin{equation*}
+  \begin{split}
+    (v\star h)(x) &= \sum_{k=-\infty}^\infty v(k)h(x-k)\\
+    (v\star g)(x) &= \sum_{k=-\infty}^\infty v(k)g(x-k)
+  \end{split}
+\end{equation*}
+To downsample by a factor of two, we remove every second sample:
+\begin{equation*}
+  (v\downarrow 2)(x) := v(2x)
+\end{equation*}
+
 Overall, these computations can be done by multiplying the vector $\bm v$ by a matrix $\bm H$ and a matrix $\bm G$ to get the approximation and detail coefficients, repectively.
 
 To compute the next level, we take the approximation coefficients of the current stage and pass them again through the filter bank.
 The procedure is depicted in Figure \ref{fig:filterbank}.
+
+The coefficients of the filters $h(x)$ and $g(x)$ depend on our choice of the scaling function $\phi(x)$ and mother wavelet function $\psi(x)$.
+They satisfy the following relations:
+\begin{equation*}
+  \begin{split}
+    \phi(x) &= \sqrt{2}\sum_{k=-\infty}^\infty h(k)\phi(2x - k)\\
+    \psi(x) &= \sqrt{2}\sum_{k=-\infty}^\infty g(k)\phi(2x - k)
+  \end{split}
+\end{equation*}
+as well as
+\begin{equation*}
+  g(k) = (-1)^k h(1-k).
+\end{equation*}
+
+For the Haar wavelets (\ref{eqn:haar_scale},\ref{eqn:haar_mother}), the filter coefficients are
+\begin{equation*}
+  \begin{split}
+    h(0) = h(1) &= \frac{1}{\sqrt{2}}\\
+    g(0) = -g(1) &= \frac{1}{\sqrt{2}}
+  \end{split}
+\end{equation*}
 
 
 
