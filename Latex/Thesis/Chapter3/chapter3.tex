@@ -61,7 +61,7 @@ This transforms a signal $\bm v$ in the original domain (time or space) into its
 \begin{figure}
   \centering
   \includegraphics[width=0.5\textwidth]{Chapter3/Images/dct2functions.png}
-  \caption{The 2-D DCT basis functions that are used by the DCT to decompose a $8\times 8$ image. 
+  \caption{The 2-D DCT basis functions that are used by the DCT to decompose a $4\times 4$ image. 
     The spatial frequency increases towards the bottom right corner.}
   \label{fig:2D-DCT}
 \end{figure}
@@ -93,7 +93,7 @@ Figure \ref{fig:ch3:dct} shows an example of a 2-D signal $\bm v$ and its transf
 Note that the majority of the energy of the transformed signal is concentrated in the top left corner.
 Most of the DCT coefficients are zero or very close to zero.
 
-In Figure \ref{fig:2D-DCT}, we show the 2-D basis functions that would used by the DCT to decompose a signal of size $8\times 8$.
+In Figure \ref{fig:2D-DCT}, we show the 2-D basis functions that would used by the DCT to decompose a signal of size $4\times 4$.
 Each basis function is characterised by a horizontal and vertical spatial frequency.
 Typically, natural images are mostly made up of low-frequency components and the corresponding coefficients are therefore relatively large.
 The highest-frequency components are usually only needed to describe very fine details.
@@ -301,29 +301,227 @@ as well as
 For the Haar wavelets (\ref{eqn:haar_scale},\ref{eqn:haar_mother}), the filter coefficients are
 \begin{equation*}
   \begin{split}
-    h(0) = h(1) &= \frac{1}{\sqrt{2}}\\
-    g(0) = -g(1) &= \frac{1}{\sqrt{2}}
+    h(0) = h(1) &= \frac{1}{\sqrt{2}}, \qquad h(k) = 0 \mbox{  if $k\neq 0,1$}\\
+    g(0) = -g(1) &= \frac{1}{\sqrt{2}}, \qquad g(k) = 0 \mbox{  if $k\neq 0,1$}
   \end{split}
 \end{equation*}
 
+The first level approximation coefficients of the Haar DWT of signal $\bm v \in\mathbb{R}^M$, with $M=2^q$, are thus given by $\bm H^q \bm v$ where $\bm H^q$ is the $2^{q-1}\times 2^q$ matrix given by
+\begin{equation*}
+  \bm H^q_{haar} = \frac{1}{\sqrt{2}} \begin{pmatrix}
+    1&1&0&0&\cdots&0&0\\
+    0&0&1&1&\cdots&0&0\\
+    \vdots&\vdots&\vdots&\vdots&\ddots&\vdots&\vdots\\
+    0&0&0&0&\cdots&1&1
+  \end{pmatrix}
+\end{equation*}
+To get the corresponding detail coefficients, we multiply $\bm v$ by the $2^{q-1}\times 2^q$ matrix $\bm G^q$ given by
+\begin{equation*}
+  \bm G^q_{haar} = \frac{1}{\sqrt{2}} \begin{pmatrix}
+    1&-1&0&0&\cdots&0&0\\
+    0&0&1&-1&\cdots&0&0\\
+    \vdots&\vdots&\vdots&\vdots&\ddots&\vdots&\vdots\\
+    0&0&0&0&\cdots&1&-1
+  \end{pmatrix}
+\end{equation*}
+
+Overall to perform the discrete Haar wavelet transform at the first scale, we multiply $\bm v$ by
+\begin{equation*}
+  \bm P^{(1)}_{haar} = \begin{bmatrix}
+    \bm H^q \\
+    \bm G^q \\
+  \end{bmatrix}
+\end{equation*}
+where we dropped $haar$-subscript on $\bm H$ and $\bm G$ for ease of viewing.
+
+To compute the transform at the second scale, we replace $\bm H^q$ by $\bm H^{q-1}\bm H^q$ and $\bm G^{q-1}\bm h^q$:
+\begin{equation*}
+  \bm P^{(2)}_{haar} = \begin{bmatrix}
+    \bm H^{q-1} \bm H^q \\
+    \bm G^{q-1} \bm H^q \\
+    \bm G^q \\
+  \end{bmatrix}
+\end{equation*}
+
+We can continue this process until the $q$th scale to get the full Haar wavelet transform matrix:
+\begin{equation*}
+  \bm P^{(q)}_{haar} = \begin{bmatrix}
+    \bm H^1 \bm H^2 \cdots \bm H^{q-1} \bm H^q \\
+    \bm G^1 \bm H^2 \cdots \bm H^{q-1} \bm H^q \\
+    \vdots\\
+    \bm G^{q-2} \bm H^{q-1} \bm H^q \\
+    \bm G^{q-1} \bm H^q \\
+    \bm G^q \\
+  \end{bmatrix}
+\end{equation*}
+
+To form the basis matrix $\bm\Psi$ such that $\bm v = \bm\Psi\bm w$ corresponding to the stage $j$ DWT, we can invert the matrix $\bm P^{(j)}$:
+\begin{equation*}
+  \bm\Psi = \left(\bm P^{(j)}\right)^{-1}
+\end{equation*}
+In practice, one usually works with wavelet functions that lead to orthogonal transform matrices, so that $\left(\bm P^{(j)}\right)^{-1}=\left(\bm P^{(j)}\right)^T$ and thus,
+\begin{equation*}
+  \bm\Psi = \left(\bm P^{(j)}\right)^T.
+\end{equation*}
+
+[CAVEAT boundary conditions]
+
+\subsection{Two-Dimensional Haar Wavelets}
+In Figure \ref{fig:haar_1d}, we showed the 1-dimensional Haar scaling function $\phi(x)$ and wavelet function $\psi(x)$.
+We can define the 2-dimensional scaling wavelet functions by taking the products of their one-dimensional versions:
+\begin{equation}
+  \begin{split}
+    \phi(x,y) &= \phi(x) \phi(y)\\
+    \psi^H(x,y) &= \phi(x) \psi(y) \\
+    \psi^V(x,y) &= \psi(x) \phi(y) \\
+    \psi^D(x,y) &= \psi(x) \psi(y)
+  \end{split}
+\end{equation}
+
+\begin{figure}
+\centering
+\begin{tikzpicture}
+  \draw (0,5) rectangle (3,8);
+  \draw (5,5) rectangle (8,8);
+  \draw (0,0) rectangle (3,3);
+  \draw (5,0) rectangle (8,3);
+
+  \draw [<->] (0,8.5) -- (0,5) -- (3.5,5);
+  \draw [<->] (5,8.5) -- (5,5) -- (8.5,5);
+  \draw [<->] (0,3.5) -- (0,0) -- (3.5,0);
+  \draw [<->] (5,3.5) -- (5,0) -- (8.5,0);
+
+  \node at (1.5,5) [below] {$\phi(x,y)$};
+  \node at (0,5) [left] {$0$};
+  \node at (0,8) [left] {$1$};
+  \node at (3,5) [below] {$1$};
+  \node at (3.5,5) [below] {$x$};
+  \node at (0,8.5) [left] {$y$};
+
+  \node at (6.5,5) [below] {$\psi^H(x,y)$};
+  \node at (5,5) [left] {$0$};
+  \node at (5,8) [left] {$1$};
+  \node at (8,5) [below] {$1$};
+  \node at (8.5,5) [below] {$x$};
+  \node at (5,8.5) [left] {$y$};
+
+  \node at (1.5,0) [below] {$\psi^V(x,y)$};
+  \node at (0,0) [left] {$0$};
+  \node at (0,3) [left] {$1$};
+  \node at (3,0) [below] {$1$};
+  \node at (3.5,0) [below] {$x$};
+  \node at (0,3.5) [left] {$y$};
+
+  \node at (6.5,0) [below] {$\psi^D(x,y)$};
+  \node at (5,0) [left] {$0$};
+  \node at (5,3) [left] {$1$};
+  \node at (8,0) [below] {$1$};
+  \node at (8.5,0) [below] {$x$};
+  \node at (5,3.5) [left] {$y$};
+
+  \draw [fill=black] (5,5) rectangle (8,6.5);
+  \draw [fill=black] (1.5,0) rectangle (3,3);
+  \draw [fill=black] (5,0) rectangle (6.5,1.5);
+  \draw [fill=black] (6.5,1.5) rectangle (8,3);
+
+  \node at (1.5,6.5){$\bm +$};  
+
+  \node at (6.5,7.25){$\bm +$};
+  \node at (6.5,5.75){\textcolor{white}{$\bm -$}};
+
+  \node at (0.75,1.5){$\bm +$};
+  \node at (2.25,1.5){\textcolor{white}{$\bm -$}};
+
+  \node at (5.75,2.25){$\bm +$};
+  \node at (7.25,0.75){$\bm +$};
+  \node at (5.75,0.75){\textcolor{white}{$\bm -$}};
+  \node at (7.25,2.25){\textcolor{white}{$\bm -$}};
+\end{tikzpicture}
+\caption[2-D Haar Wavelets]{The 2-D Haar scaling function and wavelet functions.
+  Inside the $[0,1]\times [0,1]$ square, white corresponds to $+\frac{1}{2}$ and black corresponds to $-\frac{1}{2}$. 
+  The functions are zero outside the unit square.}
+\label{fig:haar_2d}
+\end{figure}
+
+Where the superscripts $H,V$ and $D$ refer to the high-pass filters in the horizontal, vertical and diagonal direction, respectively.
+These functions are illustrated in Figure \ref{fig:haar_2d}.
+The 2-D Haar wavelet functions act as \emph{edge detectors} in their respective directions.
+For example, if we pass a $2\times 2$ image patch through the $\psi^V$ filter, the corresponding detail coefficient will be small unless there is sharp change in pixel intensities between the left side and right side of the patch, i.e. unless there is a vertical edge.
+
+\begin{figure}
+\centering
+\begin{subfigure}{0.4\textwidth}
+  \includegraphics[width=\textwidth]{Chapter3/Images/haar2_scale1.png}
+  \caption{Scale 1}
+\end{subfigure}
+\begin{subfigure}{0.4\textwidth}
+  \includegraphics[width=\textwidth]{Chapter3/Images/haar2_scale2.png}
+  \caption{Scale 2}
+\end{subfigure}
+\caption[2-D Haar basis functions]{The haar basis functions at the first scale (a) and the second scale (b). The DWT would use these basis functions to decompose a $4\times 4$ image.}
+\label{fig:haar2_basis}
+\end{figure}
+
+In Figure \ref{fig:haar2_basis}, we show two sets of basis functions that can be used by the Haar DWT to decompose a signal of size $4\times 4$.
+
+\begin{figure}
+\centering
+\begin{subfigure}{0.4\textwidth}
+  \includegraphics[width=\textwidth]{Chapter3/Images/house.png}
+  \caption{Original $512\times 512$ image}
+\end{subfigure}
+\begin{subfigure}{0.4\textwidth}
+  \includegraphics[width=\textwidth]{Chapter3/Images/dwt1.png}
+  \caption{Scale 1 DWT}
+\end{subfigure}
+\begin{subfigure}{0.4\textwidth}
+  \includegraphics[width=\textwidth]{Chapter3/Images/dwt2.png}
+  \caption{Scale 2 DWT}
+\end{subfigure}
+\begin{subfigure}{0.4\textwidth}
+  \includegraphics[width=\textwidth]{Chapter3/Images/dwt9.png}
+  \caption{Scale 9 DWT}
+\end{subfigure}
+\caption[2-D Haar DWT Example]{The 2-D DWT using Haar wavelets of a digital image (a) of size $512\times 512$.
+  We compute the DWT at the first and the second scale (b,c) as well as the full DWT (d).
+  In (d), we have a single approximation coefficient at the top left corner.
+  In (b,c,d), the brightness of a pixel increases monotonically with the size of the corresponding DWT coefficient.
+  We have enhanced the detail coefficients (relative to the approximation coefficients) for better visibility.}
+\label{fig:dwt2}
+\end{figure}
+We illustrate the DWT of a digital image in Figure \ref{fig:dwt2}.
 
 
 
-%% The simplest wavelet basis transformation is based on the Haar wavelets.
-%% Figure \ref{fig:haarlenna} vizualises a basis transformation of the original image $\bs x$ to $\bs w$. 
-%% This example uses a Haar wavelet basis at the first scale.
-%% We will explain the Haar wavelet transformations of images and videos in more detail in the next chapter.
-%% Dark areas correspond to small coefficients.
-%% Note that most entries in $\bs w$ are near zero. 
-%% In practice, we approximate these entries as zero and treat $\bs w$ as sparse.
 
-%% \begin{figure}
-%% \center
-%% \includegraphics{Images/128.png}
-%% \includegraphics{Images/haar.png}
-%% \caption{Original image $\bs x$ (left) and its Haar basis transformation $\bs w$ (right). See next chapter for more details on Haar wavelets.}
-%% \label{fig:haarlenna}
-%% \end{figure}
+\subsection{Three-Dimensional Haar Wavelets}
+\emph{same but for 3D}
+
+\section{Basis Matrix for Multi-Dimensional Signals}
+\emph{Using seperability to perform the N-D DWT. Unrolling the signal. Forming the Basis Matrix. Kronecker product}
+Like the DCT, the DWT also has the \emph{seperability} property.
+Thus, to perform the DWT on a two-dimensional signal, such as an image, we first compute the 1-D DWT for each column.
+Next, we compute the 1-D DWT on each row of the preceding result.
+% Note that, due to multi-resolution properties of the DWT, we have a choice on how we compute the 2-D DWT.
+% We could either perform the full decomposition (up to the highest possible scale) on the first dimension, followed by 
+
+
+% For the Haar wavelets, it can be easily verified that 
+% \begin{equation*}
+%   \langle\psi_k^p,\psi_l^q\rangle = 
+%   \left\{\begin{array}{rl}
+%       1&\qquad\mbox{if $k=l$ and $p=q$}\\
+%       0&\qquad\mbox{otherwise}
+%     \end{array}
+%   \right.
+% \end{equation*}
+% We also know that 
+% \begin{equation*}
+%   \langle\phi_k^j,\psi_l^j\rangle = 0\qquad \forall k,l,j
+% \end{equation*}
+% since the sets $\{\psi^j_k, k = 0,\cdots,2^j-1\}$ and $\{\phi^j_k, k = 0,\cdots,2^j-1\}$ each span a space that are orthogonal complements to each other.
+
+
 
 %% \section{Haar basis functions}
 %% The RVM takes as input a target vector ($\bs y$) and a basis matrix ($\bs \Psi$). 
@@ -348,28 +546,12 @@ For the Haar wavelets (\ref{eqn:haar_scale},\ref{eqn:haar_mother}), the filter c
 %% From here on, we will only consider the first scale transform $\hat{\bs s}^{(1)}$ and we will omit the $(1)$ superscript.
 %% We can express the transform as a multiplication by an orthogonal $r\times r$ matrix $W$ given by
 %% \begin{equation}
-%% W = \begin{bmatrix}
-%%   \Phi_r \\
-%%   \Psi_r \\
-%% \end{bmatrix}
 %% \end{equation}
 %% where $\Phi_r$ and $\Psi_r$ are $(r/2)\times r$ matrices\footnote{Note that the matrix $\Psi_r$ used here is different to the matrix $\Psi$ that was used in the previous chapter (which corresponds to $W^T$ here).} given by
 %% \begin{equation*}
-%% \Phi_r = \frac{1}{\sqrt{2}} \begin{pmatrix}
-%% 1&1&0&0&\cdots&0&0\\
-%% 0&0&1&1&\cdots&0&0\\
-%% \vdots&\vdots&\vdots&\vdots&\ddots&\vdots&\vdots\\
-%% 0&0&0&0&\cdots&1&1
-%% \end{pmatrix}
 %% \end{equation*}
 %% and 
 %% \begin{equation*}
-%% \Psi_r = \frac{1}{\sqrt{2}} \begin{pmatrix}
-%% 1&-1&0&0&\cdots&0&0\\
-%% 0&0&1&-1&\cdots&0&0\\
-%% \vdots&\vdots&\vdots&\vdots&\ddots&\vdots&\vdots\\
-%% 0&0&0&0&\cdots&1&-1
-%% \end{pmatrix}
 %% \end{equation*}
 
 

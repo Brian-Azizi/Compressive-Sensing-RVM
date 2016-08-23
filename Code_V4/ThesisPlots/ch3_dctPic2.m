@@ -1,8 +1,8 @@
 n = 601;
 b=ceil(0.15*n);
-N = 8;
+N = 4;
 
-P = ones((n+b)*N+b)*0.9;
+P = ones((n+b)*N+b)*0.6;
 for i=0:N-1
     for j=0:N-1
         [u,v] = meshgrid(linspace(-1,N,n));
