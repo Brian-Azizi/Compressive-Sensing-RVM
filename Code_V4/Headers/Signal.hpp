@@ -136,6 +136,8 @@ Signal<double> haarBasis(int h, int w, int f, int scale);
 Signal<double> dctMatrix(int dim);
 Signal<double> dctBasis2D(int h, int w);
 Signal<double> dctBasis(int h, int w, int f);
+Signal<double> haarBasisDirect(int height, int width, int frames, int scale);
+Signal<double> haarBasisDirect2D(int height, int width, int scale);
 Signal<double> getBasis(int height, int width, int frames, SignalBasis::mode basisMode, int scale = 1);
 Signal<double> getBasis(Dim dim, SignalBasis::mode basisMode, int scale = 1);
 

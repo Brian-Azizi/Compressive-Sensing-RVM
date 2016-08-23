@@ -832,92 +832,92 @@ Signal<T> applyMask(const Signal<T>& orig, const Signal<bool>& mask)
     return ret;
 }
 
-Signal<double> haarPhiMatrixTranspose(int rows) //db2 phi matrix
-{
-    if (rows < 1) error("need positive number of rows");
-    if (rows%2 != 0) error("number of rows must be even");
-    
-    Signal<double> phiT(rows, rows/2); // default initialized to zero
-    double h1 = (1+std::sqrt(3))/(4*std::sqrt(2));
-    double h2 = (3+std::sqrt(3))/(4*std::sqrt(2));
-    double h3 = (3-std::sqrt(3))/(4*std::sqrt(2));
-    double h4 = (1-std::sqrt(3))/(4*std::sqrt(2));
-
-    for (int i = 0; i < rows; ++i)
-	for (int j = 0; j < rows/2-1; ++j) {
-	    if (i == 2*j) phiT(i,j) = h1;
-	    if (i == 2*j+1) phiT(i,j) = h2;
-	    if (i == 2*j+2) phiT(i,j) = h3;
-	    if (i == 2*j+3) phiT(i,j) = h4;
-	}
-    
-    phiT(0,rows/2-1) = h3;
-    phiT(1,rows/2-1) = h4;
-    phiT(rows-2,rows/2-1) = h1;
-    phiT(rows-1,rows/2-1) = h2;
-    
-    return phiT;
-}
-
-Signal<double> haarPsiMatrixTranspose(int rows) //db2 psi matrix
-{
-    if (rows < 1) error("need positive number of rows");
-    if (rows%2 != 0) error("number of rows must be even");
-    
-    Signal<double> psiT(rows, rows/2); // default initialized to zero
-    double g4 = -(1+std::sqrt(3))/(4*std::sqrt(2));
-    double g3 = (3+std::sqrt(3))/(4*std::sqrt(2));
-    double g2 = -(3-std::sqrt(3))/(4*std::sqrt(2));
-    double g1 = (1-std::sqrt(3))/(4*std::sqrt(2));
-
-    for (int i = 0; i < rows; ++i) {
-	for (int j = 0; j < rows/2-1; ++j) {
-	    if (i == 2*j) psiT(i,j) = g1;
-	    if (i == 2*j + 1) psiT(i,j) = g2;
-	    if (i == 2*j + 2) psiT(i,j) = g3;
-	    if (i == 2*j + 3) psiT(i,j) = g4;
-	}
-    }	    
-    psiT(0,rows/2-1) = g3;
-    psiT(1,rows/2-1) = g4;
-    psiT(rows-2,rows/2-1) = g1;
-    psiT(rows-1,rows/2-1) = g2;
-
-    return psiT;
-}
-
-// Signal<double> haarPhiMatrixTranspose(int rows)
+// Signal<double> haarPhiMatrixTranspose(int rows) //db2 phi matrix
 // {
 //     if (rows < 1) error("need positive number of rows");
 //     if (rows%2 != 0) error("number of rows must be even");
     
 //     Signal<double> phiT(rows, rows/2); // default initialized to zero
-//     const double irt2 = 1/std::sqrt(2);
+//     double h1 = (1+std::sqrt(3))/(4*std::sqrt(2));
+//     double h2 = (3+std::sqrt(3))/(4*std::sqrt(2));
+//     double h3 = (3-std::sqrt(3))/(4*std::sqrt(2));
+//     double h4 = (1-std::sqrt(3))/(4*std::sqrt(2));
 
 //     for (int i = 0; i < rows; ++i)
-// 	for (int j = 0; j < rows/2; ++j)
-// 	    if (i == 2*j || i == 2*j + 1) phiT(i,j) = irt2;
-
+// 	for (int j = 0; j < rows/2-1; ++j) {
+// 	    if (i == 2*j) phiT(i,j) = h1;
+// 	    if (i == 2*j+1) phiT(i,j) = h2;
+// 	    if (i == 2*j+2) phiT(i,j) = h3;
+// 	    if (i == 2*j+3) phiT(i,j) = h4;
+// 	}
+    
+//     phiT(0,rows/2-1) = h3;
+//     phiT(1,rows/2-1) = h4;
+//     phiT(rows-2,rows/2-1) = h1;
+//     phiT(rows-1,rows/2-1) = h2;
+    
 //     return phiT;
 // }
 
-// Signal<double> haarPsiMatrixTranspose(int rows)
+// Signal<double> haarPsiMatrixTranspose(int rows) //db2 psi matrix
 // {
 //     if (rows < 1) error("need positive number of rows");
 //     if (rows%2 != 0) error("number of rows must be even");
     
 //     Signal<double> psiT(rows, rows/2); // default initialized to zero
-//     const double irt2 = 1/std::sqrt(2);
+//     double g4 = -(1+std::sqrt(3))/(4*std::sqrt(2));
+//     double g3 = (3+std::sqrt(3))/(4*std::sqrt(2));
+//     double g2 = -(3-std::sqrt(3))/(4*std::sqrt(2));
+//     double g1 = (1-std::sqrt(3))/(4*std::sqrt(2));
 
 //     for (int i = 0; i < rows; ++i) {
-// 	for (int j = 0; j < rows/2; ++j) {
-// 	    if (i == 2*j) psiT(i,j) = irt2;
-// 	    else if (i == 2*j + 1) psiT(i,j) = -irt2;
+// 	for (int j = 0; j < rows/2-1; ++j) {
+// 	    if (i == 2*j) psiT(i,j) = g1;
+// 	    if (i == 2*j + 1) psiT(i,j) = g2;
+// 	    if (i == 2*j + 2) psiT(i,j) = g3;
+// 	    if (i == 2*j + 3) psiT(i,j) = g4;
 // 	}
 //     }	    
+//     psiT(0,rows/2-1) = g3;
+//     psiT(1,rows/2-1) = g4;
+//     psiT(rows-2,rows/2-1) = g1;
+//     psiT(rows-1,rows/2-1) = g2;
 
 //     return psiT;
 // }
+
+Signal<double> haarPhiMatrixTranspose(int rows)
+{
+    if (rows < 1) error("need positive number of rows");
+    if (rows%2 != 0) error("number of rows must be even");
+    
+    Signal<double> phiT(rows, rows/2); // default initialized to zero
+    const double irt2 = 1/std::sqrt(2);
+
+    for (int i = 0; i < rows; ++i)
+	for (int j = 0; j < rows/2; ++j)
+	    if (i == 2*j || i == 2*j + 1) phiT(i,j) = irt2;
+
+    return phiT;
+}
+
+Signal<double> haarPsiMatrixTranspose(int rows)
+{
+    if (rows < 1) error("need positive number of rows");
+    if (rows%2 != 0) error("number of rows must be even");
+    
+    Signal<double> psiT(rows, rows/2); // default initialized to zero
+    const double irt2 = 1/std::sqrt(2);
+
+    for (int i = 0; i < rows; ++i) {
+	for (int j = 0; j < rows/2; ++j) {
+	    if (i == 2*j) psiT(i,j) = irt2;
+	    else if (i == 2*j + 1) psiT(i,j) = -irt2;
+	}
+    }	    
+
+    return psiT;
+}
 
 Signal<double> generateLL(int scale, int currentScale, int h, int w, 
 			  Signal<double> rPreFactor, Signal<double> cPreFactor)
@@ -1184,6 +1184,56 @@ Signal<double> dctBasis(int h, int w, int f)
     Signal<double> basis = transpose(basisTran);
     return basis;
 }
+
+
+Signal<double> haarBasisDirect2D(int h, int w, int scale)
+{
+    Signal<double> ret(h*w,h*w);
+    // Haar coefficients
+    double h0 = 1/std::sqrt(2);
+    double h1 = h0;
+    double g0 = h0;
+    double g1 = -h0;
+    
+    Signal<double> haarHH(h,w,false);
+    haarHH.fill(h0*h1);
+    Signal<double> haarHG = haarHH;
+    Signal<double> haarGH = haarHH;
+    Signal<double> haarGG = haarHH;
+
+    for (int i = h/2; i < h; ++i)
+	for (int j = 0; j < w; ++j)
+	    haarHG(i,j) = - haarHH(i,j);
+    
+    for (int j = w/2; j < w; ++j)
+	for (int i = 0; i < h; ++i)
+	    haarGH(i,j) = - haarHH(i,j);
+
+    for (int j = w/2; j < w; ++j)
+	for (int i = 0; i < h/2; ++i)
+	    haarGG(i,j) = -haarHH(i,j);
+    for (int j = 0; j < w/2; ++j)
+	for (int i = h/2; i < h; ++i)
+	    haarGG(i,j) = -haarHH(i,j);
+    
+	 
+    Signal<double> wavelet(h,w); // container holding the 2D wavelet
+    
+    
+
+
+    return ret;
+}    
+
+Signal<double> haarBasisDirect(int h, int w, int f, int scale)
+{
+    if (f == 1)
+	return haarBasisDirect2D(h,w,scale);
+
+    return Signal<double>(h*w*f,h*w*f);
+}
+
+
 
 
 Signal<double> getBasis(int height, int width, int frames, SignalBasis::mode basisMode, int scale)
