@@ -218,7 +218,7 @@ To get the full decomposition, we continue in this fashion up to the $q$th level
 The full DWT of $\bm v$ consists of the coefficients $\{c_0^0, d_k^j:\,j=0,\cdots,q-1, \, k=0,\cdots,2^j-1\}$.
 
 
-\subsection{Filter Banks}
+\subsection{Computing the DWT}
 
 \begin{figure}
   \centering
@@ -262,16 +262,15 @@ The full DWT of $\bm v$ consists of the coefficients $\{c_0^0, d_k^j:\,j=0,\cdot
     \node at (8.9,3) [shape=circle, fill=black, inner sep=2pt, minimum size=2pt] {};
     \node at (9,3) [above] {\small$\bm c^{q-2}$};
   \end{tikzpicture}
-  \caption{Filter Banks}
+  \caption{The first two levels of the DWT of the signal $\bm v$ of length $2^q$ via a filter bank.}
   \label{fig:filterbank}
 \end{figure}
 
 In practice, we can compute one level of the DWT coefficients by passing the signal $\bm v$ through a \emph{low-pass filter} $\bm h$ and a high-pass filter $\bm g$, respectively, and then downsampling the results by a factor of two.
+Overall, these computations can be done by multiplying the vector $\bm v$ by a matrix $\bm H$ and a matrix $\bm G$ to get the approximation and detail coefficients, repectively.
+
+To compute the next level, we take the approximation coefficients of the current stage and pass them again through the filter bank.
 The procedure is depicted in Figure \ref{fig:filterbank}.
-
-
-
-
 
 
 
