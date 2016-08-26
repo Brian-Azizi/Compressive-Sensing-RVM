@@ -7,13 +7,13 @@ We said that any discrete signal $\bm v \in \mathbb{R}^M$ can be expressed in a 
 \begin{equation*}
   \bm v = \bm\Psi\bm w
 \end{equation*}
-where $\bm\Psi$ is the $M\times M$ basis matrix and $\bm w \mathbb{R}^M$ is the representation of $\bm v$ in the $\bm\Psi$ basis.
+where $\bm\Psi$ is the $M\times M$ basis matrix and $\bm w \in\mathbb{R}^M$ is the representation of $\bm v$ in the $\bm\Psi$ basis.
 
 The particular classes of signals $\bm v$ that we are interested in are digital images and digital video.
 The aim of this chapter is to construct a basis matrix $\bm\Psi$ that gives us a (near-) sparse representation of a wide range of such signals $\bm v$.
 Finding a set of basis functions $\bs\Psi$ that achieve such a transformation lies at the heart of many lossy compression techniques.
 
-It is important to note here that the choice of basis functions $\bs \Psi$ typically has a significant effect on the performance of the reconstruction algorithms.
+It is important to note here that the choice of basis functions $\bm \Psi$ typically has a significant effect on the performance of the reconstruction algorithms.
 
 \section{Discrete Cosine Transform}
 The first basis transform that we will use is the Discrete Cosine Transform (DCT), one of the most widely used transforms in signal processing.
@@ -75,6 +75,7 @@ Conversely, given a signal $\bm w$ in the DCT domain, we can transform it back t
 We can express equation (\ref{eqn:idct}) in the desired form $\bm v=\bm P\bm w$.
 The entries of the basis matrix $\bm P$ are given by
 \begin{equation}
+  \label{eqn:idct_basis}
   P_{n,k} = c(k)\, \cos\left(\frac{\pi(2i-1)(k-1)}{2M}\right).
 \end{equation}
 Note that the basis matrix $\bm P$ is orthogonal, $\bm P^T\bm P=\bm I_M$.
@@ -307,23 +308,25 @@ For the Haar wavelets (\ref{eqn:haar_scale},\ref{eqn:haar_mother}), the filter c
 \end{equation*}
 
 The first level approximation coefficients of the Haar DWT of signal $\bm v \in\mathbb{R}^M$, with $M=2^q$, are thus given by $\bm H^q \bm v$ where $\bm H^q$ is the $2^{q-1}\times 2^q$ matrix given by
-\begin{equation*}
-  \bm H^q_{haar} = \frac{1}{\sqrt{2}} \begin{pmatrix}
+\begin{equation}
+  \label{eqn:haar_H}
+  \bm H^q_{haar} = \frac{1}{\sqrt{2}} \begin{bmatrix}
     1&1&0&0&\cdots&0&0\\
     0&0&1&1&\cdots&0&0\\
     \vdots&\vdots&\vdots&\vdots&\ddots&\vdots&\vdots\\
     0&0&0&0&\cdots&1&1
-  \end{pmatrix}
-\end{equation*}
+  \end{bmatrix}
+\end{equation}
 To get the corresponding detail coefficients, we multiply $\bm v$ by the $2^{q-1}\times 2^q$ matrix $\bm G^q$ given by
-\begin{equation*}
-  \bm G^q_{haar} = \frac{1}{\sqrt{2}} \begin{pmatrix}
+\begin{equation}
+  \label{eqn:haar_G}
+  \bm G^q_{haar} = \frac{1}{\sqrt{2}} \begin{bmatrix}
     1&-1&0&0&\cdots&0&0\\
     0&0&1&-1&\cdots&0&0\\
     \vdots&\vdots&\vdots&\vdots&\ddots&\vdots&\vdots\\
     0&0&0&0&\cdots&1&-1
-  \end{pmatrix}
-\end{equation*}
+  \end{bmatrix}
+\end{equation}
 
 Overall to perform the discrete Haar wavelet transform at the first scale, we multiply $\bm v$ by
 \begin{equation*}
@@ -355,20 +358,24 @@ We can continue this process until the $q$th scale to get the full Haar wavelet 
   \end{bmatrix}
 \end{equation*}
 
-To form the basis matrix $\bm\Psi$ such that $\bm v = \bm\Psi\bm w$ corresponding to the stage $j$ DWT, we can invert the matrix $\bm P^{(j)}$:
-\begin{equation*}
-  \bm\Psi = \left(\bm P^{(j)}\right)^{-1}
-\end{equation*}
-In practice, one usually works with wavelet functions that lead to orthogonal transform matrices, so that $\left(\bm P^{(j)}\right)^{-1}=\left(\bm P^{(j)}\right)^T$ and thus,
-\begin{equation*}
-  \bm\Psi = \left(\bm P^{(j)}\right)^T.
-\end{equation*}
+To form the basis matrix $\bm\Psi$ such that $\bm v = \bm\Psi\bm w$ corresponding to the stage $j$ DWT, we can invert the matrix $\bm P^{(j)}_{haar}$:
+\begin{equation}
+  \label{eqn:dwt_basis}
+  \bm\Psi = \left(\bm P^{(j)}_{haar}\right)^{-1}
+\end{equation}
+In practice, one usually works with wavelet functions that lead to orthogonal transform matrices, so that $\left(\bm P^{(j)}\right)^{-1}=\left(\bm P^{(j)}\right)^T$.
+The Haar wavelets satisfy this orthoganility condition.
+Therefore, the basis matrix $\bm\Psi$ from equation (\ref{eqn:dwt_basis}) can also be obtained as follows:
+\begin{equation}
+  \label{eqn:haar1_basis}
+  \bm\Psi = \left(\bm P^{(j)}_{haar}\right)^T.
+\end{equation}
 
 [CAVEAT boundary conditions]
 
 \subsection{Two-Dimensional Haar Wavelets}
 In Figure \ref{fig:haar_1d}, we showed the 1-dimensional Haar scaling function $\phi(x)$ and wavelet function $\psi(x)$.
-We can define the 2-dimensional scaling wavelet functions by taking the products of their one-dimensional versions:
+In general, we can define the 2-dimensional scaling wavelet functions by taking the products of their one-dimensional versions:
 \begin{equation}
   \begin{split}
     \phi(x,y) &= \phi(x) \phi(y)\\
@@ -444,7 +451,7 @@ We can define the 2-dimensional scaling wavelet functions by taking the products
 \end{figure}
 
 Where the superscripts $H,V$ and $D$ refer to the high-pass filters in the horizontal, vertical and diagonal direction, respectively.
-These functions are illustrated in Figure \ref{fig:haar_2d}.
+These functions are illustrated in Figure \ref{fig:haar_2d} for the Haar wavelet system.
 The 2-D Haar wavelet functions act as \emph{edge detectors} in their respective directions.
 For example, if we pass a $2\times 2$ image patch through the $\psi^V$ filter, the corresponding detail coefficient will be small unless there is sharp change in pixel intensities between the left side and right side of the patch, i.e. unless there is a vertical edge.
 
@@ -488,24 +495,41 @@ For example, if we pass a $2\times 2$ image patch through the $\psi^V$ filter, t
 \label{fig:dwt2}
 \end{figure}
 
-In Figure \ref{fig:haar2_basis}, we show two sets of basis functions that can be used by the Haar DWT to decompose a signal of size $4\times 4$, one corresponding to the first scale and another set corresponding to the level 2 decomposition.
+The wavelet basis functions for scale $j$ can be formed in two different ways.
+In the so-called ``standard'' construction \cite{stollnitz1995}, we first compute the DWT for scale $j$ for each column, followed by computing the scale-$J$ DWT on the intermediate result for each row.
+
+The non-standard construction, on the other hand, builds up the scale-$j$ iteratively transforming the columns and the rows.
+First, we perform the standard construction, but only for the first scale.
+%First, we compute the level-1 DWT for each column, followed by the level-1 DWT for each row. 
+Next, we do another level-1 DWT, but only on the approximation coefficients of the previous stage.
+We repeat this process $j$ times to get the level-$j$ DWT.
+
+In this document, we will only consider the non-standard construction of the DWT basis.
+The reason is that the basis functions resulting from the non-standard construction always have square support and to keep in line with \cite{pilikos2014}.
+
+In Figure \ref{fig:haar2_basis}, we illustrate the basis functions resulting from the non-standard construction. 
+We show two sets of basis functions that can be used by the Haar DWT to decompose a signal of size $4\times 4$, one corresponding to the first scale and another set corresponding to the level 2 decomposition.
 The DWT of a digital image is illustrated at various levels in Figure \ref{fig:dwt2}.
 One can clearly see that the high-pass filters corresponding to the Haar wavelets act as edge detectors.
 
-[STANDARD VS NONSTANDARD Construction]
-
 \subsection{Haar Wavelets for Videos}
-In 3-D, we have one Haar scaling function $\phi(x,y,z)$ and a total of $2^3-1=7$ Haar wavelet functions:
+A simple way of performing a DWT of a video would be to simply perform the two-dimensional DWT on each individual frame.
+This ``pseudo 3D'' approach is straightforward, but inefficient.
+Typically, we expect there to be continuity between successive frames of a video (unless there is a scene change or a cut).
+The pseudo 3D method does not exploit any of these temporal correlations.
+
+A better approach would be to perform a full 3-D wavelet decomposition using three-dimensional scaling and wavelet functions.
+In 3-D, we have one scaling function $\phi(x,y,t)$ and a total of $2^3-1=7$ wavelet functions:
 \begin{equation*}
   \begin{split}
-    \phi(x,y,z) &= \phi(z) \phi(x) \phi(y)\\
-    \psi^H(x,y,z) &=\phi(z) \phi(x) \psi(y) \\
-    \psi^V(x,y,z) &=\phi(z) \psi(x) \phi(y) \\
-    \psi^D(x,y,z) &=\phi(z) \psi(x) \psi(y) \\
-    \psi^T(x,y,z) &= \psi(z) \phi(x) \phi(y)\\
-    \psi^{HT}(x,y,z) &=\psi(z) \phi(x) \psi(y) \\
-    \psi^{VT}(x,y,z) &=\psi(z) \psi(x) \phi(y) \\
-    \psi^{DT}(x,y,z) &=\psi(z) \psi(x) \psi(y)
+    \phi(x,y,t) &= \phi(t) \phi(x) \phi(y)\\
+    \psi^H(x,y,t) &=\phi(t) \phi(x) \psi(y) \\
+    \psi^V(x,y,t) &=\phi(t) \psi(x) \phi(y) \\
+    \psi^D(x,y,t) &=\phi(t) \psi(x) \psi(y) \\
+    \psi^T(x,y,t) &= \psi(t) \phi(x) \phi(y)\\
+    \psi^{HT}(x,y,t) &=\psi(t) \phi(x) \psi(y) \\
+    \psi^{VT}(x,y,t) &=\psi(t) \psi(x) \phi(y) \\
+    \psi^{DT}(x,y,t) &=\psi(t) \psi(x) \psi(y)
   \end{split}
 \end{equation*}
 We use the $T$ superscript to denote the high-pass filters in the temporal direction.
@@ -515,145 +539,159 @@ We use the $T$ superscript to denote the high-pass filters in the temporal direc
 \begin{tikzpicture} [scale=0.8]
 % top 4
   \draw [<->] (0,21.5) -- (0,18) -- (3.5,18);
-  \draw [->] (0,18) -- (2.25,19.5);
+  \draw [->,dashed] (0,18) -- (2,20);
   \draw (0,18) rectangle (3,21);
-  \draw (0,21) -- (1.5,22) -- (4.5,22) -- (3,21);
-  \draw (4.5,22) -- (4.5,19) -- (3,18);
+  \draw (0,21) -- (1,22) -- (4,22) -- (3,21);
+  \draw (4,22) -- (4,19) -- (3,18);
   
   \draw [<->] (6,21.5) -- (6,18) -- (9.5,18);
+  \draw [->,dashed] (6,18) -- (8,20);
   \draw (6,18) rectangle (9,21);
-  \draw (6,21) -- (7.5,22) -- (10.5,22) -- (9,21);
-  \draw (10.5,22) -- (10.5,19) -- (9,18);
+  \draw (6,21) -- (7,22) -- (10,22) -- (9,21);
+  \draw (10,22) -- (10,19) -- (9,18);
 
   \draw [<->] (0,15.5) -- (0,12) -- (3.5,12);
+  \draw [->,dashed] (0,12) -- (2,14);
   \draw (0,12) rectangle (3,15);
-  \draw (0,15) -- (1.5,16) -- (4.5,16) -- (3,15);
-  \draw (4.5,16) -- (4.5,13) -- (3,12);
+  \draw (0,15) -- (1,16) -- (4,16) -- (3,15);
+  \draw (4,16) -- (4,13) -- (3,12);
 
   \draw [<->] (6,15.5) -- (6,12) -- (9.5,12);
+  \draw [->,dashed] (6,12) -- (8,14);
   \draw (6,12) rectangle (9,15);
-  \draw (6,15) -- (7.5,16) -- (10.5,16) -- (9,15);
-  \draw (10.5,16) -- (10.5,13) -- (9,12);
+  \draw (6,15) -- (7,16) -- (10,16) -- (9,15);
+  \draw (10,16) -- (10,13) -- (9,12);
   
-  \node at (1.5,18) [below] {$\phi(x,y,z)$};
+  \node at (1.5,18) [below] {$\phi(x,y,t)$};
   \node at (0,18) [left] {$0$};
   \node at (0,21) [left] {$1$};
   \node at (3,18) [below] {$1$};
   \node at (3.5,18) [below] {$x$};
   \node at (0,21.5) [left] {$y$};
-  \node at (2.25,19.5) [above] {$z$};
+  \node at (2,20) [above left] {$t$};
   
-  \node at (7.5,18) [below] {$\psi^H(x,y,z)$};
+  \node at (7.5,18) [below] {$\psi^H(x,y,t)$};
   \node at (6,18) [left] {$0$};
   \node at (6,21) [left] {$1$};
   \node at (9,18) [below] {$1$};
   \node at (9.5,18) [below] {$x$};
   \node at (6,21.5) [left] {$y$};
+  \node at (8,20) [above left] {$t$};
 
-  \node at (1.5,12) [below] {$\psi^V(x,y,z)$};
+  \node at (1.5,12) [below] {$\psi^V(x,y,t)$};
   \node at (0,12) [left] {$0$};
   \node at (0,15) [left] {$1$};
   \node at (3,12) [below] {$1$};
   \node at (3.5,12) [below] {$x$};
   \node at (0,15.5) [left] {$y$};
+  \node at (2,14) [above left] {$t$};
 
-  \node at (7.5,12) [below] {$\psi^D(x,y,z)$};
+  \node at (7.5,12) [below] {$\psi^D(x,y,t)$};
   \node at (6,12) [left] {$0$};
   \node at (6,15) [left] {$1$};
   \node at (9,12) [below] {$1$};
   \node at (9.5,12) [below] {$x$};
   \node at (6,15.5) [left] {$y$};
+  \node at (8,14) [above left] {$t$};
+
 %bottom 4
   \draw [<->] (0,9.5) -- (0,6) -- (3.5,6);
+  \draw [->,dashed] (0,6) -- (2,8);
   \draw (0,6) rectangle (3,9);
-  \draw (0,9) -- (1.5,10) -- (4.5,10) -- (3,9);
-  \draw (4.5,10) -- (4.5,7) -- (3,6);
+  \draw (0,9) -- (1,10) -- (4,10) -- (3,9);
+  \draw (4,10) -- (4,7) -- (3,6);
   
   \draw [<->] (6,9.5) -- (6,6) -- (9.5,6);
+  \draw [->,dashed] (6,6) -- (8,8);
   \draw (6,6) rectangle (9,9);
-  \draw (6,9) -- (7.5,10) -- (10.5,10) -- (9,9);
-  \draw (10.5,10) -- (10.5,7) -- (9,6);
+  \draw (6,9) -- (7,10) -- (10,10) -- (9,9);
+  \draw (10,10) -- (10,7) -- (9,6);
 
   \draw [<->] (0,3.5) -- (0,0) -- (3.5,0);
+  \draw [->,dashed] (0,0) -- (2,2);
   \draw (0,0) rectangle (3,3);
-  \draw (0,3) -- (1.5,4) -- (4.5,4) -- (3,3);
-  \draw (4.5,4) -- (4.5,1) -- (3,0);
+  \draw (0,3) -- (1,4) -- (4,4) -- (3,3);
+  \draw (4,4) -- (4,1) -- (3,0);
 
   \draw [<->] (6,3.5) -- (6,0) -- (9.5,0);
+  \draw [->,dashed] (6,0) -- (8,2);
   \draw (6,0) rectangle (9,3);
-  \draw (6,3) -- (7.5,4) -- (10.5,4) -- (9,3);
-  \draw (10.5,4) -- (10.5,1) -- (9,0);
+  \draw (6,3) -- (7,4) -- (10,4) -- (9,3);
+  \draw (10,4) -- (10,1) -- (9,0);
   
-  \node at (1.5,6) [below] {$\psi^T(x,y,z)$};
+  \node at (1.5,6) [below] {$\psi^T(x,y,t)$};
   \node at (0,6) [left] {$0$};
   \node at (0,9) [left] {$1$};
   \node at (3,6) [below] {$1$};
   \node at (3.5,6) [below] {$x$};
   \node at (0,9.5) [left] {$y$};
+  \node at (2,8) [above left] {$t$};
 
-  \node at (7.5,6) [below] {$\psi^{HT}(x,y,z)$};
+  \node at (7.5,6) [below] {$\psi^{HT}(x,y,t)$};
   \node at (6,6) [left] {$0$};
   \node at (6,9) [left] {$1$};
   \node at (9,6) [below] {$1$};
   \node at (9.5,6) [below] {$x$};
   \node at (6,9.5) [left] {$y$};
+  \node at (8,8) [above left] {$t$};
 
-  \node at (1.5,0) [below] {$\psi^{VT}(x,y,z)$};
+  \node at (1.5,0) [below] {$\psi^{VT}(x,y,t)$};
   \node at (0,0) [left] {$0$};
   \node at (0,3) [left] {$1$};
   \node at (3,0) [below] {$1$};
   \node at (3.5,0) [below] {$x$};
   \node at (0,3.5) [left] {$y$};
+  \node at (2,2) [above left] {$t$};
 
-  \node at (7.5,0) [below] {$\psi^{DT}(x,y,z)$};
+  \node at (7.5,0) [below] {$\psi^{DT}(x,y,t)$};
   \node at (6,0) [left] {$0$};
   \node at (6,3) [left] {$1$};
   \node at (9,0) [below] {$1$};
   \node at (9.5,0) [below] {$x$};
   \node at (6,3.5) [left] {$y$};
+  \node at (8,2) [above left] {$t$};
   % fills
   % top
   %TH
   \draw [fill=black, fill opacity=0.8] (6,18) rectangle (9,19.5);
-  \draw [fill=black, fill opacity=0.8] (9,19.5) -- (10.5,20.5) -- (10.5,19) -- (9,18);
+  \draw [fill=black, fill opacity=0.8] (9,19.5) -- (10,20.5) -- (10,19) -- (9,18);
  
   % V
   \draw [fill=black, fill opacity=0.8] (1.5,12) rectangle (3,15);
-  \draw [fill=black, fill opacity=0.8] (1.5,15) -- (3,16) -- (4.5,16) -- (4.5,13) -- (3,12) -- (3,15);
+  \draw [fill=black, fill opacity=0.8] (1.5,15) -- (2.5,16) -- (4,16) -- (4,13) -- (3,12) -- (3,15);
 
   %TD
   \draw [fill=black, fill opacity=0.8] (6,12) rectangle (7.5,13.5);
   \draw [fill=black, fill opacity=0.8] (7.5,13.5) rectangle (9,15);
-  \draw [fill=black, fill opacity=0.8] (7.5,15) -- (9,16) -- (10.5,16) -- (10.5,14.5) -- (9,13.5) -- (9,15);
+  \draw [fill=black, fill opacity=0.8] (7.5,15) -- (8.5,16) -- (10,16) -- (10,14.5) -- (9,13.5) -- (9,15);
     
   % bottom
   % T
-  \draw [fill=black, fill opacity=0.8] (0.75,9.5) -- (1.5,10) -- (4.5,10) -- (4.5,7) -- (3.75,6.5) -- (3.75,9.5) -- (0.75,9.5);
+  \draw [fill=black, fill opacity=0.8] (0.5,9.5) -- (1,10) -- (4,10) -- (4,7) -- (3.5,6.5) -- (3.5,9.5) -- (0.5,9.5);
   %TH
   \draw [fill=black, fill opacity=0.8] (6,6) rectangle (9,7.5);
-  \draw [fill=black, fill opacity=0.8] (6.75,9.5) -- (7.5,10) -- (10.5,10) -- (10.5,8.5) -- (9.75,8) -- (9.75,9.5) -- (6.75,9.5);
-  \draw [fill=black, fill opacity=0.8] (9,7.5) -- (9.75,8) -- (9.75,6.5) -- (9,6);
+  \draw [fill=black, fill opacity=0.8] (6.5,9.5) -- (7,10) -- (10,10) -- (10,8.5) -- (9.5,8) -- (9.5,9.5) -- (6.5,9.5);
+  \draw [fill=black, fill opacity=0.8] (9,7.5) -- (9.5,8) -- (9.5,6.5) -- (9,6);
   %TV
   \draw [fill=black, fill opacity=0.8] (1.5,0) rectangle (3,3);
-  \draw [fill=black, fill opacity=0.8] (1.5,3) -- (2.25,3.5) -- (3.75,3.5) -- (3.75,0.5) -- (3,0) -- (3,3);
-  \draw [fill=black, fill opacity=0.8] (0.75,3.5) -- (1.5,4) -- (3,4) -- (2.25,3.5);
+  \draw [fill=black, fill opacity=0.8] (1.5,3) -- (2,3.5) -- (3.5,3.5) -- (3.5,0.5) -- (3,0) -- (3,3);
+  \draw [fill=black, fill opacity=0.8] (0.5,3.5) -- (1,4) -- (2.5,4) -- (2,3.5);
   %TD
   \draw [fill=black, fill opacity=0.8] (6,0) rectangle (7.5,1.5);
   \draw [fill=black, fill opacity=0.8] (7.5,1.5) rectangle (9,3);
-  \draw [fill=black, fill opacity=0.8] (7.5,3) -- (8.25,3.5) -- (9.75,3.5) -- (9.75,2) -- (9,1.5) -- (9,3);
-  \draw [fill=black, fill opacity=0.8] (9.75,0.5) -- (9.75,2) -- (10.5,2.5) -- (10.5,1);
-  \draw [fill=black, fill opacity=0.8] (6.75,3.5) -- (7.5,4) -- (9,4) -- (8.25,3.5);
+  \draw [fill=black, fill opacity=0.8] (7.5,3) -- (8,3.5) -- (9.5,3.5) -- (9.5,2) -- (9,1.5) -- (9,3);
+  \draw [fill=black, fill opacity=0.8] (9.5,0.5) -- (9.5,2) -- (10,2.5) -- (10,1);
+  \draw [fill=black, fill opacity=0.8] (6.5,3.5) -- (7,4) -- (8.5,4) -- (8,3.5);
 \end{tikzpicture}
 \caption[3-D Haar Wavelets]{The 3-D Haar scaling function and wavelet functions.
-  Inside the $[0,1]\times [0,1] \times [0,1]$ cube, white corresponds to $+1$ and black corresponds to $-1$.}
+  Inside the $[0,1]\times [0,1] \times [0,1]$ cube, white corresponds to $+1$ and black corresponds to $-1$.
+The functions are zero outside of the cube.}
 \label{fig:haar_3d}
 \end{figure}
-Figure \ref{fig:haar_3d} shows the 3-D Haar scaling and wavelet functions.
-The basis functions can be formed by shifting and scaling these functions.
 
 \begin{figure}
   \centering
-  \begin{tikzpicture}
+  \begin{tikzpicture}[scale = 0.7]
     \draw [thick] (0,0) rectangle (6,6);
     \draw [thick] (0,3) -- (6,3);
     \draw [thick] (3,0) -- (3,6);
@@ -662,42 +700,238 @@ The basis functions can be formed by shifting and scaling these functions.
     \draw [thick] (6,6) -- (8,8);
     \draw [thick] (6,3) -- (8,5);
     \draw [thick] (3,6) -- (5,8);
-    \draw [dashed] (0,0) -- (2,2) -- (8,2);
-    \draw [dashed] (2,2) -- (2,8);
-    \draw [dashed] (1,1) -- (7,1);
-    \draw [dashed] (0,3) -- (2,5) -- (8,5);
-    \draw [dashed] (5,5) -- (3,3);
-    \draw [dashed] (1,4) -- (7,4);
-    \draw [dashed] (3,0) -- (5,2);
-    \draw [dashed] (4,1) -- (4,7);
-    %    \draw [dashed] (5,2) -- (5,8);
-    \draw [dashed] (1,1) -- (1,7);
-    %    \draw [fill=green, opacity=0.5] (3,0) -- (3,6) -- (5,8) -- (5,2);
-    %    \draw [fill=blue, opacity=0.5] (0,3) -- (2,5) -- (8,5) -- (6,3);
-    %   \draw [fill=orange, opacity=0.5] (1,1) -- (1,7) -- (7,7) -- (7,1);
-
-    \node at (6,7.5) {\large$\bm{GGH}_1$};
-    \node at (3,7.5) {\large$\bm{GHH}_1$};
-    \node at (1.5,4.5) {\large$\bm{HHH}_1$};
-    \node at (4.5,4.5) {\large$\bm{HGH}_1$};
-    \node at (1.5,1.5) {\large$\bm{HHG}_1$};
-    \node at (4.5,1.5) {\large$\bm{HGG}_1$};
-    \node at (9,3.5) {\large$\bm{GGG}_1$};
+    \draw [dashed,gray,very thin] (0,0) -- (2,2) -- (8,2);
+    \draw [dashed,gray,very thin] (2,2) -- (2,8);
+    \draw [dashed,gray,very thin] (1,1) -- (7,1);
+    \draw [dashed,gray,very thin] (0,3) -- (2,5) -- (8,5);
+    \draw [dashed,gray,very thin] (5,5) -- (3,3);
+    \draw [dashed,gray,very thin] (1,4) -- (7,4);
+    \draw [dashed,gray,very thin] (3,0) -- (5,2);
+    \draw [dashed,gray,very thin] (4,1) -- (4,7);
+    \draw [dashed,gray,very thin] (5,2) -- (5,8);
+    \draw [dashed,gray,very thin] (1,1) -- (1,7);
+    \node at (6,7.5) {\large$\bm{HHL}_1$};
+    \node at (3,7.5) {\large$\bm{HLL}_1$};
+    \node at (1.5,4.5) {\large$\bm{LLL}_1$};
+    \node at (4.5,4.5) {\large$\bm{LHL}_1$};
+    \node at (1.5,1.5) {\large$\bm{LLH}_1$};
+    \node at (4.5,1.5) {\large$\bm{LHH}_1$};
+    \node at (9.5,3.5) {\large$\bm{HHH}_1$};
+    \draw [<-] (7.5,3) -- (9.5,3) -- (9.5,3.2);
+    \node at (-1.5,3.2) {\large$\bm{HLH}_1$};
+    \draw [thick](-1.5,3) -- (-1.5,2.8) -- (-0.3,2.8);
+    \draw [->,dashed,thick] (-0.3,2.8) -- (1.5,2.8);
   \end{tikzpicture}
+  \caption{The wavelet decomposition of a three-dimensional signal $v(x,y,t)$ at the first scale. 
+    $L$ stands for ``low'' and $H$ stands for ``high''.
+    To obtain the decomposition at higher scales, we recursively decompose the low-pass channels $\bm{LLL}_j$ in a similar way.}
+  \label{fig:3d_channels}
 \end{figure}
 
+\begin{figure}
+\centering
+  \begin{subfigure}{0.35\textwidth}
+    \includegraphics[width=0.9\textwidth]{Chapter3/Images/frame_11.png}
+    \caption{Frame 11}
+  \end{subfigure}
+  \begin{subfigure}{0.35\textwidth}
+    \includegraphics[width=0.9\textwidth]{Chapter3/Images/frame_12.png}
+    \caption{Frame 12}
+  \end{subfigure}
+  \begin{subfigure}{0.35\textwidth}
+    \includegraphics[width=0.9\textwidth]{Chapter3/Images/dwt_6.png}
+    \caption{Scale 1 DWT: ``frame'' 6}
+  \end{subfigure}
+  \begin{subfigure}{0.35\textwidth}
+    \includegraphics[width=0.9\textwidth]{Chapter3/Images/dwt_38.png}
+    \caption{Scale 1 DWT: ``frame'' 38}
+  \end{subfigure}
+  \caption{Frames 11 and 12 of a 64-frame video with a resolution of $256\times 256$ (a,b).
+    We perform the three-dimensional DWT at the first scale using Haar wavelets and show two ``slices'' of the resulting coefficients (c,d). The detail coefficients have been enhanced to improve visibility.}
+ \label{fig:3d_dwt}
+\end{figure}
 
-\section{Basis Matrix for Multi-Dimensional Signals}
-\emph{Using seperability to perform the N-D DWT. Unrolling the signal. Forming the Basis Matrix. Kronecker product}
-Like the DCT, the DWT also has the \emph{seperability} property.
-Thus, to perform the DWT on a two-dimensional signal, such as an image, we first compute the 1-D DWT for each column.
-Next, we compute the 1-D DWT on each row of the preceding result.
+Figure \ref{fig:haar_3d} shows the 3-D scaling and wavelet functions for the Haar wavelets.
+To obtain the basis functions corresponding to the 3-D Haar wavelet domain, we compute scaled and shifted versions of these functions.
+
+At the first scale, the 3-D wavelet decomposition of a video results in 8 channels: one corresponding to a low-pass filter, and 7 corresponding to high-pass filters in various directions (see Figure \ref{fig:3d_channels}).
+
+For the Haar wavelets, the high-pass filters act as edge detectors, just like in the 2-D case. 
+However, on top of detecting edges along spatial directions, we also get high-pass filters that detect sudden changes in the temporal direction, i.e. motion detectors.
+
+As an example, consider Figure \ref{fig:3d_dwt}.
+In panels (a) and (b), we show two adjacent frames of the ``soccer'' test video.
+We perform the 3-D Haar DWT at the first scale and arrange the coefficients as in Figure \ref{fig:3d_channels}.
+At the first scale, the 3-D Haar basis functions only have support over a $2\times 2\times 2$ volume.
+Thus, all the DWT coefficients that are affected by the data in frames 11 and 12 of the original video, are contained within two ``frames'', or ``slices'', of the transformed signal.
+For frames 11 and 12 of the original 64-frame video, these slices are at positions $12/2=6$ and $(6+64)/2=38$ in the transformed video.
+
+In panel (c), we see the spatial edge detectors (the $LLH$, $LHL$ and $LHH$ channels) that are similar to those in the 2-D case (Figure \ref{fig:dwt2}).
+The top left corner corresponds to the low-pass filter $LLL$ and can be regarded as an ``average'' of the video.
+
+Panel (d), shows the four channels associated with a high-pass filter in the temporal direction.
+The $HLL$ channel (top left corner of panel (d)) picks up overall differences in adjacent frames.
+In this example, we note that it detects the motion of the football players and the ball, (as well as a slight motion of the backgrund due to the panning of the camera).
+The remaining channels in panel (d) combine motion detection with edge detection.
 
 
+\section{Basis Matrix for 2-D and 3-D Signals}
+So far, we have displayed two-dimensional signals as matrices and three-dimensional signals as 3-D arrays (also known as ``3-D matrices'', third-order tensors, or ``cubes'').
+To reconcile this with the notation used in Chapter \ref{ch:cs}, we need to \emph{vectorize} the multi-dimensional signal $\bm v$.
+More importantly, the RVM in Chapter \ref{ch:rvm} is agnostic of the dimensionality of the signal. 
+It takes as input a target vector $\bm y$ and a design matrix $\bm \Phi$ and outputs a weights vector $\bm w$.
+Any information about the structur of a signal (such as its dimensionality) is encoded in the design matrix.
+Therefore, it is important that we vectorize our multi-dimensional signals and also form the basis matrix $\bm Psi$ from the transform matrices (corresponding to the DCT/DWT/etc) in a way that is consistent with the vectorization.
+
+We will define the particular vectorization scheme that was used in our algorithm and describe how we built the basis matrices from the specific (inverse) transform matrices.
+
+\subsection{Basis Matrix for One-Dimensional Signals}
+We start with 1-D signals. 
+This case is trivial, since a one-dimensional signal $\bm v$ can directly be treated as a vector in $\mathbb{R}^M$, where $M$ is the length of the signal.
+
+The basis matrix matrix, in this case, is simply the inverse transform matrix.
+So, for the DCT, the basis matrix is $\bm\Psi = \bm P$, where $\bm P$ is defined in equation (\ref{eqn:idct_basis}).
+We have defined the basis matrix corresponding to the discrete Haar wavelet transform in equation (\ref{eqn:haar1_basis}).
+
+\subsection{Basis Matrix for Two-Dimensional Signals}
+Suppose $\bm v$ is a two-dimensional signal of size $r\times c$ (i.e. $r$ rows and $c$ columns).
+Suppose further that $r$ and $c$ are powers of 2, $r=2^{q_1}$ and $c = 2^{q_2}$, say.
+
+We vectorize $\bm v$ in a row-major fashion.
+To be explicit, let $\bm v_j^T$ be the $j$th row of $\bm v\in\mathbb{R}^{r\times c}$.
+The vectorized form of $\bm v$ is then given by
+\begin{equation*}
+  \bm v^V = \begin{bmatrix}
+    \bm v_1 \\
+    \bm v_2 \\
+    \vdots \\
+    \bm v_r
+  \end{bmatrix}
+\end{equation*}
+where we use the $V$ superscript to indicate the vectorized signal.
+Thus, we end up with a long vector $\bm v^V \in \mathbb{R}^{rc}$.
+
+To form the basis matrix corresponding to the two-dimensional DCT, we use the DCT's seperability property.
+Let $\bm\Psi_r$ and $\bm\Psi_c$ be the DCT basis matrices corresponding to one-dimensional signals of length $r$ and $c$, respectively.
+The basis matrix corresponding to $\bm v^V$ is then given by forming the \emph{kronecker product} of $\bm\Psi_c$ and $\bm\Psi_r$:
+\begin{equation*}
+\label{eqn:dct3_basis}
+  \bm\Psi = \bm\Psi_c \otimes \bm\Psi_r
+\end{equation*}
+The kronecker product $P \otimes Q$ between matrices $P$ and $Q$ with dimensions $m_P \times n_P$ and $m_Q \times n_Q$, respectively,  is defined to be the block matrix
+\begin{equation*}
+\begin{bmatrix}
+P_{1,1} Q & P_{1,2} Q & \cdots & P_{1,n_P} Q \\
+P_{2,1} Q & P_{2,2} Q & \cdots & P_{2,n_P} Q \\
+\vdots&\vdots&\ddots&\vdots \\
+P_{m_P,1} Q & P_{m_P,2} Q & \cdots & P_{m_P,n_P} Q \\
+\end{bmatrix}
+\end{equation*}
+of size $(m_Pm_Q) \times (n_Pn_Q)$.
+
+For the 2-D Haar DWT at the first scale, the basis matrix is constructed in a similar fashion.
+Let $\bm H^{q_1}$ and $\bm H^{q_2}$ be defined according to equation (\ref{eqn:haar_H}), and let $\bm G^{q_1}$ and $\bm G^{q_2}$  be formed according to (\ref{eqn:haar_G}) (where we dropped the $haar$ subscript. 
+The basis matrix is constructed as follows:
+\begin{equation*}
+  \bm \Psi = 
+  \begin{bmatrix}
+    \bm H^{q_2} \otimes\bm H^{q_1} \\
+    \bm H^{q_2} \otimes \bm G^{q_1} \\
+    \bm G^{q_2} \otimes \bm H^{q_1} \\
+    \bm G^{q_2} \otimes \bm G^{q_1} 
+  \end{bmatrix}^T.
+\end{equation*}
+For a signal of size $2^{q_1}\times 2^{q_2}$, we can build a cascade up to the $q$th scale, where $q = \min\{q_1,q_2\}$.
+The resulting basis matrix is given by
+\begin{equation*}
+\label{eqn:haar2_fullbasis}
+  \bm \Psi = 
+  \begin{bmatrix}
+    (\bm H^{q_2-q}\bm H^{q_2-q+1} \cdots \bm H^{q_2}) \otimes (\bm H^{q_1-q} \bm H^{q_1-q+1}\cdots\bm H^{q_1}) \\
+    (\bm H^{q_2-q}\bm H^{q_2-q+1} \cdots \bm H^{q_2}) \otimes (\bm G^{q_1-q} \bm H^{q_1-q+1}\cdots\bm H^{q_1}) \\
+    (\bm G^{q_2-q}\bm H^{q_2-q+1} \cdots \bm H^{q_2}) \otimes (\bm H^{q_1-q} \bm H^{q_1-q+1}\cdots\bm H^{q_1}) \\
+    (\bm G^{q_2-q}\bm H^{q_2-q+1} \cdots \bm H^{q_2}) \otimes (\bm G^{q_1-q} \bm H^{q_1-q+1}\cdots\bm H^{q_1}) \\
+    (\bm H^{q_2-q+1}\bm H^{q_2-q+2} \cdots \bm H^{q_2}) \otimes (\bm G^{q_1-q+1} \bm H^{q_1-q+2}\cdots\bm H^{q_1}) \\
+    (\bm G^{q_2-q+1}\bm H^{q_2-q+2} \cdots \bm H^{q_2}) \otimes (\bm H^{q_1-q+1} \bm H^{q_1-q+2}\cdots\bm H^{q_1}) \\
+    (\bm G^{q_2-q+1}\bm H^{q_2-q+2} \cdots \bm H^{q_2}) \otimes (\bm G^{q_1-q+1} \bm H^{q_1-q+2}\cdots\bm H^{q_1}) \\
+    \vdots \\
+    (\bm G^{q_2-2}\bm H^{q_2-1} \bm H^{q_2}) \otimes (\bm G^{q_1-2}\bm H^{q_1-1}\bm H^{q_1}) \\
+    (\bm H^{q_2-1} \bm H^{q_2}) \otimes (\bm G^{q_1-1}\bm H^{q_1}) \\
+    (\bm G^{q_2-1} \bm H^{q_2}) \otimes (\bm H^{q_1-1}\bm H^{q_1}) \\
+    (\bm G^{q_2-1} \bm H^{q_2}) \otimes (\bm G^{q_1-1}\bm H^{q_1}) \\
+    \bm H^{q_2} \otimes \bm G^{q_1} \\
+    \bm G^{q_2} \otimes \bm H^{q_1} \\
+    \bm G^{q_2} \otimes \bm G^{q_1} 
+  \end{bmatrix}^T.
+\end{equation*}
+Note that the dimensions of the basis matrix are $(rc)\times (rc)$, regardless of the scale that we use.
+
+\subsection{Basis Matrix for Three-Dimensional Signals}
+Finally, suppose $\bm v$ is a video signal of size $r\times c\times f$ ($f$ frames), where $r=2^{q_1}$, $c=2^{q_2}$ and $f=2^{q_3}$.
+We vectorize $\bm v$ by first vectorizing each individual frame as in the 2-D case, followed by stacking the frames.
+The result $\bm v^V$ is a long vector of length $rcf$.
+
+The basis matrix corresponding to the DCT is given by 
+\begin{equation*}
+  \bm\Psi = \bm\Psi_f\otimes\bm\Psi_c\otimes\bm\Psi_r
+\end{equation*}
+where $\bm\Psi_r$, $\bm\Psi_c$ and $\bm\Psi_f$ are the DCT basis matrices for 1-D signals of length $r$, $c$ and $f$, respectively.
+
+The Haar basis matrix for video signals at the scale 1 is constructed as follows:
+
+\begin{equation*}
+  \bm\Psi = 
+  \begin{bmatrix}
+    \bm H^{q_3}\otimes \bm H^{q_2} \otimes\bm H^{q_1} \\
+    \bm H^{q_3}\otimes \bm H^{q_2} \otimes \bm G^{q_1} \\
+    \bm H^{q_3}\otimes \bm G^{q_2} \otimes \bm H^{q_1} \\
+    \bm H^{q_3}\otimes \bm G^{q_2} \otimes \bm G^{q_1} \\
+    \bm G^{q_3}\otimes \bm H^{q_2} \otimes\bm H^{q_1} \\
+    \bm G^{q_3}\otimes \bm H^{q_2} \otimes \bm G^{q_1} \\
+    \bm G^{q_3}\otimes \bm G^{q_2} \otimes \bm H^{q_1} \\
+    \bm G^{q_3}\otimes \bm G^{q_2} \otimes \bm G^{q_1} 
+  \end{bmatrix}^T.
+\end{equation*}
+
+The extension to higher scales is similar to equation (\ref{eqn:haar2_fullbasis}).
+We can build the matrix up until the $q$th scale, where $q=\min\{q_1,q_2,q_3\}$.
+The full basis matrix is
+\begin{equation*}
+  \resizebox{.9\hsize}{!}{$
+  \bm\Psi = 
+  \begin{bmatrix}
+    (\bm H^{q_3-q}\bm H^{q_3-q+1}\cdots\bm H^{q_3})\otimes (\bm H^{q_2-q}\bm H^{q_2-q+1}\cdots\bm H^{q_2}) \otimes (\bm H^{q_1-q}\bm H^{q_1-q+1}\cdots\bm H^{q_1}) \\
+    (\bm H^{q_3-q}\bm H^{q_3-q+1}\cdots\bm H^{q_3})\otimes (\bm H^{q_2-q}\bm H^{q_2-q+1}\cdots\bm H^{q_2}) \otimes (\bm G^{q_1-q}\bm H^{q_1-q+1}\cdots\bm H^{q_1}) \\
+    (\bm H^{q_3-q}\bm H^{q_3-q+1}\cdots\bm H^{q_3})\otimes (\bm G^{q_2-q}\bm H^{q_2-q+1}\cdots\bm H^{q_2}) \otimes (\bm H^{q_1-q}\bm H^{q_1-q+1}\cdots\bm H^{q_1}) \\
+    (\bm H^{q_3-q}\bm H^{q_3-q+1}\cdots\bm H^{q_3})\otimes (\bm G^{q_2-q}\bm H^{q_2-q+1}\cdots\bm H^{q_2}) \otimes (\bm G^{q_1-q}\bm H^{q_1-q+1}\cdots\bm H^{q_1}) \\
+    (\bm G^{q_3-q}\bm H^{q_3-q+1}\cdots\bm H^{q_3})\otimes (\bm H^{q_2-q}\bm H^{q_2-q+1}\cdots\bm H^{q_2}) \otimes (\bm H^{q_1-q}\bm H^{q_1-q+1}\cdots\bm H^{q_1}) \\
+    (\bm G^{q_3-q}\bm H^{q_3-q+1}\cdots\bm H^{q_3})\otimes (\bm H^{q_2-q}\bm H^{q_2-q+1}\cdots\bm H^{q_2}) \otimes (\bm G^{q_1-q}\bm H^{q_1-q+1}\cdots\bm H^{q_1}) \\
+    (\bm G^{q_3-q}\bm H^{q_3-q+1}\cdots\bm H^{q_3})\otimes (\bm G^{q_2-q}\bm H^{q_2-q+1}\cdots\bm H^{q_2}) \otimes (\bm H^{q_1-q}\bm H^{q_1-q+1}\cdots\bm H^{q_1}) \\
+    (\bm G^{q_3-q}\bm H^{q_3-q+1}\cdots\bm H^{q_3})\otimes (\bm G^{q_2-q}\bm H^{q_2-q+1}\cdots\bm H^{q_2}) \otimes (\bm G^{q_1-q}\bm H^{q_1-q+1}\cdots\bm H^{q_1}) \\
+    (\bm H^{q_3-q+1}\bm H^{q_3-q+2}\cdots\bm H^{q_3})\otimes (\bm H^{q_2-q+1}\bm H^{q_2-q+2}\cdots\bm H^{q_2}) \otimes (\bm G^{q_1-q+1}\bm H^{q_1-q+2}\cdots\bm H^{q_1}) \\
+    (\bm H^{q_3-q+1}\bm H^{q_3-q+2}\cdots\bm H^{q_3})\otimes (\bm G^{q_2-q+1}\bm H^{q_2-q+2}\cdots\bm H^{q_2}) \otimes (\bm H^{q_1-q+1}\bm H^{q_1-q+2}\cdots\bm H^{q_1}) \\
+    \vdots\\
+    (\bm G^{q_3-1}\bm H^{q_3})\otimes (\bm G^{q_2-1}\bm H^{q_2}) \otimes (\bm G^{q_1-1}\bm H^{q_1}) \\
+    \bm H^{q_3}\otimes \bm H^{q_2} \otimes \bm G^{q_1} \\
+    \bm H^{q_3}\otimes \bm G^{q_2} \otimes \bm H^{q_1} \\
+    \bm H^{q_3}\otimes \bm G^{q_2} \otimes \bm G^{q_1} \\
+    \bm G^{q_3}\otimes \bm H^{q_2} \otimes \bm H^{q_1} \\
+    \bm G^{q_3}\otimes \bm H^{q_2} \otimes \bm G^{q_1} \\
+    \bm G^{q_3}\otimes \bm G^{q_2} \otimes \bm H^{q_1} \\
+    \bm G^{q_3}\otimes \bm G^{q_2} \otimes \bm G^{q_1} 
+  \end{bmatrix}^T
+$}
+\end{equation*}
+
+The size of the basis matrices is $(rcf)\times (rcf)$. 
+Even for relatively small signals, these matrices can be prohibitively large.
+We address this problem in Chapter \ref{ch:code}.
+
+% Like the DCT, the DWT also has the \emph{seperability} property.
+% Thus, to perform the DWT on a two-dimensional signal, such as an image, we first compute the 1-D DWT for each column.
+% Next, we compute the 1-D DWT on each row of the preceding result.
 % Note that, due to multi-resolution properties of the DWT, we have a choice on how we compute the 2-D DWT.
 % We could either perform the full decomposition (up to the highest possible scale) on the first dimension, followed by 
-
-
 % For the Haar wavelets, it can be easily verified that 
 % \begin{equation*}
 %   \langle\psi_k^p,\psi_l^q\rangle = 
@@ -715,137 +949,8 @@ Next, we compute the 1-D DWT on each row of the preceding result.
 
 
 
-%% \section{Haar basis functions}
-%% The RVM takes as input a target vector ($\bs y$) and a basis matrix ($\bs \Psi$). 
-%% In this respect, it is agnostic about whether the signal is an image or video or of some other type alltogether.
-%% Most of this information is encoded in the basis matrix $\bs \Psi$.
-%% It is therefore important, and often challenging, to select a good set of basis functions.
-
-%% Our current implementation uses 3-dimensional Haar wavelet basis functions.
-%% I will show how the basis matrix $\bs\Psi$ is constructed by briefly describing how the discrete Haar wavelet transform is performed on 1D, 2D and finally on 3D signals.
-%% \subsection{1D Haar wavelet transform}
-%% Consider a 1-dimensional signal $\bs s = \{s_1,\dots,s_r\} \in \mathbb{R}^r$ ($r$ for ``rows''), where, for simplicity, we assume that $r$ is a power of 2.
-%% The Haar wavelet transform can be performed at various resolution scales.
-%% The transform at the first scale is given by:
-%% \begin{equation*}
-%% \bs s = \{s_1,\dots,s_r\}\to \frac{1}{\sqrt{2}}\{s_1+s_2,s_3+s_4,\dots,s_{r-1}+s_r,s_1-s_2,\dots,s_{r-1}-s_r\}=\hat{\bs s}^{(1)}
-%% \end{equation*}
-%% The first half of the signal is replaced by scaled averages of adjacent elements and the second half is replaced by scaled differences of adjacent elements.
-%% By performing this transform again on the first half of $\hat{\bs s}^{(1)}$ while keeping the second half fixed, we get the Haar wavelet transform at the second scale $\hat{\bs s}^{(2)}$. 
-%% To get the third scale transform $\hat{\bs s}^{(3)}$, we perform the initial transform on the first quarter of $\hat{\bs s}^{(2)}$ while keeping the rest of the signal fixed.
-%% We may continue this process until we reach the $i$th scale, where $2^i = r$.
-
-%% From here on, we will only consider the first scale transform $\hat{\bs s}^{(1)}$ and we will omit the $(1)$ superscript.
-%% We can express the transform as a multiplication by an orthogonal $r\times r$ matrix $W$ given by
-%% \begin{equation}
-%% \end{equation}
-%% where $\Phi_r$ and $\Psi_r$ are $(r/2)\times r$ matrices\footnote{Note that the matrix $\Psi_r$ used here is different to the matrix $\Psi$ that was used in the previous chapter (which corresponds to $W^T$ here).} given by
-%% \begin{equation*}
-%% \end{equation*}
-%% and 
-%% \begin{equation*}
-%% \end{equation*}
-
-
-%% In the signal processing literature, $\Phi_r$ is referred to as a low pass filter, while $\Psi_r$ is referred to as a high pass filter.
-%% $\Phi_r$ outputs an average of the signal and $\Psi_r$ outputs the details of the signal.
-
-%% \subsection{2D Haar wavelet transform}
-%% Let $A \in \mathbb{R}^{r\times c}$ be a 2-dimensional signal (e.g. an image).
-%% For simplicity, we will assume that both $r$ and $c$ are powers of 2 (though not necessarily equal).
-
-%% It is simple to obtain $A$'s Haar wavelet transform $\hat{A}$ at the first scale.
-%% This is done by first applying the 1-dimensional transform individually to each column of $A$ to obtain a temporary matrix $\hat A_{temp}$.
-%% Next, we apply the 1-dimensional haar wavelet transform individually to each row of $\hat A_{temp}$ to obtain $\hat A$.
-
-%% We can again express the transform as a multiplication of matrices:
-%% \begin{equation}
-%% \label{eqn:2Dtransform}
-%% \hat A = \begin{bmatrix}
-%%   \Phi_r\\
-%%   \Psi_r\\
-%% \end{bmatrix}
-%% A
-%% \begin{bmatrix}
-%%   \Phi_c^T & \Psi_c^T\\
-%% \end{bmatrix}
-%% \end{equation}
-%% where $\Phi_r$ and $\Psi_r$ are as before and $\Phi_c$ and $\Psi_c$ are of similar form but each have dimensions $(c/2)\times c$.
-%% This is the transform that was used to generate the RHS of Figure \ref{fig:haarlenna}.
-%% We note that the high-pass filters essentially detect edges of various orientations in the image.
-
-%% However, as it currently stands, we cannot use this form of the basis transformation for the reconstruction algorithm. Recall that the RVM requires a \emph{vector} of measurements as opposed to a matrix and also that it requires a single basis matrix, not a basis transform as given in (\ref{eqn:2Dtransform}).
-
-%% To do this, we store the 2-dimensional signal $A$ as a long column vector $\bs a$ of length $rc$ by pasting the individual columns of $A$ one after another.
-%% The basis transformation of $\bs a$ can then be expressed as 
-%% \begin{equation*}
-%% \hat{\bs a} = W \bs a
-%% \end{equation*}
-%% where $W$ is a $rc \times rc $ matrix given by
-%% \begin{equation*}
-%% W = 
-%% \begin{bmatrix}
-%% \Phi_c \otimes \Phi_r \\
-%% \Phi_c \otimes \Psi_r \\
-%% \Psi_c \otimes \Phi_r \\
-%% \Psi_c \otimes \Psi_r \\
-%% \end{bmatrix}
-%% \end{equation*}
-
-%% The symbol $\otimes$ denotes the \emph{Kronecker product}. 
-%% The kronecker product $P \otimes Q$ between matrices $P$ and $Q$ with dimensions $m_P \times n_P$ and $m_Q \times n_Q$, respectively,  is defined to be the block matrix
-%% \begin{equation*}
-%% \begin{bmatrix}
-%% p_{1,1} Q & p_{1,2} Q & \cdots & p_{1,n_P} Q \\
-%% p_{2,1} Q & p_{2,2} Q & \cdots & p_{2,n_P} Q \\
-%% \vdots&\vdots&\ddots&\vdots \\
-%% p_{m_P,1} Q & p_{m_P,2} Q & \cdots & p_{m_P,n_P} Q \\
-%% \end{bmatrix}
-%% \end{equation*}
-%% of size $m_Pm_Q \times n_Pn_Q$.
-
-%% \subsection{3D Haar wavelet transform}
-%% Let $V \in \mathbb{R}^{r\times c\times s}$ be a 3-dimensional signal such as a video. 
-%% $V$ has $r$ rows, $c$ columns and $s$ slices, and we assume that $r$, $c$ and $s$ are all powers of 2. 
-%% We may visualize $V$ as a ``volume'' with 2 spacial dimensions and one time dimension corresponding to frames of the video.
-
-%% To obtain the Haar wavelet transform $\hat V$ of $V$, we first perform the 1-dimensional transform individually on each column in every slice of $V$ to get $\hat V_{temp1}$.
-%% We then perform the 1D transform on every row in every slice of $\hat V_{temp_1}$ to get $\hat V_{temp_2}$.
-%% Finally, we perform the 1D transform across the slices for every row and column to get $\hat V$.
-
-%% However, like in the 2-dimensional case, we need to be able to pass a single vector of coefficients and a single basis matrix to the RVM.
-%% To do this, we vectorize $V$ as follows. 
-%% First, we vectorize each individual slice of $V$ as before in the 2D case.
-%% Then, we stack all these vectors on top each other to get one very long column vector $\bs v$ of length $rcs$.
-%% The Haar wavelet transform is given by 
-%% \begin{equation*}
-%% \hat{\bs v} = W \bs v
-%% \end{equation*}
-%% where 
-%% \begin{equation*}
-%% W = 
-%% \begin{bmatrix}
-%% \Phi_s \otimes \Phi_c \otimes \Phi_r \\
-%% \Phi_s \otimes \Phi_c \otimes \Psi_r \\
-%% \Phi_s \otimes \Psi_c \otimes \Phi_r \\
-%% \Phi_s \otimes \Psi_c \otimes \Psi_r \\
-%% \Psi_s \otimes \Phi_c \otimes \Phi_r \\
-%% \Psi_s \otimes \Phi_c \otimes \Psi_r \\
-%% \Psi_s \otimes \Psi_c \otimes \Phi_r \\
-%% \Psi_s \otimes \Psi_c \otimes \Psi_r \\
-%% \end{bmatrix}
-%% \end{equation*}
-
-
-%% \subsection{Daubechies Wavelets}
-%% \emph{Intuition. Where do the coeffs come from. Matrices. Boundary conditions.}
-
-
-%% \section{Forming the basis matrix}
-%% \emph{1D, 2D, 3D case. Different scales}
-
-%% For a deeper introduction into wavelets see \cite{stollnitz1995}.
-%% For more information on wavelet compression techniques, see \cite{devore1992}.
+% For a deeper introduction into wavelets see \cite{stollnitz1995}.
+% For more information on wavelet compression techniques, see \cite{devore1992}.
 
 
 
