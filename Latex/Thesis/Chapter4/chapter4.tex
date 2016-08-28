@@ -97,9 +97,10 @@ where $\bm I_M$ is the $M\times M$ identity matrix.
 
 So far, we have specified the general linear regression model.
 To get to the sparse Bayesian formulation, we define a zero-mean Gaussian prior distribution over the parameters $\bm w$
-\begin{equation*}
-  p(\bm w\,|\,\bm \alpha) = \prod_{j=1}^M \mathcal{N}\left(w_j\,|\,\alpha_j^{-1}\right)
-\end{equation*}
+\begin{equation}
+\label{eqn:prior_w}
+  p(\bm w\,|\,\bm \alpha) = \prod_{j=1}^M \mathcal{N}\left(w_j\,|\,0,\alpha_j^{-1}\right)
+\end{equation}
 where $\bm \alpha = \left[\alpha_1,\cdots,\alpha_M\right]^T$ is a vector of $M$ hyperparameters.
 It is important to note that each hyperparameter $\alpha_j$ is solely responsible for controlling the strength of the prior of its associated weight $w_j$.
 If $\alpha_j$ is large, the prior over $w_j$ is very strongly peaked at zero.
@@ -117,12 +118,14 @@ where $\Gamma(.)$ is the Gamma function defined by
 \Gamma(z) = \int_0^\infty t^{z-1} \exp(-t) dt.
 \]
 } priors
-\begin{equation*}
+\begin{equation}
+\label{eqn:prior_alpha}
   p(\bm\alpha\,|\,a,b) = \prod_{j=1}^M \GammaDist(\alpha_j\,|\,a,b)
-\end{equation*}
-\begin{equation*}
+\end{equation}
+\begin{equation}
+\label{eqn:prior_beta}
   p(\beta\,|\,c,d) = \GammaDist(\beta\,|\,c,d)
-\end{equation*}
+\end{equation}
 where $\beta \equiv \sigma^{-2}$.
 
 As a side note, consider the prior of $\bm w$ after marginalising out the dependence on the hyperpriors $\bm\alpha$.
