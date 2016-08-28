@@ -1,3 +1,5 @@
+/* Simple program that generates a small signal for testing */
+
 #include <iostream>
 #include <fstream>
 #include <sstream>

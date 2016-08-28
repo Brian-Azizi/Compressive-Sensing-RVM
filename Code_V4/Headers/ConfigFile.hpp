@@ -1,6 +1,8 @@
 #ifndef GUARD_CONFIGFILE_HPP
 #define GUARD_CONFIGFILE_HPP
 
+/* Class for handling configuration files. Based on "http://www.dreamincode.net/forums/topic/183191-create-a-simple-configuration-file-parser/" */
+
 #include <string>
 #include <map>
 #include <ostream>

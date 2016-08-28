@@ -23,44 +23,49 @@
 
 class Interpolator {
 private:
-    typedef double signalType; // Specify C++ type of input
-    Signal<signalType> signal;
-    Signal<signalType> block;
+    typedef double signalType; // Specify C++ type of input. NOTE: code was only tested with signalType = double
+    Signal<signalType> signal; // holds original signal
+    Signal<signalType> block; // holds the current signal block
 
     //Signal<signalType> sensingMatrices;
     Signal<signalType> maskedSignal;
-    Signal<signalType> allTargets; // save the measurements
-    Signal<bool> sensedEntries;
-    Signal<signalType> signalPatch;
-    Signal<bool> sensedPatch;
+    Signal<signalType> allTargets; // save the measurements in concatenated form
+    Signal<bool> sensedEntries; // true at positions in which we maskedSignal has data 
+    Signal<signalType> signalPatch; // subarray of maskedSignal
+    Signal<bool> sensedPatch; // subarray of sensedEntries
     
-    Signal<signalType> signalPatchVector;
+    // Vectorized versions
+    Signal<signalType> signalPatchVector; 
     Signal<bool> sensedPatchVector;
     Signal<bool> initialSensedVector;
     Signal<signalType> initialSignalVector;
     Signal<double> recoveredVector;
-    Signal<double> recoveredPatch;
+    Signal<double> recoveredPatch; // reshaped to have block.dim() dimensions
     
-    std::vector<Signal<double> > cascadeRecoveredSignals;
-    std::vector<Signal<double> > cascadeBasis;
+    std::vector<Signal<double> > cascadeRecoveredSignals; // holds output of each stage of cascade
+    std::vector<Signal<double> > cascadeBasis; // holds basis matrices for each stage of cascade
 
     SignalSettings cfg;
 
-    //    bool m_printProgress;
-
-    int rank, nproc;
+    // MPI variables
+    int rank, nproc; 
+    /* Used to decide how to split the work load between the processes. (i,j,k)th entry contains index of rank that will reconstruct block (i,j,k) */
     Signal<int> grid;
-    std::map<int, std::vector<Signal<int> > > gridMap;
-    int m_DUMMY;   
-    void reconstruct();
+    std::map<int, std::vector<Signal<int> > > gridMap; // maps rank number to list containing blocks it is responsible for.
+
+    int m_DUMMY;   // a dummy integer. Usually used to denote empty data
+
+    void reconstruct(); // helper function that contains the main loop of the algorithm
+
+    /* Rounds input to the nearest integer and clamps to the range [min, max] */
     int getIntRange(double input, int min = 0, int max = 255);
+
     double computeMSE(const Signal<double>& original, const Signal<double>& reconstructed);
     double MSEtoPSNR(double mse);
 
 
 public:
-    Interpolator(const SignalSettings& settingsFile);
-    //bool printProgress() const { return m_printProgress; }
+    Interpolator(const SignalSettings& settingsFile); // Construct using settings file
     void run();				    // run interpolator
     };
 
@@ -72,7 +77,6 @@ Interpolator::Interpolator(const SignalSettings& settingsFile)
     sensedEntries = Signal<bool>(signal.dim()); // initialized to false
     cascadeRecoveredSignals = 
 	std::vector<Signal<double> >(cfg.endScale, Signal<double>(signal.dim(), false));
-    //m_printProgress = cfg.printProgress;
     m_DUMMY = 9999;
 }
 
@@ -102,13 +106,15 @@ void Interpolator::run()
     /*** Reconstruct the signal ***/
     if (cfg.printProgress && cfg.rank==0) std::cout << "\t*** Start Reconstruction ***\n";
     
-    // Define grid and gird map
+    // Define grid and grid map
     rank = cfg.rank;
     nproc = cfg.nproc;
     grid = Signal<int> ( signal.height()/block.height(), signal.width()/block.width(), signal.frames()/block.frames());
     for (int i = 0; i < grid.size(); ++i) grid.data()[i] = i % nproc;
     for (int i = 0; i < grid.size(); ++i) gridMap[grid.data()[i]].push_back(grid.index(i));
-    int rootCalc = 0;
+
+    // Calculate number of blocks that root process is responsible for.
+    int rootCalc = 0; 
     for (int i = 0; i < grid.size(); ++i) if (grid.data()[i] == 0) ++rootCalc;
     
     // run the big loop
@@ -250,9 +256,9 @@ void Interpolator::reconstruct()
 	for (int colIdx = 0; colIdx < numBlocksWidth; ++colIdx)
 	    for (int frameIdx = 0; frameIdx < numBlocksFrames; ++frameIdx) {
 		
-		if (rank != grid(rowIdx, colIdx, frameIdx)) continue;
+		if (rank != grid(rowIdx, colIdx, frameIdx)) continue; // only process the block if its assigned to your rank
 		
-		if (rank == 0)
+		if (rank == 0) 	// we print progress on the root process
 		    std::cout << "Block (" << rowIdx+1 << "," << colIdx+1
 			      << "," << frameIdx+1 << ")   \tof\t("
 			      << numBlocksHeight << "," << numBlocksWidth
@@ -265,7 +271,7 @@ void Interpolator::reconstruct()
 		sensedPatchVector = vectorize(sensedPatch);
 		initialSensedVector = vectorize(sensedPatch);
 
-
+		/* Note, we compute a full-sized sensing matrix here. We use sensedEntries later on to delete rows */
 		Signal<double> theta = getSensingMatrix(block.size(), cfg.sensor.setting());
 		Signal<double> origSignalPatch = signal.getPatch(rowIdx*block.height(), colIdx*block.width(),
 								 frameIdx*block.frames(), block.height(),
@@ -275,15 +281,15 @@ void Interpolator::reconstruct()
 		if (cfg.sensor.setting() == Sensor::mask) mangledSignalVector = origSignalPatchVector;
 		else mangledSignalVector = matMult(theta,origSignalPatchVector);				
 		
-		Signal<double> initialMangledVector = mangledSignalVector;
+		Signal<double> initialMangledVector = mangledSignalVector; 
 		Signal<double> mangledSignal = reshape(mangledSignalVector, block.dim());
 		Signal<double> targetPatch(block.dim()); // set to zero
 		targetPatch.fill(m_DUMMY);
 
-			       
-		for (int scale = 0; scale < cfg.endScale; ++scale) {
-		    int measurements = countSensed(sensedPatchVector);
-		    if (measurements == 0) {
+		// Start MSCE Algorithm 
+		for (int scale = 0; scale < cfg.endScale; ++scale) { // loop over cascades
+		    int measurements = countSensed(sensedPatchVector); 
+		    if (measurements == 0) { // skip empty blocks
 			if (cfg.rank==0) {
 			    if (scale == 0) std::cout << "(empty)" << std::endl;
 			    else std::cout << "\t\t\t\t\t\t(empty)" << std::endl;
@@ -291,32 +297,33 @@ void Interpolator::reconstruct()
 			continue;
 		    }
 		    
-		    Signal<double> measuredSignalPatchVector = applyMask(mangledSignalVector, sensedPatchVector);		    
+		    // Set the entries that are not measured to zero
+		    Signal<double> measuredSignalPatchVector = applyMask(mangledSignalVector, sensedPatchVector);     
 
 		    /*** Declare and define RVM variables ***/
-		    Signal<double> targets = getTargets(measuredSignalPatchVector, sensedPatchVector);
+		    Signal<double> targets = getTargets(measuredSignalPatchVector, sensedPatchVector); // delete rows
 		    Signal<double> mangledBasis;
 		    if (cfg.sensor.setting() == Sensor::mask) mangledBasis = cascadeBasis[scale];
 		    else mangledBasis = matMult(theta,cascadeBasis[scale]);
-		    Signal<double> designMatrix = getDesignMatrix(mangledBasis, sensedPatchVector);
+		    Signal<double> designMatrix = getDesignMatrix(mangledBasis, sensedPatchVector); // delete rows
 
     		    /*** Start the RVM ***/
-    		    bool useCascade;
+    		    bool useCascade; // true if we have not reached the final cascade yet
     		    if (scale+1 < cfg.endScale) useCascade = true;
     		    else useCascade = false;
 		    
-		    
+		    /* Instantiate the RVM */
 		    RVM rvm(cfg.stdDev, cfg.deltaML_threshold, rank==0); // Third arg is "RVM prints progress?"
 
 		    uint64 trainTimeStart = GetTimeMs64();
-		    rvm.train(designMatrix, targets);	
+		    rvm.train(designMatrix, targets);	// train using SSBL Algorithm
 		    trainTime += (GetTimeMs64() - trainTimeStart); trainTimeCount++;
 
 		    uint64 predictTimeStart = GetTimeMs64();
-		    recoveredVector = rvm.predict(cascadeBasis[scale]);		    		    		    
+		    recoveredVector = rvm.predict(cascadeBasis[scale]);	// sparse multiplication of basis matrix and weights
 		    predictTime += (GetTimeMs64() - predictTimeStart); predictTimeCount++;
 
-		    if (cfg.maskFill) recoveredVector.fill(origSignalPatchVector, initialSensedVector);
+		    if (cfg.maskFill && cfg.sensor.setting() == Sensor::mask) recoveredVector.fill(origSignalPatchVector, initialSensedVector); // fill recovered vector with original data, if desired.
 		    
     		    /*** Save recovered patch ***/
     		    recoveredPatch = reshape(recoveredVector, block.height(), block.width(), block.frames());
@@ -341,9 +348,10 @@ void Interpolator::reconstruct()
 			
 			for (int i = 0; i < block.size(); ++i) { 
     			    if (cfg.sensor.setting() == Sensor::mask) { 
-				if (errors(i) != 0) sensedPatchVector(i) = true; // get new mask
+				if (errors(i) != 0) sensedPatchVector(i) = true; // get updated mask
 				else sensedPatchVector(i) = false;
 			    } else {	 // %%%%%%% Temporary Hack. Other sensors don't work with Cascade yet. %%%%%%%%%%%
+				//if (errors(i) != 0 && std::abs(errors(i)) < 1.5) sensedPatchVector(i) = true; // get new mask
 				if (initialSensedVector(i) != 0) sensedPatchVector(i) = true;
 				else sensedPatchVector(i) = false;
 			    }
@@ -369,6 +377,9 @@ double Interpolator::computeMSE(const Signal<double>& orig, const Signal<double>
     int xo, xr;			// note, this will convert to integers
 
     for (int i = 0; i < orig.size(); ++i) {
+	/* So far, we have not restricted the range of the predicted pixel values. 
+	   However, when viewing the data as a video file, all pixel values will be clamped to a certain range ([0,255] usually).
+	   Thus, we need to convert the predicted pixels to integers in that range in order to compute the accurate PSNR*/
 	xo = getIntRange(orig.data()[i], minEntry, maxEntry);
 	xr = getIntRange(rec.data()[i], minEntry, maxEntry);
 	error += ((xo-xr) * (xo-xr));

@@ -4,12 +4,13 @@
 #include <ostream>
 #include <string>
 
-// simple class for holding settings for Signal masks
+/* simple class for holding settings for Signal masks.*/
 class Mask{
 public:
+    /* Various Decimations pattern for the mask */
     enum mode {uniform, timeRays, verticalFlicker, horizontalFlicker, missingFrames, verticalLines, horizontalLines};
 
-    // Constructers
+    // Constructers: Construct using a percentage of retained samples and either a mask::mode or string containing the mode
     Mask() : m_perc(0), m_setting(uniform) { check(); }
     Mask(double p, mode m) : m_perc(p), m_setting(m) { check(); }
     Mask(mode m, double p) : m_perc(p), m_setting(m) { check(); }
@@ -34,8 +35,8 @@ public:
     void check() const;
 
 private:
-    mode m_setting;
-    double m_perc;
+    mode m_setting; 		// Decimation pattern
+    double m_perc;		// Percentage of retained samples
 };
 
 // helper functions

@@ -410,7 +410,8 @@ Signal<T> matMult(const Signal<T>& A, const Signal<T>& B, double alpha) // does 
     Signal<T> ret(A.height(), B.width(),false);
     blasMatrixMultiplication(A.height(), A.width(), A.data(), B.height(), B.width(),
 			     B.data(), ret.height(), ret.width(), ret.data(), alpha);
-    
+
+    /* Old    */
     // for (int i = 0; i < A.height(); ++i)
     // 	for (int j = 0; j < B.width(); ++j)
     // 	    for (int k = 0; k < A.width(); ++k)
@@ -564,46 +565,6 @@ double dot(const Signal<double>& a, const Signal<double>& b)
 }
 
 
-Signal<double> cholesky(const Signal<double>& A)
-{
-    if (A.frames() != 1 || A.height() != A.width()) error("input must be square matrix");
-    int N = A.height();
-
-    Signal<double> chol(N,N);
-    for (int i = 0; i < N; ++i) {
-	chol(i,i) = A(i,i);
-	for (int k = 0; k < i; ++k) chol(i,i) -= chol(k,i)*chol(k,i);
-	chol(i,i) = std::sqrt(chol(i,i));
-
-	for (int j = i+1; j < N; ++j) {
-	    chol(i,j) = A(i,j);
-	    for (int k = 0; k < i; ++k) chol(i,j) -= chol(k,i)*chol(k,i);
-	    chol(i,j) /= chol(i,i);
-	}
-    }
-    
-    return chol;
-}
-
-Signal<double> inversed(const Signal<double>& A)
-{
-   if (A.frames() != 1 || A.height() != A.width()) error("input must be square matrix");
-   int N = A.height();
-
-   Signal<double> inv(N,N);
-   for (int j = 0; j < N; ++j) {
-       inv(j,j) = 1.0/A(j,j);
-       
-       for (int i = 0; i < j; ++i)
-	   for (int k = 0; k < j; ++k) 
-	       inv(i,j) += inv(i,k)*A(k,j);
-       for (int k = 0; k < j; ++k)
-	   inv(k,j) /= -A(j,j);
-   }
-
-   return inv;
-}
-
 Signal<double> readSignal(const std::string& inputFile) // reads a signal from a file. Assumes frames are seperated by empty lines
 {
     std::ifstream in(inputFile.c_str());
@@ -714,10 +675,12 @@ Signal<double> eye(int N)
 {
     return eye(Dim(N,N));
 }
+// ADD SUPPORT FOR CUSTOM SEED
 Signal<double> gaussianSamples(const Dim& dim, double mean, double stddev)
 {
     std::random_device rd;
     std::mt19937 g(rd());
+    //std::mt19937 g(0);
 
     std::normal_distribution<double> d(mean, stddev);
     
@@ -832,6 +795,7 @@ Signal<T> applyMask(const Signal<T>& orig, const Signal<bool>& mask)
     return ret;
 }
 
+/* Quick and dirty attempt at using db2 wavelets
 // Signal<double> haarPhiMatrixTranspose(int rows) //db2 phi matrix
 // {
 //     if (rows < 1) error("need positive number of rows");
@@ -885,6 +849,7 @@ Signal<T> applyMask(const Signal<T>& orig, const Signal<bool>& mask)
 
 //     return psiT;
 // }
+*/
 
 Signal<double> haarPhiMatrixTranspose(int rows)
 {
@@ -959,6 +924,7 @@ Signal<double> generateLL(int scale, int currentScale, int h, int w,
 	tempFull = kronecker(cPre_Psi, rPre_Psi); // new HH
 	LL.putPatch(tempFull, 0, 3*full_dim2);
 
+	// Generate Higher scales recursively
 	new_LL = generateLL(scale, currentScale+1, h, w, rPre_Phi, cPre_Phi);
 	LL.putPatch(new_LL, 0, 0);
 	return LL;
@@ -1072,7 +1038,7 @@ Signal<double> generateLLL(int scale, int currentScale, int h, int w, int f,
 	tempFull = kronecker(sPre_Psi, tempCR);
 	LLL.putPatch(tempFull, 0, 7*full_dim2);
 
-	
+	// Generate Higher scales recursively
 	new_LLL = generateLLL(scale, currentScale+1, h, w, f, rPre_Phi, cPre_Phi, sPre_Phi);
 	LLL.putPatch(new_LLL, 0, 0);
 
@@ -1186,55 +1152,6 @@ Signal<double> dctBasis(int h, int w, int f)
 }
 
 
-Signal<double> haarBasisDirect2D(int h, int w, int scale)
-{
-    Signal<double> ret(h*w,h*w);
-    // Haar coefficients
-    double h0 = 1/std::sqrt(2);
-    double h1 = h0;
-    double g0 = h0;
-    double g1 = -h0;
-    
-    Signal<double> haarHH(h,w,false);
-    haarHH.fill(h0*h1);
-    Signal<double> haarHG = haarHH;
-    Signal<double> haarGH = haarHH;
-    Signal<double> haarGG = haarHH;
-
-    for (int i = h/2; i < h; ++i)
-	for (int j = 0; j < w; ++j)
-	    haarHG(i,j) = - haarHH(i,j);
-    
-    for (int j = w/2; j < w; ++j)
-	for (int i = 0; i < h; ++i)
-	    haarGH(i,j) = - haarHH(i,j);
-
-    for (int j = w/2; j < w; ++j)
-	for (int i = 0; i < h/2; ++i)
-	    haarGG(i,j) = -haarHH(i,j);
-    for (int j = 0; j < w/2; ++j)
-	for (int i = h/2; i < h; ++i)
-	    haarGG(i,j) = -haarHH(i,j);
-    
-	 
-    Signal<double> wavelet(h,w); // container holding the 2D wavelet
-    
-    
-
-
-    return ret;
-}    
-
-Signal<double> haarBasisDirect(int h, int w, int f, int scale)
-{
-    if (f == 1)
-	return haarBasisDirect2D(h,w,scale);
-
-    return Signal<double>(h*w*f,h*w*f);
-}
-
-
-
 
 Signal<double> getBasis(int height, int width, int frames, SignalBasis::mode basisMode, int scale)
 {
@@ -1253,6 +1170,55 @@ Signal<double> getBasis(Dim dim, SignalBasis::mode basisMode, int scale)
 {
     return getBasis(dim.height(), dim.width(), dim.frames(), basisMode, scale);
 }
+
+
+/* NOT YET IMPLEMENTED */
+// Signal<double> haarBasisDirect2D(int h, int w, int scale)
+// {
+//     Signal<double> ret(h*w,h*w);
+//     // Haar coefficients
+//     double h0 = 1/std::sqrt(2);
+//     double h1 = h0;
+//     double g0 = h0;
+//     double g1 = -h0;
+    
+//     Signal<double> haarHH(h,w,false);
+//     haarHH.fill(h0*h1);
+//     Signal<double> haarHG = haarHH;
+//     Signal<double> haarGH = haarHH;
+//     Signal<double> haarGG = haarHH;
+
+//     for (int i = h/2; i < h; ++i)
+// 	for (int j = 0; j < w; ++j)
+// 	    haarHG(i,j) = - haarHH(i,j);
+    
+//     for (int j = w/2; j < w; ++j)
+// 	for (int i = 0; i < h; ++i)
+// 	    haarGH(i,j) = - haarHH(i,j);
+
+//     for (int j = w/2; j < w; ++j)
+// 	for (int i = 0; i < h/2; ++i)
+// 	    haarGG(i,j) = -haarHH(i,j);
+//     for (int j = 0; j < w/2; ++j)
+// 	for (int i = h/2; i < h; ++i)
+// 	    haarGG(i,j) = -haarHH(i,j);
+    
+	 
+//     Signal<double> wavelet(h,w); // container holding the 2D wavelet
+    
+    
+
+
+//     return ret;
+// }    
+
+// Signal<double> haarBasisDirect(int h, int w, int f, int scale)
+// {
+//     if (f == 1)
+// 	return haarBasisDirect2D(h,w,scale);
+
+//     return Signal<double>(h*w*f,h*w*f);
+// }
 
 
 #endif

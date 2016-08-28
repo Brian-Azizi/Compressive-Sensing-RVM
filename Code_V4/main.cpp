@@ -1,4 +1,4 @@
-#define USE_MPI
+#define USE_MPI			// Comment out if MPI is not used
 
 #include <climits>
 #include <cstdlib>
@@ -11,6 +11,7 @@
  #include <mpi.h>
 #endif
 
+// global variables used for measuring execution time of program
 #include "Headers/Timer.hpp"
 uint64 startTime = 0;
 uint64 trainTime = 0; int trainTimeCount = 0;
@@ -71,7 +72,7 @@ int main(int argc, char* argv[])
 	/**********  Display Time and Host for each process **************************************/
 	/*(Total time does not include the call to Matlab*/
 		
-#ifdef HOST_NAME_MAX		// not defined on osx for some reason
+#ifdef HOST_NAME_MAX		// seems to not be available on osx
 	long int host_name_max = HOST_NAME_MAX;
 #else 
 	int host_name_max = 64;
@@ -105,7 +106,7 @@ int main(int argc, char* argv[])
 		
 		/* Create a child process to deal with Matlab. 
 		   Matlab needs to be installed and in the PATH.
-		   I believe this does not work on Windows or OSX.*/
+		   I believe this does not work on Windows.*/
 		pid_t pid = fork();
 		if (pid == -1)
 		    std::cerr << "Error: call to 'fork()' failed. Unable to convert output to media\n";

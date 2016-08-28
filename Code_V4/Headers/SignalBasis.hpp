@@ -2,7 +2,6 @@
 #define GUARD_SIGNALBASIS_HPP
 
 #include <string>
-//#include "Signal.hpp"
 
 /*** simple class for basis function Mode ***/
 class SignalBasis{

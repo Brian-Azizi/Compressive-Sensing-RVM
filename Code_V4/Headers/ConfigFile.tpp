@@ -1,6 +1,8 @@
 #ifndef GUARD_CONFIGFILE_TPP
 #define GUARD_CONFIGFILE_TPP
 
+/* Class for handling configuration files. Based on "http://www.dreamincode.net/forums/topic/183191-create-a-simple-configuration-file-parser/" */
+
 #include <iostream>
 #include <string>
 #include <sstream>

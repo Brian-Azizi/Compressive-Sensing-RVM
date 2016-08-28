@@ -356,7 +356,7 @@ std::string longHelpMessage(const std::string& argv_0)
        << "  printToLogFile\t\tIf 1, direct stdout and stderr to a log file (default: 1)\n"
        << "  logFile\t\t\tFile name for a log file (ignored it 'printToLogFile=1') (default is name of settingsfile but with .log extension)\n"
        << "  convertToMedia\tIf 1, output .txt files will also be converted to media files (.png for images and .avi for videos). Requires MATLAB. (default: 1)\n"
-       << "  frameRate\t\tFrame rate for output videos (default: 30; ignored if input is an image or if we are not converting to media).\n"
+       << "  frameRate\t\tFrame rate for output videos (default: 25; ignored if input is an image or if we are not converting to media).\n"
        << std::endl;
     
     return ss.str();
@@ -411,6 +411,5 @@ std::string outputSignal(const Signal<T>& S, const std::string& label, const Sig
 
     return ret;		// return name of output file
 }
-
 
 #endif

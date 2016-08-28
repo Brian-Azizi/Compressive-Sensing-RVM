@@ -1,6 +1,8 @@
 #ifndef GUARD_CONVERT_HPP
 #define GUARD_CONVERT_HPP
 
+/* Helper Class for handling configuration files. Based on "http://www.dreamincode.net/forums/topic/183191-create-a-simple-configuration-file-parser/" */
+
 #include <sstream>
 #include <typeinfo>
 
