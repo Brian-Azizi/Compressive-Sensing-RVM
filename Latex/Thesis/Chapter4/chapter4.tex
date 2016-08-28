@@ -265,6 +265,7 @@ As a consequence, the corresponding basis functions $\phi_j(\cdot)$ are effectiv
 In the case of the RVM, where $\phi_j(\cdot) \equiv K(\cdot, \bm x^{(j)})$, the input vectors $\bm x^{(j)}$ corresponding to the remaining non-zero weights are known as the \emph{relevance vectors} of the model.
 
 \subsection{Sequential Sparse Bayesian Learning Algorithm}
+\label{sect:ssbl}
 A central drawback of the training algorithm discussed in the previous section is its speed. 
 The computational complexity scales with the cube of the number of basis functions.
 During training, as basis functions are pruned from the model, the algorithm accelerates.

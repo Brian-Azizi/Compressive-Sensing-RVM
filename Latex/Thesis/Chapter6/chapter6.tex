@@ -1,13 +1,51 @@
-\chapter{Implementation Details and Code optimization}
+\chapter{Implementation Details}
 \label{ch:code}
+We have implemented the MSCE Algorithm for video signals in C++.
 
-Talk about code relevant to previous chapter.
+In this chapter, we will discuss some of the design decisions and optimizations that went into the implementation.
 
-Code specific for results goes in the results chapter,
+\section{Blockwise Reconstruction}
+Let $\bm v$ be a video signal consisting of $f$ frames with a width of $w$ and a height $h$.
+Vectorizing $\bm v$ gives us a vector of length $hwf$.
+In order to reconstruct such signals in the Bayesian Compressive Sensing framework (Chapter \ref{ch:msce}), we need to form the basis matrix $\bm\Psi$ which has dimensions $(hwf)\times (hwf)$.
 
-\begin{enumerate}
-\item Blocks
-\item Parallelization
-\item Short FastRVM
-\item Modified Error Bars
-\end{enumerate}
+Even for relatively small videos, the memory requirements for such large basis matrices can easily be in the order of terabytes.
+As an example, consider the commonly used \emph{CIF (Common Intermediate Format)}.
+CIF videos have a spatial resolution of $352 \times 288$.
+For a CIF video containing 100 frames, the required memory for storing $\bm\Psi$ as \emph{floats} is 
+\begin{equation*}
+(288\times 352\times 100)^2 \times 4 \mbox{ bytes} = 4.11 \times 10^{14} \mbox{ bytes} = 411 \mbox{ TB}
+\end{equation*}
+
+In our code, we address the problem by performing a \emph{blockwise reconstruction}.
+We split the input signal into small sub-blocks of size $2^{j_1}\times 2^{j_2}\times 2^{j_3}$.
+A typical size of such a block is $16\times 16\times 16$ (a so-called ``macroblock'').
+
+The blocks are sequentially passed to the MSCE algorithm and after each block has been reconstructed , we put them back together to obtained the recovered video.
+
+Note that the size of the block restricts the number of cascades in the MSCE algorithm.
+To run the algorithm up to scale $s$, we require a block size of at least $2^s\times 2^s\times 2^s$.
+
+\section{Code Optimization}
+\subsection{Parallelization}
+In the blockwise reconstruction, each block is processed independently from the others.
+Therefore, we have added an option to the code to process the blocks in parallel.
+Using the \emph{Message Passing Interface} (MPI), we run the program on several processors, splitting the workload evenly between them. This generally leads to a very significant speedup.
+
+However, if the blocksize is too small, the communication between processes - when gathering the results - will dominate over the actual computation time.
+Initial tests seem to indicate that, in order to achieve a significant increase in the execution time, the blocks should be at least of size $4\times4\times4$ before switching to parallel mode.
+
+
+\subsection{Fixed Noise Variance}
+At each stage of the MSCE algorithm, we keep the noise variance $\sigma^2$ fixed, while training the Sparse Bayesian Learning model.
+As noted in Section \ref{sect:ssbl}, doing so allows us to use the efficient update formulae in \cite{tipping2003} which speed up training.
+
+\subsection{Modified RVM Training}
+In the MSCE, the RVM is trained using Algorithm \ref{rvm:alg2}.
+We use a slightly modified version of the training algorithm in which we only consider addition of basis functions to the model.
+
+At each iteration, we add the basis vector $\bm\phi$ that results in the largest increase of the marginal likelihood.
+We continue to do so until none of the remaining candidate basis functions cause an increase in log marginal likelihood that is above the convergence threshold.
+
+For the problem of image and video reconstruction, this modified algorithm gives qualitatively similar results to the unmodified version \cite{pilikos2014}. However, it can lead to a significant reduction in the runtime of the algorithm.
+
