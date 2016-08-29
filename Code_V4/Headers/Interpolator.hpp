@@ -133,7 +133,7 @@ void Interpolator::run()
 	    int source = st.MPI_SOURCE;
 	    Signal<double> grIdx = grid.index(tag);
 	    allTargets.putPatch(buffer, grIdx(0)*block.height(), grIdx(1)*block.width(), grIdx(2)*block.frames());	    
-	    std::cout << "Gathering Measurements: " << tag << "\tof " << grid.size() << "\t...\n";
+	    //std::cout << "Gathering Measurements: " << tag << "\tof " << grid.size() << "\t...\n";
 	}	    
     } 	
     else {	    
@@ -153,7 +153,7 @@ void Interpolator::run()
 	for (int i = 0; i < grid.size(); ++i) {
 	    Signal<double> grIdx = grid.index(i);
 	    if (rank == 0) {
-		std::cout << "Gathering Result_" << scale+1 <<": " << i << "\tof " << grid.size() << "\t...\n";
+		//std::cout << "Gathering Result_" << scale+1 <<": " << i << "\tof " << grid.size() << "\t...\n";
 		if (grid.data()[i] != 0) {
 		    MPI_Recv(buffer.data(), buffer.size(), MPI_DOUBLE, grid.data()[i], i, MPI_COMM_WORLD, &st);
 		    cascadeRecoveredSignals[scale]
@@ -186,7 +186,7 @@ void Interpolator::run()
 	}
 
 	/*** Print settings again ***/
-	std::cout << cfg;
+	//std::cout << cfg;
 	
 	/*** Write the output to disk and store the output file names in the fls file ***/
 	std::cout << "\n\t *** Output Files ***";        

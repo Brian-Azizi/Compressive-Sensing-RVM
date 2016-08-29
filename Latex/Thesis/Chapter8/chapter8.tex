@@ -1,5 +1,18 @@
 \chapter{Conclusion}
 
-\begin{itemize}
-\item For certain basis functions, the matrix $\bm\Psi$ will be very sparse. It is possible to exploit this sparsity to significantly reduce the memory requirements. 
-\end{itemize}
+In this thesis, we investigated the efficacy of the Bayesian Compressive Sensing framework for efficient reconstruction of highly under-sampled video signals.
+We developed an extension to the Multi-Scale Cascade of Estimations algorithm that achieves near-perfect reconstructions of videos from a very small set of measurements.
+
+To do so, we constructed three-dimensional wavelet basis functions that allow for a highly compressible representation of the video signal.
+Compressive Sensing inversion is then formulated as a machine learning problem and the Relevance Vector Machine was employed to find highly sparse solutions.
+To boost performance, a cascade of RVMs it built that exploits the multi-resolution properties of wavelet basis functions.
+
+In order to deal with the large memory requirements of the algorithm, the reconstruction is performed in blockwise fashion.
+We have also implemented the method as a distributed program, resulting in dramatically reduced execution times.
+
+Future research could improve performance by extending these methods in various ways.
+Alternative sets of waveles, such as the CDF-9/7 wavelet that is used by the JPEG2000 format, may lead to sparser representations of the video signals. 
+Furthermore, the speed of the algorithm can be increased by using a multi-threaded implementation of the Sequential Sparse Bayesian Learning Algorithm. 
+
+Development of Bayesian approaches to Compressive Sensing systems is an active area of research.
+

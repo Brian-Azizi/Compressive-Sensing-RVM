@@ -12,5 +12,7 @@ serial : main.cpp Headers/ConfigFile.hpp Headers/ConfigFile.tpp Headers/Convert.
 clean :
 	rm main main_serial *.fls *.log .rvmsettings.fls .rvmsettings.log
 
+cleanConfig:
+	rm *.cfg
 
 

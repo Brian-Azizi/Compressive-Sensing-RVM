@@ -131,7 +131,7 @@ void RVM::getFirstBasisFunction(const Signal<double>& designMatrix, const Signal
 
     double alpha = num/denom;
     if (alpha < 0) {
-	if(m_print) std::cerr << "RVM: alpha < 0! Setting alpha to 1e3";
+	//if(m_print) std::cerr << "RVM: alpha < 0! Setting alpha to 1e3";
 	alpha = 1.0e3; // little hack for dealing with numerical issues
     }
     alphas(firstIdx) = alpha;
