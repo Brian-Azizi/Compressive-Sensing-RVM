@@ -86,6 +86,8 @@ The names of the output files will be saved in a .fls file where the stem of the
 
 `basisMode`: Type of basis function used to represent the signal. Possible values: `haar`, `dct` (default: `dct`)
 
+`basisStartScale`: Minimum scale of wavelet basis functions for the cascade of RVMs. Ignored if `basisMode = dct` (default: `1`).
+
 `basisEndScale`: Maximum scale of wavelet basis functions for the cascade of RVMs. Ignored if `basisMode = dct` (default: `1`).
 
 `stdDev`: Standard deviation of the noise in the RVM (default: `1.0`)
@@ -96,7 +98,7 @@ The names of the output files will be saved in a .fls file where the stem of the
 
 `computePSNR`: If 1, the Mean Square Error and Peak Signal-to-Noise Ratio for each reconstruction stage will be computed and displayed on standard out. Note that this computation will cap Signal entries in the range [0,255]. Actual saved output, however, is not affected by this capping. (default: `1`)
 
-`printToLogFile`: If 1, we redirect stdout and stderr to a log file (default: `1`)
+`printToLogFile`: If 1, we redirect stdout and stderr to a log file (default: `0`)
 
 `logFile`: File name for a log file. Ignored if 'printToLogFile = 0'. The default name is the same as that of the settings file but with the `.log` extension.
 
@@ -117,4 +119,4 @@ The following labels will be produced:
 
 `MEASUREMENTS`; A text file containing all the Compressive Sensing Measurements. The file will be filled with zeros until it has the same dimensions as the input signal.
 
-`RECOVERED_<x>_OF_<y>`: Contains the output of cascade x, where the highest scale in the cascade is y.
+`RECOVERED_<p>_OF_<q>`: Contains the output of cascade with wavelet scale p, where the total number of cascades is q.

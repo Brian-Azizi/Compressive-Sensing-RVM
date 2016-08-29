@@ -137,10 +137,12 @@ void SignalSettings::initParameters() {
     }
       
     /*** Get Basis Function options ***/
-    std::string basisFunctionMode = cfg.getValueOfKey<std::string>("basisMode", "dct");
+    std::string basisFunctionMode = cfg.getValueOfKey<std::string>("basisMode", "dct");    
     endScale = cfg.getValueOfKey<int>("basisEndScale", 1);
+    startScale = cfg.getValueOfKey<int>("basisStartScale", 1);
     if (basisFunctionMode == "dct") {
-	if (rank == 0) std::cout << "CFG: Using DCT basis - ignoring 'basisEndScale'\n";
+	if (rank == 0) std::cout << "CFG: Using DCT basis - ignoring 'basisEndScale' and 'basisStartScale'.\n";
+	startScale = 1;
 	endScale = 1;
     }
     try {
@@ -150,6 +152,8 @@ void SignalSettings::initParameters() {
 	std::cerr << "Error with specified basis function options.\n";
 	throw;
     }
+
+    numCascades = endScale - startScale + 1;
 
     stdDev = cfg.getValueOfKey<double>("stdDev", 1); // default is 1
     deltaML_threshold = cfg.getValueOfKey<double>("deltaML_threshold", 1); // default is 1
@@ -193,6 +197,8 @@ void SignalSettings::check()
     
     // Test that scale is greater than zero
     if (endScale < 1) error("End scale of basis is less than 1");
+    if (startScale < 1) error("Start scale of basis is less than 1");
+    if (endScale < startScale) error("End scale of basis is less than startScale");
 
     // Test if block dimensions are divisible by 2^scale
     int const scaleDim = std::pow(2,endScale);
@@ -219,76 +225,78 @@ void SignalSettings::check()
 std::ostream& operator<<(std::ostream& os, const SignalSettings& setting)
 {
     os << "\n\t*** Settings: ***\n";
-    os << "Settings File:\t\t" << setting.cfgFile;
-    os << "\nInput File:\t\t" << setting.inputFile;
-    os << "\nSignal Dimensions:\t" << setting.signalDim;
+    os << "Settings File:\t\t\t" << setting.cfgFile;
+    os << "\nInput File:\t\t\t" << setting.inputFile;
+    os << "\nSignal Dimensions:\t\t" << setting.signalDim;
 
-    os << "\nOutput Directory:\t" << setting.outputDirectory;
+    os << "\nOutput Directory:\t\t" << setting.outputDirectory;
     if (!setting.cfg.keyExists("outputDirectory")) os << "\t\t(default)";
 
-    if (setting.cfg.keyExists("outputName")) os << "\nOutput Name:\t\t" << setting.outputName;
+    if (setting.cfg.keyExists("outputName")) os << "\nOutput Name:\t\t\t" << setting.outputName;
     
     if (!setting.cfg.keyExists("blockHeight") || !setting.cfg.keyExists("blockWidth") || !setting.cfg.keyExists("blockFrames")) {
-	os << "\nBlock Height:\t\t" << setting.blockDim.height();
+	os << "\nBlock Height:\t\t\t" << setting.blockDim.height();
 	if (!setting.cfg.keyExists("blockHeight")) os << "\t\t(default)";
-	os << "\nBlock Width:\t\t" << setting.blockDim.width();
+	os << "\nBlock Width:\t\t\t" << setting.blockDim.width();
 	if (!setting.cfg.keyExists("blockWidth")) os << "\t\t(default)";
-	os << "\nBlock Frames:\t\t" << setting.blockDim.frames();
+	os << "\nBlock Frames:\t\t\t" << setting.blockDim.frames();
 	if (!setting.cfg.keyExists("blockFrames")) os << "\t\t(default)";	
-    } else os << "\nBlock Dimensions:\t" << setting.blockDim;
+    } else os << "\nBlock Dimensions:\t\t" << setting.blockDim;
     
-    os << "\nSimulating Corruption:\t" << (setting.simulateCorruption ? "yes" : "no");    
+    os << "\nSimulating Corruption:\t\t" << (setting.simulateCorruption ? "yes" : "no");    
     if (!setting.cfg.keyExists("simulateCorruption")) os << "\t\t(default)";
     if (!setting.simulateCorruption) {
-	os << "\nMask File:\t\t" << setting.maskFile;
-	os << "\nMask Fill:\t\t" << (setting.maskFill ? "yes" : "no");
+	os << "\nMask File:\t\t\t" << setting.maskFile;
+	os << "\nMask Fill:\t\t\t" << (setting.maskFill ? "yes" : "no");
 	if (!setting.cfg.keyExists("maskFill")) os << "\t\t(default)";
     }
     else {
-	os << "\nSensor Mode:\t\t" << setting.sensor.settingString();
+	os << "\nSensor Mode:\t\t\t" << setting.sensor.settingString();
 	if (!setting.cfg.keyExists("sensorMode")) os << "\t\t(default)";
-	os << "\nPercentage:\t\t" << setting.percentage;
+	os << "\nPercentage:\t\t\t" << setting.percentage;
 	if (!setting.cfg.keyExists("percentage")) os << "\t\t(default)";
 	if (setting.sensor.setting() == Sensor::mask) {
-	    os << "\nMask Mode:\t\t" << setting.mask.settingString();
+	    os << "\nMask Mode:\t\t\t" << setting.mask.settingString();
 	    if (!setting.cfg.keyExists("maskMode")) os << "\t\t(default)";
-	    os << "\nMask Fill:\t\t" << (setting.maskFill ? "yes" : "no");
+	    os << "\nMask Fill:\t\t\t" << (setting.maskFill ? "yes" : "no");
 	    if (!setting.cfg.keyExists("maskFill")) os << "\t\t(default)";
 	}
     }
     
-    os << "\nSignal Basis Mode:\t" << modeToString(setting.basisMode);
+    os << "\nSignal Basis Mode:\t\t" << modeToString(setting.basisMode);
     if (!setting.cfg.keyExists("basisMode")) os << "\t\t(default)";
     
     if (setting.basisMode != SignalBasis::dct) {
-	os << "\nSignal Basis End Scale:\t" << setting.endScale;
+	os << "\nSignal Basis Start Scale:\t" << setting.startScale;
+	if (!setting.cfg.keyExists("basisStartScale")) os << "\t\t(default)";
+	os << "\nSignal Basis End Scale:\t\t" << setting.endScale;
 	if (!setting.cfg.keyExists("basisEndScale")) os << "\t\t(default)";
     }
     
-    os << "\nRVM std deviation:\t" << setting.stdDev;
+    os << "\nRVM std deviation:\t\t" << setting.stdDev;
     if (!setting.cfg.keyExists("stdDev")) os << "\t\t(default)";
-    os << "\nRVM delta ML threshold:\t" << setting.deltaML_threshold ;
+    os << "\nRVM delta ML threshold:\t\t" << setting.deltaML_threshold ;
     if (!setting.cfg.keyExists("deltaML_threshold")) os << "\t\t(default)";
 
-    os << "\nCompute PSNR:\t\t" << (setting.computePSNR ? "yes" : "no");
+    os << "\nCompute PSNR:\t\t\t" << (setting.computePSNR ? "yes" : "no");
     if (!setting.cfg.keyExists("computePSNR")) os << "\t\t(default)";
     
-    os << "\nRNG Seed:\t\t" << setting.rngSeed;
+    os << "\nRNG Seed:\t\t\t" << setting.rngSeed;
     if (!setting.cfg.keyExists("rngSeed")) os << "\t(default: current time)";
-    os << "\nConverting to media:\t" << (setting.convertToMedia ? "yes" : "no");
+    os << "\nConverting to media:\t\t" << (setting.convertToMedia ? "yes" : "no");
     if (!setting.cfg.keyExists("convertToMedia")) os << "\t\t(default)";
     if (setting.signalDim.frames() != 1 && setting.convertToMedia) {
-	os << "\nFrame Rate:\t\t" << setting.frameRate;
+	os << "\nFrame Rate:\t\t\t" << setting.frameRate;
 	if (!setting.cfg.keyExists("frameRate")) os << "\t\t(default)";
     }
     os << "\n";
-    os << "\nPrint to log file:\t" << (setting.printProgress ? "yes" : "no");
+    os << "\nPrint to log file:\t\t" << (setting.printProgress ? "yes" : "no");
     if (!setting.cfg.keyExists("printProgress")) os << "\t\t(default)";    
     if (setting.printProgress) 
-	os << "\nLog file:\t\t" << setting.logFileName;
+	os << "\nLog file:\t\t\t" << setting.logFileName;
 
-    os << "\nFLS file:\t\t" << setting.flsFileName;
-    os << "\nNumber of Process:\t" << setting.nproc;
+    os << "\nFLS file:\t\t\t" << setting.flsFileName;
+    os << "\nNumber of Process:\t\t" << setting.nproc;
     os << "\n";
     return os;
 }
@@ -313,12 +321,13 @@ std::string helpMessage(const std::string& argv_0)
        << "  maskMode\t\tDecimation pattern of simulated mask. (Default: uniform. Ignored if sensorMode is not mask)\n"       
        << "  maskFill\t\tIf 1, fill up the recovered signals with original measurements for masked signals (default: 1)\n"
        << "  basisMode\t\tType of basis transform. Possible values: haar, dct (default: dct)\n"
+       << "  basisStartScale\t\tMinimum scale of basis functions (default: 1; ignored if using dct)\n"
        << "  basisEndScale\t\tMaximum scale of basis functions (default: 1; ignored if using dct)\n"
        << "  stdDev\t\tStandard deviation of the noise in the RVM (default: 1.0)\n"
        << "  deltaML_threshold\tThreshold for change in marginal likelihood in the RVM (default: 1.0)\n"
        << "  rngSeed\t\tSeed for random number generator for reproducability (optional)\n"
        << "  computePSNR\t\tIf 1, output reconstruction performance metrics (mse and psnr).\n"
-       << "  printToLogFile\tIf 1, direct stdout and stderr to a log file (default: 1)\n"
+       << "  printToLogFile\tIf 1, direct stdout and stderr to a log file (default: 0)\n"
        << "  logFile\t\tFile name for log file (oprional) (ignored if printToLogFile=0)\n"
        << "  convertToMedia\tIf 1, call Matlab to convert output to media format (default: 1)\n"
        << "  frameRate\t\tFrame rate for output videos (default: 25)\n"
@@ -348,12 +357,13 @@ std::string longHelpMessage(const std::string& argv_0)
        << "  maskMode\t\tDecimation pattern of simulated mask. Possible values: uniform, timeRays, verticalFlicker, horizontalFlicker, missingFrames, verticalLines, horizontalLines (default: uniform; ignored if we are not simulating corruption or not using 'mask' as sensor mode)\n"       
        << "  maskFill\t\tIf 1 and simulating a sensormode = mask, we fill up the recovered signals with original measurements where available\n"
        << "  basisMode\t\tForm of basis functions used to represent the signal. Possible values: haar, dct (default: dct)\n"
+       << "  basisStartScale\t\tMinimum scale of basis functions (default: 1; ignored if using dct)\n"
        << "  basisEndScale\t\tMaximum scale of basis functions (default: 1; ignored if using dct)\n"
        << "  stdDev\t\tStandard deviation of the noise in the RVM (default: 1.0)\n"
        << "  deltaML_threshold\tThreshold for change in marginal likelihood in the RVM (default: 1.0)\n"
        << "  rngSeed\t\tSeed for random number generator for reproducability (default: set to current time)\n"
        << "  computePSNR\t\tIf 1, the Mean Square Error and Peak Signal-to-Noise Ratio for each reconstruction stage will be computed and displayed on standard out. Note that this computation will cap Signal entries in the range [0,255]. Actual saved output is not affected by this. (default: 1)\n"
-       << "  printToLogFile\t\tIf 1, direct stdout and stderr to a log file (default: 1)\n"
+       << "  printToLogFile\t\tIf 1, direct stdout and stderr to a log file (default: 0)\n"
        << "  logFile\t\t\tFile name for a log file (ignored it 'printToLogFile=1') (default is name of settingsfile but with .log extension)\n"
        << "  convertToMedia\tIf 1, output .txt files will also be converted to media files (.png for images and .avi for videos). Requires MATLAB. (default: 1)\n"
        << "  frameRate\t\tFrame rate for output videos (default: 25; ignored if input is an image or if we are not converting to media).\n"

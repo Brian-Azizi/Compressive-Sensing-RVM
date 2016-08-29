@@ -647,7 +647,6 @@ Signal<double> inverse(const Signal<double>& A)
     return invA;
 }
 
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // Generate a random matrix by drawing Bernoulli Samples
 Signal<double> bernoulliSamples(const Dim& dim, double p, double min, double max)
 {
@@ -675,7 +674,7 @@ Signal<double> eye(int N)
 {
     return eye(Dim(N,N));
 }
-// ADD SUPPORT FOR CUSTOM SEED
+
 Signal<double> gaussianSamples(const Dim& dim, double mean, double stddev)
 {
     std::random_device rd;

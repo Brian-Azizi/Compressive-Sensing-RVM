@@ -210,6 +210,13 @@ void Interpolator::run()
 	    if (flsFile) flsFile << "masked\t\t" << name << std::endl;
 	    std::cout << "\nMasked signal saved at:\t\t\t" << name;
 	}
+
+	// signal mask
+	if (cfg.sensor.setting() == Sensor::mask) {
+	    name = outputSignal(sensedEntries, "_MASK", cfg); // writes to disk and returns filename
+	    //if (flsFile) flsFile << "masked\t\t" << name << std::endl;
+	    std::cout << "\nMask saved at:\t\t\t" << name;
+	}
 	
 	// targets	
 	name = outputSignal(allT2, "_MEASUREMENTS", cfg);
