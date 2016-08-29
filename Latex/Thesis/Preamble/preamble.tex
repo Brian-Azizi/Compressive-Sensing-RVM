@@ -238,9 +238,17 @@
 \DeclareMathOperator*{\Stick}{Stick}
 \DeclareMathOperator*{\Uniform}{Uniform}
 \DeclareMathOperator*{\diag}{diag}
+\DeclareMathOperator*{\mse}{MSE}
+\DeclareMathOperator*{\psnr}{PSNR}
+\DeclareMathOperator*{\rre}{RRE}
 %% shorthand for \boldsymbol and \overline
 \let\bs\boldsymbol
 \let\ol\overline
 %% command that allows equations to be split across pages
 %\allowdisplaybreaks[3]
 \linespread{1.25}
+
+%% matlab2tikz stuff
+\usepackage{pgfplots}
+\pgfplotsset{compat=newest}
+\usetikzlibrary{plotmarks}
