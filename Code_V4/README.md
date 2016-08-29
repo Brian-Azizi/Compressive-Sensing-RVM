@@ -98,7 +98,7 @@ The names of the output files will be saved in a .fls file where the stem of the
 
 `computePSNR`: If 1, the Mean Square Error and Peak Signal-to-Noise Ratio for each reconstruction stage will be computed and displayed on standard out. Note that this computation will cap Signal entries in the range [0,255]. Actual saved output, however, is not affected by this capping. (default: `1`)
 
-`printToLogFile`: If 1, we redirect stdout and stderr to a log file (default: `0`)
+`printToLogFile`: If 1, we redirect stdout and stderr to a log file (default: `1`)
 
 `logFile`: File name for a log file. Ignored if 'printToLogFile = 0'. The default name is the same as that of the settings file but with the `.log` extension.
 

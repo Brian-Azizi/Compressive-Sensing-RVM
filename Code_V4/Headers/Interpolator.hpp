@@ -76,7 +76,7 @@ Interpolator::Interpolator(const SignalSettings& settingsFile)
     block = Signal<signalType>(cfg.blockDim, false);        
     sensedEntries = Signal<bool>(signal.dim()); // initialized to false
     cascadeRecoveredSignals = 
-	std::vector<Signal<double> >(cfg.endScale, Signal<double>(signal.dim(), false));
+	std::vector<Signal<double> >(cfg.numCascades, Signal<double>(signal.dim(), false));
     m_DUMMY = 9999;
 }
 
@@ -100,8 +100,8 @@ void Interpolator::run()
     allTargets = Signal<double>(signal.dim(),false);    
 
     /*** Get basis matrices for various scales ***/
-    for (int scale = 0; scale < cfg.endScale; ++scale)
-	cascadeBasis.push_back(getBasis(block.dim(), cfg.basisMode, scale+1));
+    for (int scale = 0; scale < cfg.numCascades; ++scale)
+	cascadeBasis.push_back(getBasis(block.dim(), cfg.basisMode, cfg.startScale+scale));
 
     /*** Reconstruct the signal ***/
     if (cfg.printProgress && cfg.rank==0) std::cout << "\t*** Start Reconstruction ***\n";
@@ -149,7 +149,7 @@ void Interpolator::run()
     MPI_Barrier(MPI_COMM_WORLD);
 
     // cascadeRecoveredSignals
-    for (int scale = 0; scale < cfg.endScale; ++scale) {
+    for (int scale = 0; scale < cfg.numCascades; ++scale) {
 	for (int i = 0; i < grid.size(); ++i) {
 	    Signal<double> grIdx = grid.index(i);
 	    if (rank == 0) {
@@ -224,9 +224,9 @@ void Interpolator::run()
 	std::cout << "\nMeasurements saved at:\t\t\t" << name;
 	
 	// recovered
-	for (int scale = 0; scale < cfg.endScale; ++scale) {
+	for (int scale = 0; scale < cfg.numCascades; ++scale) {
 	    std::stringstream label;
-	    label << "_RECOVERED_" << scale+1 << "_OF_" << cfg.endScale;
+	    label << "_RECOVERED_" << scale+cfg.startScale << "_OF_" << cfg.numCascades;
 	    name = outputSignal(cascadeRecoveredSignals[scale], label.str(), cfg);
 	    if (flsFile) flsFile << "recovered_" << scale+1 << "\t\t" << name << std::endl;
 	    std::cout << "\nRecovered Signal (scale " << scale+1 << ") saved at:\t" << name;
@@ -238,11 +238,11 @@ void Interpolator::run()
 	    std::cout << "\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n"
 		      << "%%%%%%%%%%%%%%% Accuracy of Reconstruction %%%%%%%%%%%%%%\n\n";
 	    
-	    for (int scale = 0; scale < cfg.endScale; ++scale) {
+	    for (int scale = 0; scale < cfg.numCascades; ++scale) {
 		double mse = computeMSE(signal, cascadeRecoveredSignals[scale]);
 		double psnr = MSEtoPSNR(mse);
 		std::stringstream record;
-		record << "Scale " << scale+1 << ":  MSE  = " << mse << "\n";
+		record << "Scale " << scale+cfg.startScale << ":  MSE  = " << mse << "\n";
 		record << "\t  PSNR = " << psnr << "\n";
 		std::cout << record.str();
 	    }
@@ -294,7 +294,7 @@ void Interpolator::reconstruct()
 		targetPatch.fill(m_DUMMY);
 
 		// Start MSCE Algorithm 
-		for (int scale = 0; scale < cfg.endScale; ++scale) { // loop over cascades
+		for (int scale = 0; scale < cfg.numCascades; ++scale) { // loop over cascades
 		    int measurements = countSensed(sensedPatchVector); 
 		    if (measurements == 0) { // skip empty blocks
 			if (cfg.rank==0) {
@@ -316,7 +316,7 @@ void Interpolator::reconstruct()
 
     		    /*** Start the RVM ***/
     		    bool useCascade; // true if we have not reached the final cascade yet
-    		    if (scale+1 < cfg.endScale) useCascade = true;
+    		    if (scale+1 < cfg.numCascades) useCascade = true;
     		    else useCascade = false;
 		    
 		    /* Instantiate the RVM */

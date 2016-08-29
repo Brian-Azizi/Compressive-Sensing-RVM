@@ -291,7 +291,7 @@ std::ostream& operator<<(std::ostream& os, const SignalSettings& setting)
     }
     os << "\n";
     os << "\nPrint to log file:\t\t" << (setting.printProgress ? "yes" : "no");
-    if (!setting.cfg.keyExists("printProgress")) os << "\t\t(default)";    
+    if (!setting.cfg.keyExists("printToLogFile")) os << "\t\t(default)";    
     if (setting.printProgress) 
 	os << "\nLog file:\t\t\t" << setting.logFileName;
 
