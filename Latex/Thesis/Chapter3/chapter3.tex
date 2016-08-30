@@ -1,7 +1,5 @@
 \chapter{Basis Functions}
 \label{ch:dwt}
-
-%\item Explain MSE, PSNR
 In Section \ref{sect:compression}, we introduced transform coding.
 We said that any discrete signal $\bm v \in \mathbb{R}^M$ can be expressed in a different basis via a basis transform:
 \begin{equation*}
@@ -10,10 +8,8 @@ We said that any discrete signal $\bm v \in \mathbb{R}^M$ can be expressed in a 
 where $\bm\Psi$ is the $M\times M$ basis matrix and $\bm w \in\mathbb{R}^M$ is the representation of $\bm v$ in the $\bm\Psi$ basis.
 
 The particular classes of signals $\bm v$ that we are interested in are digital images and digital video.
-The aim of this chapter is to construct a basis matrix $\bm\Psi$ that gives us a (near-) sparse representation of a wide range of such signals $\bm v$.
+The aim of this chapter is to construct a basis matrix $\bm\Psi$ that gives us a sparse representation of a wide range of such signals $\bm v$.
 Finding a set of basis functions $\bs\Psi$ that achieve such a transformation lies at the heart of many lossy compression techniques.
-
-It is important to note here that the choice of basis functions $\bm \Psi$ typically has a significant effect on the performance of the reconstruction algorithms.
 
 \section{Discrete Cosine Transform}
 \label{sect:dct}
@@ -23,13 +19,51 @@ It underlies JPEG image compression and is used in various video compression alg
 
 A DCT decomposes a signal in terms of cosine functions with different frequencies.
 Its extensive use in lossy compression algorithms is due to the DCT's \emph{energy compaction} properties.
-The majority of a signal's energy is contained within relatively few coefficients - typically those corresponding to the lower frequency basis functions.
+The majority of a transformed signal's energy is contained within relatively few coefficients - typically those corresponding to the lower frequency basis functions.
 
-On a side note, the DCT comes in a various versions that have minor differences between them.
+The DCT comes in a various versions that have minor differences between them.
 In the following, we will describe the most widely used version, known as the \emph{DCT-II}, as well as its inverse transform, the \emph{DCT-III}.
-We will refer to them simply as ``the DCT'' and ``the Inverse DCT (IDCT)'', respectively.
+We will refer to them simply as ``the DCT'' and ``the Inverse DCT'' (IDCT), respectively.
 
 \subsection{One-Dimensional DCT}
+Formally, the DCT $\bm w$ of a one-dimensional signal $\bm v$ of length $M$ is given by
+\begin{equation}
+  \label{eqn:dct_basis}
+  w_k = c_k \sum_{n=1}^{M} v_n \, \cos\left(\frac{\pi(2n-1)(k-1)}{2M}\right) \qquad k = 1,\cdots,M
+\end{equation}
+where
+\begin{equation*}
+  c_k = \left\{\begin{array}{ll}
+  \sqrt{\frac{1}{M}} & \qquad\mbox{if $k=1$}\\
+  \sqrt{\frac{2}{M}} & \qquad\mbox{otherwise}\\
+  \end{array}\right.
+\end{equation*}
+This transforms a signal $\bm v$ in the original domain (time or space) into its representation $\bm w$ in the DCT domain.
+
+Conversely, given a signal $\bm w$ in the DCT domain, we can transform it back to the orignal (time or space) domain via the IDCT defined by
+\begin{equation}
+  \label{eqn:idct}
+  v_n = \sum_{k=1}^M c_k w_k  \, \cos\left(\frac{\pi(2n-1)(k-1)}{2M}\right) \qquad n = 1,\cdots,M
+\end{equation}
+
+We can express equation (\ref{eqn:idct}) in the desired form $\bm v=\bm P\bm w$.
+The entries of the basis matrix $\bm P$ are given by
+\begin{equation}
+  \label{eqn:idct_basis}
+  P_{n,k} = c_k\, \cos\left(\frac{\pi(2n-1)(k-1)}{2M}\right).
+\end{equation}
+It can be verified that the basis matrix $\bm P$ is orthogonal, $\bm P^T\bm P=\bm I_M$.
+
+\subsection{Multi-Dimensional DCT}
+Once we know how to perform the DCT on a one-dimensional signal, we can easily extend the transform to multi-dimensional signals (images, video, etc).
+To do so, we simply perform successive 1-D transforms along each dimension of the signal.
+This is the \emph{seperability} of the DCT.
+
+Suppose the signal of interest is a digital image.
+That means that $\bm v$ is a $M_1\times M_2$ matrix where $M_1\times M_2$ is the resolution of the image.
+To transform the signal, we first perform the DCT on every row of the matrix.
+Following that, we perform the DCT on every column of the resulting matrix to get the final transformed signal.
+
 \begin{figure}
   \centering
   \begin{subfigure}{0.45\textwidth}
@@ -46,19 +80,9 @@ We will refer to them simply as ``the DCT'' and ``the Inverse DCT (IDCT)'', resp
   \label{fig:ch3:dct}
 \end{figure}
 
-Formally, the DCT $\bm w$ of a one-dimensional signal $\bm v$ of length $M$ is given by
-\begin{equation}
-  \label{eqn:dct_basis}
-  w_k = c(k) \sum_{m=1}^{M} v_m \, \cos\left(\frac{\pi(2i-1)(k-1)}{2M}\right) \qquad k = 1,\cdots,M
-\end{equation}
-where
-\begin{equation*}
-  c(k) = \left\{\begin{array}{ll}
-  \sqrt{\frac{1}{M}} & \qquad\mbox{if $k=1$}\\
-  \sqrt{\frac{2}{M}} & \qquad\mbox{otherwise}\\
-  \end{array}\right.
-\end{equation*}
-This transforms a signal $\bm v$ in the original domain (time or space) into its representation $\bm w$ in the DCT domain.
+Figure \ref{fig:ch3:dct} shows an example of a 2-D signal $\bm v$ and its transform $\bm w$.
+Note that the majority of the energy of the transformed signal is concentrated in the top left corner.
+Most of the DCT coefficients are zero or very close to zero.
 
 \begin{figure}
   \centering
@@ -67,34 +91,6 @@ This transforms a signal $\bm v$ in the original domain (time or space) into its
     The spatial frequency increases towards the bottom right corner.}
   \label{fig:2D-DCT}
 \end{figure}
-
-Conversely, given a signal $\bm w$ in the DCT domain, we can transform it back to the orignal (time or space) domain via the IDCT defined by
-\begin{equation}
-  \label{eqn:idct}
-  v_n = \sum_{k=1}^M c(k) w_k  \, \cos\left(\frac{\pi(2i-1)(k-1)}{2M}\right) \qquad n = 1,\cdots,M
-\end{equation}
-
-We can express equation (\ref{eqn:idct}) in the desired form $\bm v=\bm P\bm w$.
-The entries of the basis matrix $\bm P$ are given by
-\begin{equation}
-  \label{eqn:idct_basis}
-  P_{n,k} = c(k)\, \cos\left(\frac{\pi(2i-1)(k-1)}{2M}\right).
-\end{equation}
-Note that the basis matrix $\bm P$ is orthogonal, $\bm P^T\bm P=\bm I_M$.
-
-\subsection{Multi-Dimensional DCT}
-Once we know how to perform the DCT on a one-dimensional signal, we can easily extend the transform to multi-dimensional signals (images, video, etc).
-To do so, we simply perform successive 1-D transforms along each dimension of the signal.
-This property is known as \emph{seperability}.
-
-Suppose the signal of interest is a digital image.
-That means that $\bm v$ is a $M_1\times M_2$ matrix where $M_1\times M_2$ is the resolution of the image.
-To transform the signal, we first perform the DCT on every row of the matrix.
-Following that, we perform the DCT on every column of the resulting matrix to get the final transformed signal.
-
-Figure \ref{fig:ch3:dct} shows an example of a 2-D signal $\bm v$ and its transform $\bm w$.
-Note that the majority of the energy of the transformed signal is concentrated in the top left corner.
-Most of the DCT coefficients are zero or very close to zero.
 
 In Figure \ref{fig:2D-DCT}, we show the 2-D basis functions that would used by the DCT to decompose a signal of size $4\times 4$.
 Each basis function is characterised by a horizontal and vertical spatial frequency.
@@ -106,15 +102,19 @@ For a discussion on the properties of the DCT, see \cite{khayam2003}
 \section{Discrete Wavelet Transform}
 Wavelets have become a very popular tool in signal processing.
 Their energy compaction properties are on par and often superior to those of the DCT for a wide range of signal classes.
-In 2000, the JPEG committee released a new image coding standard, JPEG2000, that is gradually replacing the original JPEG standard.
-The new format moved away from the DCT and uses a Discrete Wavelet Transform (DWT) instead.
+Moreover, the multiresolution properties of wavelets allow us to analyze signals at different scales.
 
-[CAVEAT and INTRO]
+In 2000, the JPEG committee released a new image coding standard, JPEG2000, that is gradually replacing the original JPEG standard.
+The new format moved away from the DCT and uses a Discrete Wavelet Transform (DWT) instead \cite{usevitch2001}.
+
+The aim of the following sections is to provide some intuition on the general properties of wavelets.
+We will discuss how a wavelet basis can be constructed at multiple resolution levels and how the DWT can be computed in practice.
+We will refrain from going to deep into mathematical detail and instead direct the interested reader to \cite{mallat1999,daubechies1992}.
 
 \subsection{Introduction to Wavelets}
 To motivate wavelets, consider again the one-dimensional signal $\bm v$ of length $M$.
 Suppose, for simplicity, that $M$ is a power of $2$, $M = 2^q$ say.
-We can view the $\bm v$ as a piecewise-constant function $v(x)$ on the half-open interval $[0,1)$, where $v(x) = v_i$ if $x \in [\frac{i-1}{M}, \frac{i}{M})$.
+We can view $\bm v$ as a piecewise-constant function $v(x)$ on the half-open interval $[0,1)$, where $v(x) = v_i$ if $x \in [\frac{i-1}{M}, \frac{i}{M})$.
 
 Let $V^j$ denote the vector space containing all piecewise-constant functions $f$ defined on the interval $[0,1)$ that consist of $2^j$ pieces, each of which is constant across a sub-interval of size $2^{-j}$.
 Thus, $V^0$ consists of all functions that are constant on $[0,1)$, while $V^1$ consists of all functions that have two constant pieces, one over $[0,1/2)$ and one over $[1/2,1)$.
@@ -123,9 +123,9 @@ In particular, our signal $v(x)$ resides in the space $V^q$.
 Note that if $f \in V^j$, then $f \in V^{j+1}$.
 Thus, the vector spaces $V^j$ are nested: $V^0 \subset V^1 \subset V^2 \subset \cdots$.
 
-Next, we need to choose a basis for each vector space $V^j$.
+We need to choose a basis for each vector space $V^j$.
 To do so, we introduce a \emph{scaling function} (also known as \emph{scalet}, or \emph{father wavelet}) that is usually denoted $\phi(x)$.
-The form of the scaling function depends on the particular choice wavelet decomposition.
+The form of the scaling function depends on the particular choice of wavelet decomposition.
 
 \begin{figure}
   \centering
@@ -155,7 +155,7 @@ The form of the scaling function depends on the particular choice wavelet decomp
   \label{fig:haar_1d}
 \end{figure}
 
-For example, for the \emph{Haar wavelets} the scaling function is given by
+For example, for the \emph{Haar wavelets}, the scaling function is given by
 \begin{equation}
   \label{eqn:haar_scale}
   \phi(x) = \left\{ \begin{array}{rl}
@@ -175,10 +175,10 @@ Using this basis, we can decompose our signal $v(x)\in V^q$ as
 \begin{equation*}
   v(x) = \sum_{k=0}^{2^q-1} c_k^q \phi_k^q(x)
 \end{equation*}
-For the scaling function defined in equation (\ref{eqn:haar_scale}), we have that $c_k^q = v_{k+1}$.
+For the particular scaling function defined in equation (\ref{eqn:haar_scale}), we can see that $c_k^q = v_{k+1}$.
 
 To obtain \emph{wavelets}, consider the \emph{orthogonal complement} of $V^j$ in $V^{j+1}$ and denote it $W^j$. 
-That is, $W^j = \{f \in V^{j+1} :\quad \langle f,g\rangle = 0\quad \forall g \in V^j\}$ where the inner product $\langle f,g\rangle$ is given by
+That is, $W^j = \{f \in V^{j+1} :\, \langle f,g\rangle = 0\,\, \forall g \in V^j\}$ where the inner product $\langle f,g\rangle$ is defined by
 \begin{equation*}
   \langle f,g\rangle = \int_0^1f(x)g(x)dx.
 \end{equation*}
@@ -200,7 +200,7 @@ For the Haar wavelets, the mother wavelet is given by:
 \end{equation}
 The Haar mother wavelet is shown in Figure \ref{fig:haar_mother}.
 
-Note that, since the scaling functions $\phi_k^j$ form a basis of $V^j$ and the wavelet functions $\psi_k^j$ form a basis of $W^k$, and since $W^j$ is the orthogonal complement to $V^j$ in $V^{j+1}$, it follows that the set $\{\phi_k^j, \psi_k^j: k=0,\cdots,2^j-1\}$ forms a basis of the vector space $V^{j+1}$.
+Note that, since the scaling functions $\phi_k^j$ form a basis of $V^j$ and the wavelet functions $\psi_k^j$ form a basis of $W^j$, and since $W^j$ is the orthogonal complement to $V^j$ in $V^{j+1}$, it follows that the set $\{\phi_k^j, \psi_k^j: k=0,\cdots,2^j-1\}$ forms a basis of the vector space $V^{j+1}$.
 
 This allows us to express our signal $v \in V^q$ as 
 \begin{equation*}
@@ -217,7 +217,10 @@ To get the full decomposition, we continue in this fashion up to the $q$th level
 \begin{equation*}
   v(x) = \sum_{j=0}^{q-1} \sum_{k=0}^{2^j-1} d_k^{j} \psi_k^j(x) + c_0^0\phi(x)
 \end{equation*}
-The full DWT of $\bm v$ consists of the coefficients $\{c_0^0, d_k^j:\,j=0,\cdots,q-1, \, k=0,\cdots,2^j-1\}$.
+The full Discrete Wavelet Transform of $\bm v$ consists of the coefficients
+\begin{equation*}
+  \{c_0^0, d_k^j:\,j=0,\cdots,q-1, \, k=0,\cdots,2^j-1\}.
+\end{equation*}
 
 
 \subsection{Computing the DWT}
@@ -272,8 +275,8 @@ In practice, we can compute one level of the DWT coefficients by passing the sig
 Passing $v$ through the filters $h$ and $g$ results in the \emph{convolutions}:
 \begin{equation*}
   \begin{split}
-    (v\star h)(x) &= \sum_{k=-\infty}^\infty v(k)h(x-k)\\
-    (v\star g)(x) &= \sum_{k=-\infty}^\infty v(k)g(x-k)
+    (v\star h)(x) &:= \sum_{k=-\infty}^\infty v(k)h(x-k)\\
+    (v\star g)(x) &:= \sum_{k=-\infty}^\infty v(k)g(x-k)
   \end{split}
 \end{equation*}
 To downsample by a factor of two, we remove every second sample:
@@ -281,13 +284,12 @@ To downsample by a factor of two, we remove every second sample:
   (v\downarrow 2)(x) := v(2x)
 \end{equation*}
 
-Overall, these computations can be done by multiplying the vector $\bm v$ by a matrix $\bm H$ and a matrix $\bm G$ to get the approximation and detail coefficients, repectively.
+Overall, these computations can be performed by multiplying the vector $\bm v$ by a matrix $\bm H$ and a matrix $\bm G$ to get the approximation and detail coefficients, respectively.
 
-To compute the next level, we take the approximation coefficients of the current stage and pass them again through the filter bank.
+To compute the next stage, we take the approximation coefficients of the current stage and pass them again through the filter bank.
 The procedure is depicted in Figure \ref{fig:filterbank}.
 
-The coefficients of the filters $h(x)$ and $g(x)$ depend on our choice of the scaling function $\phi(x)$ and mother wavelet function $\psi(x)$.
-They satisfy the following relations:
+The coefficients of the filters $h(x)$ and $g(x)$ depend on our choice of the scaling function $\phi(x)$ and mother wavelet function $\psi(x)$ and must satisfy the relations
 \begin{equation*}
   \begin{split}
     \phi(x) &= \sqrt{2}\sum_{k=-\infty}^\infty h(k)\phi(2x - k)\\
@@ -307,7 +309,7 @@ For the Haar wavelets (\ref{eqn:haar_scale},\ref{eqn:haar_mother}), the filter c
   \end{split}
 \end{equation*}
 
-The first level approximation coefficients of the Haar DWT of signal $\bm v \in\mathbb{R}^M$, with $M=2^q$, are thus given by $\bm H^q \bm v$ where $\bm H^q$ is the $2^{q-1}\times 2^q$ matrix given by
+The approximation coefficients for the first stage of the Haar DWT of signal $\bm v \in\mathbb{R}^M$, with $M=2^q$, are thus given by $\bm H^q \bm v$ where $\bm H^q$ is the $2^{q-1}\times 2^q$ matrix defined by
 \begin{equation}
   \label{eqn:haar_H}
   \bm H^q_{haar} = \frac{1}{\sqrt{2}} \begin{bmatrix}
@@ -317,7 +319,7 @@ The first level approximation coefficients of the Haar DWT of signal $\bm v \in\
     0&0&0&0&\cdots&1&1
   \end{bmatrix}
 \end{equation}
-To get the corresponding detail coefficients, we multiply $\bm v$ by the $2^{q-1}\times 2^q$ matrix $\bm G^q$ given by
+To get the corresponding detail coefficients, we multiply $\bm v$ by the $2^{q-1}\times 2^q$ matrix $\bm G^q$ defined by
 \begin{equation}
   \label{eqn:haar_G}
   \bm G^q_{haar} = \frac{1}{\sqrt{2}} \begin{bmatrix}
@@ -328,14 +330,14 @@ To get the corresponding detail coefficients, we multiply $\bm v$ by the $2^{q-1
   \end{bmatrix}
 \end{equation}
 
-Overall to perform the discrete Haar wavelet transform at the first scale, we multiply $\bm v$ by
+Overall, to perform the discrete Haar wavelet transform at the first scale, we multiply $\bm v$ by
 \begin{equation*}
   \bm P^{(1)}_{haar} = \begin{bmatrix}
     \bm H^q \\
     \bm G^q \\
   \end{bmatrix}
 \end{equation*}
-where we dropped $haar$-subscript on $\bm H$ and $\bm G$ for ease of viewing.
+where we dropped the $haar$-subscript on $\bm H$ and $\bm G$ for ease of viewing.
 
 To compute the transform at the second scale, we replace $\bm H^q$ by $\bm H^{q-1}\bm H^q$ and $\bm G^{q-1}\bm h^q$:
 \begin{equation*}
@@ -357,21 +359,21 @@ We can continue this process until the $q$th scale to get the full Haar wavelet 
     \bm G^q \\
   \end{bmatrix}
 \end{equation*}
+Note that the size of the transform matrix $\bm P^j_{haar}$ is $M\times M$ and is not affected by the scale $j$.
 
-To form the basis matrix $\bm\Psi$ such that $\bm v = \bm\Psi\bm w$ corresponding to the stage $j$ DWT, we can invert the matrix $\bm P^{(j)}_{haar}$:
+To form the basis matrix $\bm\Psi$ such that $\bm v = \bm\Psi\bm w$ corresponding to the DWT at scale $j$, we can invert the matrix $\bm P^{(j)}_{haar}$:
 \begin{equation}
   \label{eqn:dwt_basis}
   \bm\Psi = \left(\bm P^{(j)}_{haar}\right)^{-1}
 \end{equation}
-In practice, one usually works with wavelet functions that lead to orthogonal transform matrices, so that $\left(\bm P^{(j)}\right)^{-1}=\left(\bm P^{(j)}\right)^T$.
-The Haar wavelets satisfy this orthoganility condition.
+In practice, it is desirable to work with orthonormal wavelet bases because they lead to orthogonal transform matrices, so that $\left(\bm P^{(j)}\right)^{-1}=\left(\bm P^{(j)}\right)^T$.
+This orthoganility property is provided by Haar wavelets.
 Therefore, the basis matrix $\bm\Psi$ from equation (\ref{eqn:dwt_basis}) can also be obtained as follows:
 \begin{equation}
   \label{eqn:haar1_basis}
   \bm\Psi = \left(\bm P^{(j)}_{haar}\right)^T.
 \end{equation}
 
-[CAVEAT boundary conditions]
 
 \subsection{Two-Dimensional Haar Wavelets}
 In Figure \ref{fig:haar_1d}, we showed the 1-dimensional Haar scaling function $\phi(x)$ and wavelet function $\psi(x)$.
@@ -433,9 +435,22 @@ In general, we can define the 2-dimensional scaling wavelet functions by taking 
   \draw [fill=black] (6.5,1.5) rectangle (8,3);
 
   \node at (1.5,6.5){$\bm +$};  
+  % \node at (0.75,5.75){$\bm +$};
+  % \node at (2.25,5.75){$\bm +$};
+  % \node at (0.75,7.25){$\bm +$};
+  % \node at (2.25,7.25){$\bm +$};
+  % \draw (1.5,5) -- (1.5,8);
+  % \draw (0,6.5) -- (3,6.5);
 
-  \node at (6.5,7.25){$\bm +$};
-  \node at (6.5,5.75){\textcolor{white}{$\bm -$}};
+ \node at (6.5,7.25){$\bm +$};
+ \node at (6.5,5.75){\textcolor{white}{$\bm -$}};
+  % \node at (5.75,5.75){\textcolor{white}{$\bm -$}};
+  % \node at (7.25,5.75){\textcolor{white}{$\bm -$}};
+  % \node at (5.75,7.25){$\bm +$};
+  % \node at (7.25,7.25){$\bm +$};
+  % \draw (6.5,5) -- (6.5,8);
+  % \draw (5,6.5) -- (8,6.5);
+
 
   \node at (0.75,1.5){$\bm +$};
   \node at (2.25,1.5){\textcolor{white}{$\bm -$}};
@@ -446,12 +461,11 @@ In general, we can define the 2-dimensional scaling wavelet functions by taking 
   \node at (7.25,2.25){\textcolor{white}{$\bm -$}};
 \end{tikzpicture}
 \caption[2-D Haar Wavelets]{The 2-D Haar scaling function and wavelet functions.
-  Inside the $[0,1]\times [0,1]$ square, white corresponds to $+2$ and black corresponds to $-1$. 
+  Inside the $[0,1]\times [0,1]$ square, white corresponds to $+1$ and black corresponds to $-1$. 
   The functions are zero outside the unit square.}
 \label{fig:haar_2d}
 \end{figure}
-
-Where the superscripts $H,V$ and $D$ refer to the high-pass filters in the horizontal, vertical and diagonal direction, respectively.
+where the superscripts $H,V$ and $D$ refer to the high-pass filters in the horizontal, vertical and diagonal direction, respectively.
 These functions are illustrated in Figure \ref{fig:haar_2d} for the Haar wavelet system.
 The 2-D Haar wavelet functions act as \emph{edge detectors} in their respective directions.
 For example, if we pass a $2\times 2$ image patch through the $\psi^V$ filter, the corresponding detail coefficient will be small unless there is sharp change in pixel intensities between the left side and right side of the patch, i.e. unless there is a vertical edge.
@@ -496,33 +510,34 @@ For example, if we pass a $2\times 2$ image patch through the $\psi^V$ filter, t
 \label{fig:dwt2}
 \end{figure}
 
-The wavelet basis functions for scale $j$ can be formed in two different ways.
-In the so-called ``standard'' construction \cite{stollnitz1995}, we first compute the DWT for scale $j$ for each column, followed by computing the scale-$J$ DWT on the intermediate result for each row.
+% The wavelet basis functions for scale $j$ can be formed in two different ways.
+% In the so-called ``standard'' construction \cite{stollnitz1995}, we first compute the DWT for scale $j$ for each column, followed by computing the scale-$J$ DWT on the intermediate result for each row.
 
-The non-standard construction, on the other hand, builds up the scale-$j$ iteratively transforming the columns and the rows.
-First, we perform the standard construction, but only for the first scale.
-%First, we compute the level-1 DWT for each column, followed by the level-1 DWT for each row. 
-Next, we do another level-1 DWT, but only on the approximation coefficients of the previous stage.
-We repeat this process $j$ times to get the level-$j$ DWT.
+The two-dimensional DWT of a signal is computed sequentially for each scale.
+We start by computing the 1-D DWT at the first scale for each individual column.
+Next, we do the same on each row of the intermediate result.
+This gives us the 2-D DWT at the first scale.
 
-In this document, we will only consider the non-standard construction of the DWT basis.
-The reason is that the basis functions resulting from the non-standard construction always have square support and to keep in line with \cite{pilikos2014}.
+To get the next highest scale, we perform the scale 1 computations on the approximation coefficients of the current scale.
+This process process needs to be repeated $j$ times to obtain the DWT at $j$th scale.
+\footnote{
+  This construction procedure is the so-called ``non-standard'' construction.
+  For an alternative construction strategy that leads to a different set of 2-D basis functions, see \cite{stollnitz1995}.
+}
 
-In Figure \ref{fig:haar2_basis}, we illustrate the basis functions resulting from the non-standard construction. 
-We show two sets of basis functions that can be used by the Haar DWT to decompose a signal of size $4\times 4$, one corresponding to the first scale and another set corresponding to the level 2 decomposition.
-The DWT of a digital image is illustrated at various levels in Figure \ref{fig:dwt2}.
+In Figure \ref{fig:haar2_basis}, we illustrate the basis functions resulting corresponding to the 2-D DWT with Haar wavelets..
+We show two sets of basis functions that can be used to decompose a signal of size $4\times 4$, one corresponding to the first scale decomposition (panel (a)) and another set corresponding to the scale 2 (panel (b)).
+
+In Figure \ref{fig:dwt2}, we have computed the DWT of a digital image at various scales. 
 One can clearly see that the high-pass filters corresponding to the Haar wavelets act as edge detectors.
 
+\section{Construction of the Basis Matrix \texorpdfstring{$\bm\Psi$}{[Psi]}}
+When discussing two-dimensional basis transforms, we viewed the signal $\bm v$ as a 2-D array.
+However, the theory in Chapter \ref{ch:cs} was developed for signals in vectorized forms.
+Moreover, in Chapter \ref{ch:rvm} we will discuss the RVM which also operates on vectorized data.
+Therefore, it is important that we vectorize our multi-dimensional signals $\bm v$.
 
-\section{Basis Matrix for 2-D and 3-D Signals}
-So far, we have displayed two-dimensional signals as matrices and three-dimensional signals as 3-D arrays (also known as ``3-D matrices'', third-order tensors, or ``cubes'').
-To reconcile this with the notation used in Chapter \ref{ch:cs}, we need to \emph{vectorize} the multi-dimensional signal $\bm v$.
-More importantly, the RVM in Chapter \ref{ch:rvm} is agnostic of the dimensionality of the signal. 
-It takes as input a target vector $\bm y$ and a design matrix $\bm \Phi$ and outputs a weights vector $\bm w$.
-Any information about the structur of a signal (such as its dimensionality) is encoded in the design matrix.
-Therefore, it is important that we vectorize our multi-dimensional signals and also form the basis matrix $\bm Psi$ from the transform matrices (corresponding to the DCT/DWT/etc) in a way that is consistent with the vectorization.
-
-We will define the particular vectorization scheme that was used in our algorithm and describe how we built the basis matrices from the specific (inverse) transform matrices.
+In this section we will define the vectorization scheme that was used in our implementation and describe how to construct the basis matrix $\bm\Psi$ from the respective transform matrices in a way that is consistent with the vectorization.
 
 \subsection{Basis Matrix for One-Dimensional Signals}
 We start with 1-D signals. 
@@ -534,31 +549,32 @@ We have defined the basis matrix corresponding to the discrete Haar wavelet tran
 
 \subsection{Basis Matrix for Two-Dimensional Signals}
 \label{sect:vectorize2d}
-Suppose $\bm v$ is a two-dimensional signal of size $r\times c$ (i.e. $r$ rows and $c$ columns).
+Suppose $\bm A$ is a two-dimensional signal of size $r\times c$ (i.e. $r$ rows and $c$ columns).
 Suppose further that $r$ and $c$ are powers of 2, $r=2^{q_1}$ and $c = 2^{q_2}$, say.
 
-We vectorize $\bm v$ in a row-major fashion.
-To be explicit, let $\bm v_j^T$ be the $j$th row of $\bm v\in\mathbb{R}^{r\times c}$.
-The vectorized form of $\bm v$ is then given by
+We vectorize $\bm A$ in a row-major fashion.
+To be explicit, let $\bm a_j^T$ be the $j$th row of $\bm A\in\mathbb{R}^{r\times c}$.
+The vectorized form of $\bm A$ is then given by
 \begin{equation*}
-  \bm v^V = \begin{bmatrix}
-    \bm v_1 \\
-    \bm v_2 \\
+  \bm v = \begin{bmatrix}
+    \bm a_1 \\
+    \bm a_2 \\
     \vdots \\
-    \bm v_r
+    \bm a_r
   \end{bmatrix}
 \end{equation*}
-where we use the $V$ superscript to indicate the vectorized signal.
-Thus, we end up with a long vector $\bm v^V \in \mathbb{R}^{rc}$.
+Thus, we end up with a long vector $\bm v \in \mathbb{R}^{rc}$.
 
+\subsubsection{DCT}
 To form the basis matrix corresponding to the two-dimensional DCT, we use the DCT's seperability property.
 Let $\bm\Psi_r$ and $\bm\Psi_c$ be the DCT basis matrices corresponding to one-dimensional signals of length $r$ and $c$, respectively.
-The basis matrix corresponding to $\bm v^V$ is then given by forming the \emph{kronecker product} of $\bm\Psi_c$ and $\bm\Psi_r$:
+The basis matrix corresponding to $\bm v$ is then constructed by forming the \emph{kronecker product} of $\bm\Psi_c$ and $\bm\Psi_r$:
 \begin{equation*}
 \label{eqn:dct3_basis}
   \bm\Psi = \bm\Psi_c \otimes \bm\Psi_r
 \end{equation*}
-The kronecker product $P \otimes Q$ between matrices $P$ and $Q$ with dimensions $m_P \times n_P$ and $m_Q \times n_Q$, respectively,  is defined to be the block matrix
+
+The kronecker product $P \otimes Q$ between matrices $P$ and $Q$ with dimensions $m_P \times n_P$ and $m_Q \times n_Q$, respectively,  is defined by the block matrix
 \begin{equation}
 \label{eqn:kron}
 \begin{bmatrix}
@@ -570,22 +586,26 @@ P_{m_P,1} Q & P_{m_P,2} Q & \cdots & P_{m_P,n_P} Q \\
 \end{equation}
 of size $(m_Pm_Q) \times (n_Pn_Q)$.
 
+\subsubsection{DWT}
 For the 2-D Haar DWT at the first scale, the basis matrix is constructed in a similar fashion.
-Let $\bm H^{q_1}$ and $\bm H^{q_2}$ be defined according to equation (\ref{eqn:haar_H}), and let $\bm G^{q_1}$ and $\bm G^{q_2}$  be formed according to (\ref{eqn:haar_G}) (where we dropped the $haar$ subscript. 
-The basis matrix is constructed as follows:
+Let $\bm H^{q_1}$ and $\bm H^{q_2}$ be defined according to equation (\ref{eqn:haar_H}), and let $\bm G^{q_1}$ and $\bm G^{q_2}$  be formed according to (\ref{eqn:haar_G}) (where we dropped the $haar$ subscript). 
+The basis matrix $\bm\Psi$ is constructed as follows:
 \begin{equation*}
-  \bm \Psi = 
+%  \resizebox{.9\hsize}{!}{$ 
+ \bm \Psi = 
   \begin{bmatrix}
     \bm H^{q_2} \otimes\bm H^{q_1} \\
     \bm H^{q_2} \otimes \bm G^{q_1} \\
     \bm G^{q_2} \otimes \bm H^{q_1} \\
     \bm G^{q_2} \otimes \bm G^{q_1} 
   \end{bmatrix}^T.
+%$}
 \end{equation*}
 For a signal of size $2^{q_1}\times 2^{q_2}$, we can build a cascade up to the $q$th scale, where $q = \min\{q_1,q_2\}$.
 The resulting basis matrix is given by
 \begin{equation*}
 \label{eqn:haar2_fullbasis}
+%  \resizebox{.9\hsize}{!}{$
   \bm \Psi = 
   \begin{bmatrix}
     (\bm H^{q_2-q}\bm H^{q_2-q+1} \cdots \bm H^{q_2}) \otimes (\bm H^{q_1-q} \bm H^{q_1-q+1}\cdots\bm H^{q_1}) \\
@@ -604,33 +624,8 @@ The resulting basis matrix is given by
     \bm G^{q_2} \otimes \bm H^{q_1} \\
     \bm G^{q_2} \otimes \bm G^{q_1} 
   \end{bmatrix}^T.
+%$}
 \end{equation*}
 Note that the dimensions of the basis matrix are $(rc)\times (rc)$, regardless of the scale that we use.
 
-% Like the DCT, the DWT also has the \emph{seperability} property.
-% Thus, to perform the DWT on a two-dimensional signal, such as an image, we first compute the 1-D DWT for each column.
-% Next, we compute the 1-D DWT on each row of the preceding result.
-% Note that, due to multi-resolution properties of the DWT, we have a choice on how we compute the 2-D DWT.
-% We could either perform the full decomposition (up to the highest possible scale) on the first dimension, followed by 
-% For the Haar wavelets, it can be easily verified that 
-% \begin{equation*}
-%   \langle\psi_k^p,\psi_l^q\rangle = 
-%   \left\{\begin{array}{rl}
-%       1&\qquad\mbox{if $k=l$ and $p=q$}\\
-%       0&\qquad\mbox{otherwise}
-%     \end{array}
-%   \right.
-% \end{equation*}
-% We also know that 
-% \begin{equation*}
-%   \langle\phi_k^j,\psi_l^j\rangle = 0\qquad \forall k,l,j
-% \end{equation*}
-% since the sets $\{\psi^j_k, k = 0,\cdots,2^j-1\}$ and $\{\phi^j_k, k = 0,\cdots,2^j-1\}$ each span a space that are orthogonal complements to each other.
-
-
-
-% For a deeper introduction into wavelets see \cite{stollnitz1995}.
-% For more information on wavelet compression techniques, see \cite{devore1992}.
-
-
-
+In Chapter \ref{ch:video}, we describe the three-dimensional DCT and DWT and explain how video signals are vectorized in our implementation.

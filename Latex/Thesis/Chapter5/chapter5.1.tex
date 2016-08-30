@@ -281,7 +281,6 @@ The seperability property of the DCT makes the extension to three dimensions str
 To compute the DCT of a video, we first compute the 2-D DCT for each individual frame of the video followed by a 1-D DCT across the temporal axis for each pixel.
 The DCT basis functions (\ref{eqn:dct_basis}) in 3-D are characterised by a horizontal and vertical spatial frequency, as well as an additional temporal frequency component.
 
-
 \section{Basis Matrix for Three-Dimensional Signals}
 We vectorize $\bm v$ by first vectorizing each individual frame in a row-major fashion (see Section \ref{sect:vectorize2d}), followed by stacking the vectorized frames on top of each other.
 The result $\bm v^V$ is a long vector of length $rcf$.

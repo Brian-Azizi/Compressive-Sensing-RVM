@@ -29,14 +29,14 @@ Letting $\bm\Phi=\bm\Theta\bm\Psi$, the system (\ref{eqn:intro_cs}) can then be 
 \end{equation}
 
 A variety of deterministic CS algorithms have been developed that attempt to find sparse solutions to (\ref{eqn:intro_cs2}).
-For our algorithm, however, we choose to approach the problem from the point of view of \emph{machine learning}.
+For our implementation, however, we choose to approach the problem from the point of view of \emph{machine learning}.
 
-The aim of supervised machine learning is to learn a relationship $t = f(\bm x)$ between an input vector $\bm x$ and a target $t$.
+In general, the aim of supervised machine learning is to learn a relationship $t = f(\bm x)$ between an input vector $\bm x$ and a target $t$.
 If the target is a discrete variable the problem is known as \emph{classification}, whereas if $t$ is real-valued we refer to the problem as \emph{regression}.
 
 To apply regression techniques to the CS problem (\ref{eqn:intro_cs2}), we regard the CS measurements $y^{(i)}$ as targets and treat the corresponding rows $\bm\varphi^{(i)}$ of the matrix $\bm\Phi$ is input vectors.
 In this context, $\bm y$ is known as a \emph{target vector} and $\bm\Phi$ as the corresponding \emph{design matrix}.
-A linear regression algorithm takes these quantities as its input and ``learns'' a \emph{weights vector} $\bm w$.
+A linear regression algorithm takes these quantities as its input and ``learns'' a set of \emph{weights} $\bm w$.
 Given $\bm w$, the original signal can be computed using equation (\ref{eqn:intro_basis}).
 
 For our code, we implemented the \emph{Relevance Vector Machine} (RVM) \cite{tipping2001,tipping2003} as it tends to give very sparse solutions $\bm w$.
@@ -49,12 +49,12 @@ To provide a range of reconstruction scenarios, our code simulates various types
 Of particular interest is the case when $\bm\Theta$ corresponds to a signal mask, so that $\bm y$ is a highly undersampled version of the signal $\bm v$.
 The problem of solving (\ref{eqn:intro_cs}) is then equivalent to the problem \emph{signal interpolation}.
 For this particular class of sensing mechanisms, \cite{pilikos2014} developed an extension to the RVM called \emph{Multi-Scale Cascade of Estimations} (MSCE).
-The MSCE algorithm utilizes the multiresolution properties of Haar wavelets to form a cascade of RVMs.
-\cite{pilikos2014} investigated its performance in image interpolation and found that it can provide a significant boost in the reconstruction quality.
+The MSCE algorithm utilizes the \emph{multiresolution properties of Haar wavelets} to form a cascade of RVMs.
+\cite{pilikos2014} investigated its performance in image interpolation and found that it can provide a significant boost in the reconstruction quality over a single RVM.
 For our implementation, we extended the MSCE to the case of video interpolation.
 
 \section*{Thesis Organization}
-In this thesis, we discuss the underlying theory and implementation details for all the building blocks of our Compressive Sensing algorithm.
+In this thesis, we discuss the underlying theory and implementation details for all the building blocks of our Compressive Sensing implementation.
 
 We begin in Chapter \ref{ch:cs} with a discussion of the relevant background in digital signal processing.
 A brief overview of the conventional approaches to signal acquisition and compression is provided and then contrasted with the novel Compressive Sensing framework.
@@ -66,9 +66,9 @@ These two basis transforms are often used for their sparsifying properties, espe
 In Chapter \ref{ch:rvm}, we derive the Sparse Bayesian Learning framework and discuss two different algorithms for training the RVM.
 
 Chapter \ref{ch:msce} combines Compressive Sensing with Sparse Bayesian Learning to form the Bayesian Compressive Sensing framework.
-We show how CS can be viewed from a Bayesian perspective and discuss the MSCE algorith.
+We show how CS can be viewed from a Bayesian perspective and discuss the MSCE algorithm.
 
-Our methods for handling video input are described in Chapter \ref{ch:video} and we provide further implementation details practical considerations in Chapter \ref{ch:code}.
+Our methods for handling video input are described in Chapter \ref{ch:video} and we provide further implementation details and practical considerations in Chapter \ref{ch:code}.
 
 Chapter \ref{ch:results} contains a range of example results as well as a performance evaluation of the code.
 Finally, we discuss future work and conclude in Chapter \ref{ch:conclusion}.

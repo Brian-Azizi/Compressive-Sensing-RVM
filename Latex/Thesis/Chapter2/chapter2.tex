@@ -91,13 +91,13 @@ where $\bm w = (w_1,\cdots,w_M)^T$.
 For simplicity, we assume that the basis $\bm\Psi$ is orthonormal, so that $\bm\Psi\bm\Psi^T = \bm I_M$ and $\bm\psi_i^T\bm\psi_j$ is 1 if $i = j$ and 0 otherwise.
 Thus, the coefficient $w_j$ is given by $w_j = \bm v^T\bm\psi_j$.
 
-We now have two equivalent representations of the same signal, $\bm v$ in the original basis and $\bm w$ in the $\bm\Psi$ basis.
+We now have two equivalent representations of the same signal: $\bm v$ in the original basis and $\bm w$ in the $\bm\Psi$ basis.
 Since $\bm\Psi$ is orthogonal, $\bm v$ and $\bm w$ have the same $\ell_2$-norm, $||\bm v||_2 = ||\bm\Psi\bm w||_2 = ||\bm w||_2$.
 However, in the original signal, $\bm v$, the energy is typically spread over many of its components.
 On the other hand, it is possible to find a basis $\bm\Psi$ such that the energy of the transformed signal, $\bm w$, is concentrated in only a few large components $w_j$ and a large fraction of its entries are very close to zero.
 
 Suppose that we delete the entries $w_j$ that are very small and replace them with zero to obtain $\bm{\hat w}$.
-Let $\bm{\hat v} = \bm\Psi\hat{\bm w}$ the approximate signal in the original domain.
+Let $\bm{\hat v} = \bm\Psi\hat{\bm w}$ be the approximate signal in the original domain.
 Since $\bm{\hat w}$ is very close to $\bm w$, it follows that
 \begin{equation*}
   ||\bm{\hat v} - \bm v||_2 = ||\bm\Psi\bm{\hat w} - \bm\Psi\bm w||_2 = ||\bm\Psi (\bm{\hat w} - \bm w)||_2 = ||\bm{\hat w} - \bm w||_2
@@ -231,34 +231,34 @@ Let us define $\bm\Phi = \bm\Theta\bm\Psi$, so that
 We have arrived at another underdetermined linear system.
 The CS measurements $\bm y$ are still the same as in (\ref{eqn:cs_sensing}), but the sensing matrix $\bm\Theta$ has been replaced by the new sensing matrix $\bm\Phi$.
 
-However, we now want to recover the signal $\bm w$ and we can use the fact that $\bm w$ is $K$-sparse for some $K$.
+However, we now want to recover the signal $\bm w$ and we can use the fact that $\bm w$ is $K$-sparse.
 This allows us to address the problems above.
 
 The information in $\bm w$ is highly localized.
 It is fully contained in only $K << M$ of its entries.
 Thus, as long as $N\geq K$, it should, at least in principle, be possible for a measurement vector $\bm y$ of length $N<<M$ to completely capture the information within $\bm w$.
 
-Furthermore, since $(M-K)$ entries of $\bm w$ are zero, it follows that in (\ref{eqn:cs}), $\bm y$ is actually linear combination of only $K$ columns of $\bm\Phi$. 
+Furthermore, since $(M-K)$ entries of $\bm w$ are zero, it follows that in (\ref{eqn:cs}), $\bm y$ is actually a linear combination of only $K$ of the columns of $\bm\Phi$. 
 So, if $N\geq K$, we might expect to find suitable constraints that allow us to recover $\bm w$.
 Once $\bm w$ is recovered, we can compute $\bm v$ via $\bm v = \bm\Psi\bm w$.
 
 \subsection{Constructing the Sensing Mechanism}
 \label{sect:sensors}
 In practice, we do not know the locations of the $K$ nonzero entries in $\bm w$.
-So the first challenge in a compressive sensing system is to design a $N\times M$ sensing matrix $\bm\Theta$ which ensures that, for any signal $\bm v$ that has a $K$-sparse representation in the basis $\bm\Psi$, we measure all the essential information in the signal.
+So the first challenge in a compressive sensing system is to design a $N\times M$ sensing matrix $\bm\Theta$ which ensures that, for any signal $\bm v$ that has a $K$-sparse representation in the basis $\bm\Psi$, $\bm y=\bm\Theta\bm v$ contains all the essential information within the signal $\bm v$.
 
 We will not go into the theoretical details of designing an optimal CS measurement process. Instead we will refer the reader to \cite{candes2008} and simply state three particular sensing matrices that have been used successfully in practice:
-\begin{enumerate}
-\item Form $\bm\Theta$ by sampling its entries $\theta_{ij}$ independently from the Gaussian distribution with mean zero and variance $1/M$: $\theta_{ij}\, \stackrel{iid}{\sim}\, \mathcal{N}(0,1/M)$.
-\item Sample the entries $\theta_{ij}$ independently from a symmetric Bernoulli distribution, $P(\theta_{ij} = \pm 1/\sqrt{M}) = 1/2$. 
-\item Form $\bm\Theta$ by starting with the $M\times M$ identity matrix $I_M$ and deleting $M-N$ of its rows at random. This sensing matrix corresponds to measuring a down-sampled version of the signal $\bm v$ directly. If the signal of interest $\bm v$ is a digital image, then $\bm\Theta$ measures $\bm v$ after an \emph{image mask} has been applied to it. This sensing mechanism has been succesfully used in \cite{pilikos2014}.
-\end{enumerate}
+\begin{description}
+\item[Gaussian:] Form $\bm\Theta$ by sampling its entries $\theta_{ij}$ independently from the Gaussian distribution with mean zero and variance $1/M$: $\theta_{ij}\, \stackrel{iid}{\sim}\, \mathcal{N}(0,1/M)$.
+\item[Bernoulli:] Sample the entries $\theta_{ij}$ independently from a symmetric Bernoulli distribution, $P(\theta_{ij} = \pm 1/\sqrt{M}) = 1/2$. 
+\item[Signal Mask:] Form $\bm\Theta$ by starting with the $M\times M$ identity matrix $I_M$ and deleting $M-N$ of its rows at random. This sensing matrix corresponds to measuring a down-sampled version of the signal $\bm v$ directly. Throughout the thesis, will refer to such sensing matrices as ``signal masks''. 
+\end{description}
 
 \subsection{Signal Recovery}
 Using the sensing mechanisms outlined above, we are able to measure the signal $\bm v$ directly in a compressed format $\bm y$.
 The final part of a Compressive Sensing system is a signal reconstruction algorithm that decompresses $\bm y$ and recovers $\bm v$ or, equivalently, its sparse representation $\bm w$.
 
-This can be achieved by searching for the sparsest solution $\bm w$ that satisfies equation (\ref{eqn:cs}) \cite{baraniuk2007}.
+One way of achieving this is by searching for the sparsest solution $\bm w$ that satisfies equation (\ref{eqn:cs}) \cite{baraniuk2007}.
 That is, the desired signal is the solution to the optimization problem:
 \begin{equation}
 \label{eqn:cs_l0}
@@ -271,7 +271,6 @@ Luckily, and somewhat surprisingly, it can be shown that, if $N = O(K\log(M/K))$
 \label{eqn:cs_l1}
   \min_{\bm w} ||\bm w||_1 \qquad \mbox{subject to} \qquad \bm\Phi\bm w = \bm y
 \end{equation}
-The solution $\bm{\hat w}$ can be transformed to the original domain via $\bm{\hat v} = \Psi\bm{\hat w}$.
 
 In practice, signals $\bm v$ usually only have an almost-sparse representation.
 Thus, the reconstruction is not completely exact and the solution $\bm{\hat v}$ will be a close approximation to $\bm v$.
@@ -280,6 +279,6 @@ A large part of the CS literature is focused on developing algorithms that recov
 
 For a discussion and comparison of some of the most widely used algorithms, see \cite{pilikos2014}.
 
-In Chapter \ref{ch:msce} we will approach the CS signal reconstruction problem in a Bayesian way.
+In Chapter \ref{ch:msce} we will approach the CS signal reconstruction problem from a Bayesian perspective.
 Before we do so, however, we need to introduce the Sparse Bayesian Learning framework (Chapter \ref{ch:rvm}) and provide a more thorough discussion about basis functions (Chapter \ref{ch:dwt}).
 
