@@ -1,41 +1,41 @@
-%\chapter{Multi-Scale Cascade of Estimations}
 \chapter{Bayesian Compressive Sensing}
 \label{ch:msce}
 
-In this chapter, we combine the Compressive Sensing framework from Chapter \ref{ch:cs} with the Bayesian framework from Chapter \ref{ch:rvm} to form the \emph{Bayesian Compressive Sensing} (BCS) framework.
+In this chapter, we combine the Compressive Sensing framework from Chapter \ref{ch:cs} with the Sparse Bayesian Learning framework from Chapter \ref{ch:rvm} to formulate the \emph{Bayesian Compressive Sensing} (BCS) algorithm.
 
-Following that, we will discuss the \emph{Multi-Scale Cascade of Estimations} (MSCE) algorithm.
+Following that, we discuss the scenario where the sensing mechanism $\bm\Theta$ corresponds to a signal mask.
+We describe how the performance of the BCS algorithm can be boosted via the \emph{Multi-Scale Cascade of Estimations} algorithm.
 
-\section{Compressive Sensing as Regression}
-%\section{Bayesian Compressive Sensing}
+\section{Compressive Sensing as Linear Regression}
 In the Bayesian Compressive Sensing (BCS) \cite{ji2008} framework, we attempt to approach the Compressive Sensing problem from the point of view of linear regression.
 
 Recall the setup from Chapter \ref{ch:cs}.
 We are intersted in recovering the signal $\bm v\in\mathbb{R}^M$ from the CS measurements $\bm\Theta\bm v = \bm y\in\mathbb{R}^N$, where $N << M$.
 We also assume that $\bm v$ is compressible in the basis $\bm \Psi$.
+
 This means that $\bm w = \bm\Psi^T\bm v$ is well approximated by the $K$-sparse vector $\bm w_K$ which is identical to $\bm w$ for the $K$ elements in $\bm w$ with the largest magnitude.
 
-Thus, $\bm w_e = \bm w - \bm w_K$ is assumed to be very small in magnitude in we will effectively treat it as noise,
+Thus, $\bm w_e = \bm w - \bm w_K$ is assumed to be very small in magnitude.
 Letting $\bm\Phi=\bm\Theta\bm\Psi$, we have
 \begin{equation*}
   \bm y = \bm\Theta\bm v = \bm\Theta\bm\Psi\bm w = \bm\Phi\bm w = \bm\Phi\bm w_K + \bm\Phi\bm w_e = \bm\Phi\bm w_K + \bm n_e
 \end{equation*}
-where $\bm n_e = \bm\Phi\bm w_e$.
-Moreover, there could be an additional noise source $\bm n$ in the CS measurements $\bm y$ (e.g. due to finite precision in the measurement device) so that, overall,
+where $\bm n_e = \bm\Phi\bm w_e$ will be regarded as noise.
+Furthermore, there could be an additional noise source $\bm n$ in the CS measurements $\bm y$ (e.g. due to finite precision in the measurement device) so that, overall,
 \begin{equation}
 \label{eqn:bcs_setup}
   \bm y = \bm\Phi\bm w_K + \bm n_e + \bm n = \bm\Phi\bm w_K + \bm \epsilon
 \end{equation}
 with $\bm\epsilon = \bm n_e + \bm n$.
 
-In the BCS literature \cite{ji2008}, $\bm\epsilon$ is typically approximated as zero-mean Gaussian noise variable with an unknown variance $\sigma^2$:
+In the BCS literature \cite{ji2008}, $\bm\epsilon$ is typically approximated by a zero-mean Gaussian noise variable with an unknown variance $\sigma^2$:
 \begin{equation}
 \label{eqn:bcs_noise}
   \bm\epsilon\sim\mathcal{N}(0,\sigma^2\bm I_N).
 \end{equation}
 
 Although this assumption may not always be completely accurate in practice, it is often used for its desirable analytical properties.
-We might try to justify it by noting that the sensing matrix $\bm\theta$ is usually constructed randomly (often using Gaussian samples) and that the noise source $\bm n$ in the CS measurements is typically represented by a zero-mean Gaussian distribution.
+A possible justification is that the sensing matrix $\bm\Theta$ is usually constructed randomly (often using Gaussian samples) and that the noise source $\bm n$ in the CS measurements is typically represented by a zero-mean Gaussian distribution.
 
 Note the similarity between equations (\ref{eqn:bcs_setup}) and (\ref{eqn:bcs_noise}) and the geneneral linear regression model in equations (\ref{rvm:lklhd_2}) and (\ref{rvm:error}).
 The only difference is that, in equation (\ref{eqn:bcs_setup}), we have the addtional constraint that $\bm w_K$ is \emph{sparse}.
@@ -44,10 +44,14 @@ Since in the BCS framework, we wish to solve the CS problem from a Bayesian stan
 The sparsity constraint can be entered into the model by placing a sparseness-inducing prior distribution over the weights $\bm w_K$.
 
 There is a range of popular sparseness priors.
-Here, we choose the hierarchical prior that was specified in Chapter \ref{ch:rvm}, equations (\ref{eqn:prior_w}), (\ref{eqn:prior_alpha}) and (\ref{eqn:prior_beta}).
-This allows us to use the Sparse Bayesian Learning framework to invert the CS system.
+However, to make the connection to the RVM and exploit the analysis from Chapter \ref{ch:rvm}, we choose the prior (\ref{eqn:prior_w})
+\begin{equation*}
+  p(\bm w_K\,|\,\bm \alpha) = \prod_{j=1}^M \mathcal{N}\left(w_j\,|\,0,\alpha_j^{-1}\right)
+\end{equation*}
 
-More explicitly, we view the CS measurements $\bm y \in \mathbb{R}^N$ as a target vector and $\bm\Phi=\bm\Theta\bm\Psi \in\mathbb{R}^{N\times M}$ as a design matrix and use the Sequential Sparse Bayesian Learning Algorithm (Algorithm \ref{rvm:alg2}) to compute the posterior distribution of the weights $\bm w \in \mathbb{R}^M$ (\ref{rvm:posterior}).
+To summarize, we solve the CS problem by passing the CS measurements $\bm y$ and the matrix $\bm\Phi$ to train a RVM.
+The SBBL algorithm (Algorithm \ref{rvm:alg2}) is then used to compute the posterior distribution of the weights $\bm w \in \mathbb{R}^M$ (\ref{rvm:posterior}).
+
 The desired signal $\bm v\in\mathbb{R}^M$ can then by recovered by computing 
 \begin{equation}
   \label{eqn:bcs_recover}
@@ -55,11 +59,16 @@ The desired signal $\bm v\in\mathbb{R}^M$ can then by recovered by computing
 \end{equation} 
 where $\bm \mu$ is the posterior mean of $\bm w$.
 
-[ADVANTAGES OVER DCS?, PERFORMANCE?]
+The method of applying the RVM to CS inversion is sometimes referred to as the Bayesian Compressive Sensing (BCS) algorithm.
+The BCS algorithm was compared against state-of-the-art deterministic CS algorithms by \cite{ji2008,pilikos2014} and shown to give comparable performance.
 
-\section{Image Interpolation}
-%\chapter{Multi-Scale Cascade of Estimations Algorithm}
-The BCS framework of the previous section was used by \cite{pilikos2014} to reconstruct images that have missing pixel values, such as in Figure \ref{fig:lenna_mask}.
+We have implemented the BCS algorithm as part of our Compressive Sensing algorithm.
+Using BCS, our implementation is able to reconstruct video signals from a small number of CS measurements that were sampled by a general sensing mechanism $\bm\Theta$. 
+In order to do so, we had to construct three-dimensional basis functions, as outlined in Chapter \ref{ch:video}.
+
+\section{The Case when \texorpdfstring{$\Theta$}{[Theta]} is a Signal Mask}
+
+\subsection{Image Interpolation}
 \begin{figure}
   \centering
   \includegraphics[width=0.6\textwidth]{Chapter5/Images/lenna_MASKED.png}
@@ -67,16 +76,12 @@ The BCS framework of the previous section was used by \cite{pilikos2014} to reco
   \label{fig:lenna_mask}
 \end{figure}
 
-In the context of Compressive Sensing, this problem corresponds to a sensing mechanism that directly measures a down-sampled version of the original signal $\bm v$.
-In Section \ref{sect:sensors} we explained how to construct corresponding sensing matrix $\bm\Theta$.
-We will refer to such sensing matrices as ``masks''.
-The problem of reconstructing such masked signals is sometimes also referred to as ``interpolation''.
+If the sensing matrix $\bm\Theta$ is a signal mask (see Section \ref{sect:sensors}), the CS measurements $y$ of an image $\bm v$ can be visualized as an image with missing pixel values as in Figure \ref{fig:lenna_mask}.
+The problem of reconstructing such signals is sometimes referred to as \emph{interpolation}.
 
-In the BCS framework, we recover the original signal according to (\ref{eqn:bcs_recover}).
-If $\bm\theta$ is a mask, the design matrix $\bm\Phi$ that is passed to the RVM consists of the basis matrix $\bm\Psi$ but with the rows corresponding to missing pixel values removed.
-The recovery strategy that we discussed is thus equivalent to using the RVM directly to predict the pixel values at \emph{all} the locations according to equation (\ref{rvm:pred_mean}).
+In this context, the design matrix $\bm\Phi$ can be computed efficiently from $\bm\Psi$ by simply deleting all the rows in $\bm\Psi$ that correspond to the entries of $\bm v$ that have missing data.
 
-Since we have knowledge of the true pixel values for a subset of these locations, we can improve the reconstruction by replacing the predicted values with the original data when possible.
+Moreover, it is possible to get a slight performance boost in the reconstruction by filling in the BCS solution $\bm{\hat v}$ (\ref{eqn:bcs_recover}) with the measured at data $\bm y$ at the appropriate locations.
 
 \subsection{Reconstruction using Haar Wavelets}
 Using the BCS model from above with a Haar basis matrix, we reconstruct the image in Figure \ref{fig:lenna_mask}.
@@ -107,7 +112,8 @@ We display the output in Figure \ref{fig:lenna_rvm} for various scales of the Ha
 We see that the scale of the wavelet basis has a strong effect on the quality of the reconstruction.
 Wavelets at lower scales can fail to reconstruct the entire image, but generally give a more accurate reconstruction at the portion of the image where they succeed.
 On the other, wavelets at larger scales typically achieve a reconstruction of the entire image at the cost of increased blurring or pixelation.
-This conflict can be seen in Figure \ref{fig:lenna_rvm} by contrasting panel (c) with panel (d): They both get a reconstruction of the entire image, but scale 3 actually outperforms scale 4 in this example.
+This conflict can be seen in Figure \ref{fig:lenna_rvm} by contrasting panel (c) with panel (d):
+They both achieve a reconstruction of the entire image, but scale 3 outperforms scale 4 in this example.
 Moreover, if we compare panel (b) with panel (d), we see that, in the part of the image where the recovery succeeds, the scale 2 reconstruction manages to recover finer details than both scale 3 and scale 4.
 
 To explain why this tradeoff exists, recall that two-dimensional Haar wavelets at scale $s$ have a support of size up to $2^s\times 2^s$.
@@ -123,37 +129,45 @@ If the masked image happens to be missing data at all four of these locations, t
 Therefore, column $j$ of the design matrix will be zero.
 The same is true for the three columns that correspond to the remaining locations that were covered by basis function $j$.
 
-The Sequential Sparse Bayesian Learning Algorithm will generally not select any columns that are conpletely zero, since they offer no change to marginal likelyhood.
+The SSBL algorithm will generally not select any columns that are completely zero, since they offer no change to the marginal likelihood.
 The consequence is that the corresponding entries in the posterior mean $\bm\mu$ of $\bm w$ will remain zero.
 The resulting reconstruction (\ref{eqn:bcs_recover}) will therefore be unable to recover the $2\times 2$ patch covered by basis function $j$.
 
-This problem can be mitigated by using larger scales since, for any given number of missing pixels, it is less likely that larger square patches of the masked image are completely void of data.
+This problem can be mitigated by using larger scales since, for any given total number of missing pixels, it is less likely that larger square patches of the masked image are completely void of data.
 However, the SSBL Algorithm generally prefers to add basis functions with larger support to the model, since they typically cause a larger increase in the Marginal Likelihood.
-The result is that we get a more smoothed or blurred reconstruction and use the finer details, even in parts of the image that would have been accurately recovered at smaller scales.
+The result is that we get a more blurred reconstruction and lose the finer details, even in parts of the image that would have been accurately recovered at smaller scales.
 
-\section{Multi-Scale Cascade of Estimations Algorithm}
-How can we recover the finer details of the image, while also obtaining a full reconstruction?
-\cite{pilikos2014} addressed this problem by using the RVM error bars to form a cascade of RVM estimations.
-The resulting algorithm is called \emph{Multi-Scale Cascade of Estimations} (MSCE).
 
-It begins by using the procedure from the previous section with the Haar basis matrix at the lowest scale to obtain a reconstruction of the masked image.
-Next the error bars are computed for the predictions at the locations $\bm x^*$ of the missing pixel values:
+
+
+
+\subsection{Multi-Scale Cascade of Estimations Algorithm}
+The \emph{Multi-Scale Cascade of Estimations} (MSCE) algorithm was developed by \cite{pilikos2014} to this tradeoff between inaccurate but complete reconstructions and accurate but incomplete reconstructions.
+
+To explain the algorithm, note that, in the interpolation problem, the BCS reconstruction (\ref{eqn:bcs_recover}) is equivalent to computing the mean (\ref{rvm:pred_mean}) of the predictive distribution (\ref{rvm:predictive}) of the entire signal $\bm v$.
+Moreover, we can compute the predictive variance (\ref{rvm:pred_var}) (or error-bars) for each estimate:
 \begin{equation}
 \label{eqn:msce_error}
   (\sigma^2)^* = \sigma^2 +\bm\psi(\bm x^*)^T\bm\Sigma\bm\psi(\bm x).
 \end{equation}
 
-The MSCE algorithm uses the error measure $(\sigma^2)^*$ to decide whether to keep the estimated pixel value for location $\bm x^*$, or whether discard and keep $\bm x^*$ marked as missing.
+The MSCE algorithm uses these error bars to construct a cascade of BCS algorithms, that builds up the scale of the Haar wavelets.
+
+We begin by executing the BCS algorithm using Haar wavelets at the first scale.
+Next, we compute equation (\ref{eqn:msce_error}) for each location in the signal in which originally had missing data.
 If $(\sigma^2)^*$ is small, but larger than the noise variance $\sigma^2$, we trust the estimate and accept it. 
 If $(\sigma^2)^*$ is large, we do not trust the estimate and reject it.
-Finally, if $(\sigma^2)^*$ is equal to $\sigma^2$, then $\bm\psi(\bm x^*)^T\bm\Sigma\bm\psi(\bm x^*) = 0$. 
-This means that $\bm\psi(\bm x^*) = 0$ since $\bm\Sigma$ is positive definite.
+
+If $(\sigma^2)^*$ is equal to $\sigma^2$, then $\bm\psi(\bm x^*)^T\bm\Sigma\bm\psi(\bm x^*) = 0$. 
+This means that $\bm\psi(\bm x^*) = 0$ since, by postive definiteness of $\bm\Sigma$, $\bm\psi(\bm x^*)^T\bm\Sigma\bm\psi(\bm x^*) > 0$ unless $\bm\psi(\bm x^*) = 0$.
 Thus, the RVM predicted the pixel value at location $\bm x^*$ to be zero. 
 Since the recovery of the pixel was unsuccessful in this case, we reject the estimate.
 
-If the resulting reconstruction still has missing pixel values, we pass it to the next stage of the cascade which uses a Haar basis at the next highest scale (2 in this case).
+The output of the current cascade becomes the target vector of the next cascade.
+The new basis matrix is constructed using Haar wavelets that are one scale higher than in the previous cascade.
 
-This process it repeated until we achieve a reconstruction of the entire image or until some pre-defined maximum for the scale of the Haar basis.
+This process it repeated until we no more signal values marked as missing, or until some pre-defined maximum for the scale of the Haar basis is reached.
+
 We have summarized the MCSE in Algorithm \ref{alg3}.
 
 \begin{algorithm}
