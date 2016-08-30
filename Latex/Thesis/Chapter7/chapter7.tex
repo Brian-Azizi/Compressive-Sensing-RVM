@@ -31,42 +31,27 @@ It is given by
 This is the metric that was used in \cite{ji2008} and \cite{pilikos2014}.
 
 \section{Model Selection}
-\subsection{Noise Variance \texorpdfstring{$\sigma^2$}{[sigma2]}}
-
-\begin{figure}
-\includegraphics[width=\textwidth]{Chapter7/Images/noise_lenna_wide.png}
-\end{figure}
+Choice of $sigma^2$, $\tau$, threshold.
 
 % \begin{figure}
-% \centering
-% \begin{subfigure}{0.4\textwidth}
 % \includegraphics[width=\textwidth]{Chapter7/Images/noise_lenna_wide.png}
-% \end{subfigure}
-% \begin{subfigure}{0.4\textwidth}
-% \includegraphics[width=\textwidth]{Chapter7/Images/noise_lenna_close.png}
-% \end{subfigure}
-% \begin{subfigure}{0.4\textwidth}
-% \includegraphics[width=\textwidth]{Chapter7/Images/noise_foreman_close.png}
-% \end{subfigure}
-% \begin{subfigure}{0.4\textwidth}
-% \includegraphics[width=\textwidth]{Chapter7/Images/noise_foreman_close.png}
-% \end{subfigure}
 % \end{figure}
 
-\subsection{Noise Threshold \texorpdfstring{$\tau$}{[tau]}}
-
-\section{Example Results}
+\section{Example Results: Video Interpolation}
 Different Decimation Patters. 
 
 Different Percentages. 
 
 Different block size.
 
-\section{Comparison of MSCE against BCS with DCT for interpolation}
+\section{Performance Evaluation}
+Performance curves
 
-Performance curve
+Masks vs Gaussian vs Rademacher
 
-What if pre-compressed
+Show for random $\Theta$ that high scale Haar beats low scale Haar. 
+
+DCT vs Haar 
 
 Comparison with literature?
 
@@ -76,11 +61,4 @@ Time vs block dim.
 Serial vs MPI.
 
 
-\section{Video Reconstruction for General Sensing Matrices}
 
-\begin{itemize}
-\item General sensing Matrix for BCS of videos?
-\item Masks vs Gaussian vs Rademacher
-\item MSCE was done to solve the signal interpolation. In particular, to fix the problem with small support of wavelets while still using their power.
-\item Problem: Limited to signal interpolation. Solution: Use CS sensing matrices (but Cascade don't work yet).
-\end{itemize}

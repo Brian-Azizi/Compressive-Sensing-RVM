@@ -1,29 +1,75 @@
 \chapter{Introduction}
+The goal of the MPhil project is an implementation of a generic Compressive Sensing algorithm that can efficiently reconstruct video signals from a small number of measurements.
 
-There are three parts: A signal processing framework called \emph{Compressive Sensing (CS)}, a pre-processing step in form of a basis transformation based on discrete wavelet transforms and a Machine Learning algorithm called \emph{Sparse Bayesian Learning}.
+\emph{Compressive Sensing} (CS) \cite{candes2006, donoho2006} is a relatively recent framework within digital signal processing.
+Using the techniques in CS, we can measure signals \emph{directly in a compressed format}.
 
-The key notion that ties in these three areas is the notion of \emph{sparsity}.
-
-The $\ell_p$ -norm of a vector $\bm z \mathbb{R}^n$ is defined as follows for $p>0$:
-
+There are two major components to any CS system.
+Let $\bm v \in\mathbb{R}^M$ denote the digital signal of interest.
+The first component is a \emph{sensing mechanism} that acquires the measurements
 \begin{equation}
-\label{eqn:lp-norm}
-  ||\bm z||_p \equiv \left( \sum_{i=1}^n |z_i|^p \right)^\frac{1}{p}.
+  \label{eqn:intro_cs}
+  \bm\Theta\bm v = \bm y
 \end{equation}
-If $p=0$ we can define the $\ell_0$ ``norm'' of $\bm z$ to be the number of its non-zero entries:
+where $\bm\Theta$ is a known $N\times M$ matrix with $N<<M$.
+The second component is a \emph{reconstruction algorithm} that recovers the original signal $\bm v$ from the CS measurements $\bm y$ by finding a solution to the under-determined system (\ref{eqn:intro_cs}).
+
+In order to solve the system, we make the assumption that $\bm v$ has a sparse representation.
+This means that we can perform a change-of-basis transformation
 \begin{equation}
-\label{eqn:l0-norm}
-  ||\bm z||_0 \equiv  \sum_{i=1}^n \mathbbm{1}\{z_j \neq 0\}
+  \label{eqn:intro_basis}
+  \bm v = \bm\Psi\bm w
+\end{equation}
+such that the transformed signal $\bm w$ is \emph{sparse}, i.e. it has only a small number of non-zero entries.
+
+Letting $\bm\Phi=\bm\Theta\bm\Psi$, the system (\ref{eqn:intro_cs}) can then be expressed as
+\begin{equation}
+  \label{eqn:intro_cs2}
+  \bm y = \bm\Phi\bm w.
 \end{equation}
 
+A variety of deterministic CS algorithms have been developed that attempt to find sparse solutions to (\ref{eqn:intro_cs2}).
+For our algorithm, however, we choose to approach the problem from the point of view of \emph{machine learning}.
 
-Our contributions are three-fold:
-\begin{enumerate}
-\item An extension of the MSCE-algorithm in \cite{pilikos2014} to video data.
-\item An extension to MSCE to deal with additional sensing mechanisms.
-\item A parameter study and performance comparison of different wavelet representations, sensing modalities, 
-\end{enumerate}
+The aim of supervised machine learning is to learn a relationship $t = f(\bm x)$ between an input vector $\bm x$ and a target $t$.
+If the target is a discrete variable the problem is known as \emph{classification}, whereas if $t$ is real-valued we refer to the problem as \emph{regression}.
 
+To apply regression techniques to the CS problem (\ref{eqn:intro_cs2}), we regard the CS measurements $y^{(i)}$ as targets and treat the corresponding rows $\bm\varphi^{(i)}$ of the matrix $\bm\Phi$ is input vectors.
+In this context, $\bm y$ is known as a \emph{target vector} and $\bm\Phi$ as the corresponding \emph{design matrix}.
+A linear regression algorithm takes these quantities as its input and ``learns'' a \emph{weights vector} $\bm w$.
+Given $\bm w$, the original signal can be computed using equation (\ref{eqn:intro_basis}).
 
-\section*{Scope}
+For our code, we implemented the \emph{Relevance Vector Machine} (RVM) \cite{tipping2001,tipping2003} as it tends to give very sparse solutions $\bm w$.
+This algorithm was used by \cite{pilikos2014} to successfully reconstruct highly undersampled image signals.
+Comparing it to a range of classic deterministic CS reconstruction algorithms, \cite{pilikos2014} found that the RVM gave superior reconstruction performance.
+
+In practical CS systems, the sensing mechanism $\bm\Theta$ is typically implemented within the actual sensing hardware.
+To provide a range of reconstruction scenarios, our code simulates various types of sensing matrices.
+
+Of particular interest is the case when $\bm\Theta$ corresponds to a signal mask, so that $\bm y$ is a highly undersampled version of the signal $\bm v$.
+The problem of solving (\ref{eqn:intro_cs}) is then equivalent to the problem \emph{signal interpolation}.
+For this particular class of sensing mechanisms, \cite{pilikos2014} developed an extension to the RVM called \emph{Multi-Scale Cascade of Estimations} (MSCE).
+The MSCE algorithm utilizes the multiresolution properties of Haar wavelets to form a cascade of RVMs.
+\cite{pilikos2014} investigated its performance in image interpolation and found that it can provide a significant boost in the reconstruction quality.
+For our implementation, we extended the MSCE to the case of video interpolation.
+
 \section*{Thesis Organization}
+In this thesis, we discuss the underlying theory and implementation details for all the building blocks of our Compressive Sensing algorithm.
+
+We begin in Chapter \ref{ch:cs} with a discussion of the relevant background in digital signal processing.
+A brief overview of the conventional approaches to signal acquisition and compression is provided and then contrasted with the novel Compressive Sensing framework.
+
+In order to ensure a high quality reconstruction, it is important to find sparse representations of the signal.
+Chapter \ref{ch:dwt} describes the Discrete Cosine Transform and the Discrete Wavelet Transform.
+These two basis transforms are often used for their sparsifying properties, especially when applied to digital image and video signals.
+
+In Chapter \ref{ch:rvm}, we derive the Sparse Bayesian Learning framework and discuss two different algorithms for training the RVM.
+
+Chapter \ref{ch:msce} combines Compressive Sensing with Sparse Bayesian Learning to form the Bayesian Compressive Sensing framework.
+We show how CS can be viewed from a Bayesian perspective and discuss the MSCE algorith.
+
+Our methods for handling video input are described in Chapter \ref{ch:video} and we provide further implementation details practical considerations in Chapter \ref{ch:code}.
+
+Chapter \ref{ch:results} contains a range of example results as well as a performance evaluation of the code.
+Finally, we discuss future work and conclude in Chapter \ref{ch:conclusion}.
+

@@ -16,6 +16,7 @@ Finding a set of basis functions $\bs\Psi$ that achieve such a transformation li
 It is important to note here that the choice of basis functions $\bm \Psi$ typically has a significant effect on the performance of the reconstruction algorithms.
 
 \section{Discrete Cosine Transform}
+\label{sect:dct}
 The first basis transform that we will use is the Discrete Cosine Transform (DCT), one of the most widely used transforms in signal processing.
 It underlies JPEG image compression and is used in various video compression algorithms such as MJPEG, MPEG, H.261 and H.263 \cite{zeng2013}.
 \footnote{A related transform, known as the \emph{Modified DCT} is used in many lossy audio compression formats such as MP3, AAC and Vorbis.}
@@ -41,7 +42,7 @@ We will refer to them simply as ``the DCT'' and ``the Inverse DCT (IDCT)'', resp
     \includegraphics[width=\textwidth]{Chapter3/Images/dctCoeff.png}
     \caption{DCT of $\bm v$}
   \end{subfigure}
-  \caption{Panel (a) shows the original signal $\bm v$, a 256$\times$256 grayscale image known as ``cameraman''. Panel (b) illustrates the 2-D DCT of $\bm v$. The brightness of a an element increases with the absolute value of the corresponding DCT coefficient. (The high-frequency coefficients have been enhanced to show more detail).}
+  \caption[Two-dimensional DCT applied to a digital image]{Panel (a) shows the original signal $\bm v$, a 256$\times$256 grayscale image known as ``cameraman''. Panel (b) illustrates the 2-D DCT of $\bm v$. The brightness of a an element increases with the absolute value of the corresponding DCT coefficient. (The high-frequency coefficients have been enhanced to show more detail).}
   \label{fig:ch3:dct}
 \end{figure}
 
@@ -62,7 +63,7 @@ This transforms a signal $\bm v$ in the original domain (time or space) into its
 \begin{figure}
   \centering
   \includegraphics[width=0.5\textwidth]{Chapter3/Images/dct2functions.png}
-  \caption{The 2-D DCT basis functions that are used by the DCT to decompose a $4\times 4$ image. 
+  \caption[The 2-D DCT basis functions]{The 2-D DCT basis functions that are used by the DCT to decompose a $4\times 4$ image. 
     The spatial frequency increases towards the bottom right corner.}
   \label{fig:2D-DCT}
 \end{figure}
@@ -263,7 +264,7 @@ The full DWT of $\bm v$ consists of the coefficients $\{c_0^0, d_k^j:\,j=0,\cdot
     \node at (8.9,3) [shape=circle, fill=black, inner sep=2pt, minimum size=2pt] {};
     \node at (9,3) [above] {\small$c^{q-2}$};
   \end{tikzpicture}
-  \caption{The first two levels of the DWT of the signal $\bm v$ of length $2^q$ via a filter bank.}
+  \caption[Filter Bank computation of the DWT]{The first two levels of the DWT of the signal $\bm v$ of length $2^q$ via a filter bank.}
   \label{fig:filterbank}
 \end{figure}
 

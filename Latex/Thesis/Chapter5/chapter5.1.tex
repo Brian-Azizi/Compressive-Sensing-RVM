@@ -35,11 +35,13 @@ We use the $T$ superscript to denote the high-pass filters in the temporal direc
 \begin{tikzpicture} [scale=0.8]
 % top 4
   \draw [<->] (0,21.5) -- (0,18) -- (3.5,18);
-  \draw [->,dashed] (0,18) -- (2,20);
+  \draw [->] (0,18) -- (2,20);
   \draw (0,18) rectangle (3,21);
   \draw (0,21) -- (1,22) -- (4,22) -- (3,21);
   \draw (4,22) -- (4,19) -- (3,18);
-  
+  \draw [dashed] (0,18) -- (1,19) -- (4,19);
+  \draw [dashed] (1,19) -- (1,22);
+
   \draw [<->] (6,21.5) -- (6,18) -- (9.5,18);
   \draw [->,dashed] (6,18) -- (8,20);
   \draw (6,18) rectangle (9,21);
@@ -65,6 +67,7 @@ We use the $T$ superscript to denote the high-pass filters in the temporal direc
   \node at (3.5,18) [below] {$x$};
   \node at (0,21.5) [left] {$y$};
   \node at (2,20) [above left] {$t$};
+  \node at (1,19.3) [left] {$1$};
   
   \node at (7.5,18) [below] {$\psi^H(x,y,t)$};
   \node at (6,18) [left] {$0$};
@@ -218,7 +221,7 @@ The functions are zero outside of the cube.}
     \draw [thick](-1.5,3) -- (-1.5,2.8) -- (-0.3,2.8);
     \draw [->,dashed,thick] (-0.3,2.8) -- (1.5,2.8);
   \end{tikzpicture}
-  \caption{The wavelet decomposition of a three-dimensional signal $v(x,y,t)$ at the first scale. 
+  \caption[Wavelet decomposition of a video]{The wavelet decomposition of a three-dimensional signal $v(x,y,t)$ at the first scale. 
     $L$ stands for ``low'' and $H$ stands for ``high''.
     To obtain the decomposition at higher scales, we recursively decompose the low-pass channels $\bm{LLL}_j$ in a similar way.}
   \label{fig:3d_channels}
@@ -242,7 +245,7 @@ The functions are zero outside of the cube.}
     \includegraphics[width=0.9\textwidth]{Chapter3/Images/dwt_38.png}
     \caption{Scale 1 DWT: ``frame'' 38}
   \end{subfigure}
-  \caption{Frames 11 and 12 of a 64-frame video with a resolution of $256\times 256$ (a,b).
+  \caption[Example showing the Haar wavelet decomposition of a video signal]{Frames 11 and 12 of a 64-frame video with a resolution of $256\times 256$ (a,b).
     We perform the three-dimensional DWT at the first scale using Haar wavelets and show two ``slices'' of the resulting coefficients (c,d). The detail coefficients have been enhanced to improve visibility.}
  \label{fig:3d_dwt}
 \end{figure}
@@ -371,7 +374,7 @@ Once we have successfully created a vectorization scheme for the video signal $\
     \includegraphics[width=\textwidth]{Chapter5/Images/foreman_orig_151.png}
     \caption{Original}
   \end{subfigure}
-  \caption{Example of a masked video signal, where only 60\% of the pixel values are known (a-b). 
+  \caption[Example output of our video interpolator]{Example of a masked video signal, where only 60\% of the pixel values are known (a-b). 
     Reconstruction via the MSCE Algorithm using 2 cascades (PSNR: 28.6) (c-d).
     Original video (e-f).}
   \label{fig:foreman_masked}
@@ -387,3 +390,16 @@ Panels (c) and (d) show the output of the MSCE algorithm.
 For reference, we have also included the frames from the original video in panels (e) and (f).
 
 Further test results of this method are shown in Chapter \ref{ch:results}.
+
+\section{Video Reconstruction from general CS measurements}
+Unfortunetaly the MSCE don't work for general sensing matrices because it was designed specifically to deal with the problem of `black pixels vs blurriness'.
+
+The problem is that the basis functions that the RVM works are actually (random) linear combinations of the DWT basis functions.
+We want to get error bars on the reconstructed pixels, but the pixels are in a different ``domain'' as the CS measurements. 
+So we cannot trust those errors.
+
+If we can make additional measurements (random projection), we \emph{can} use the error bars to select optimal random projections \cite{ji2008}. 
+
+To allow reconstruction of video from general CS measurements, we have also implemented the BCS algorithm [add alg box?].
+In ch 8, we compare performance between different sensors (for masks, use both algorithms).
+Also look at how block size and basis function choice affect performance for random sensors.

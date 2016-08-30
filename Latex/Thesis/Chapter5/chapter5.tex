@@ -1,12 +1,13 @@
-\chapter{Multi-Scale Cascade of Estimations}
-%\chapter{Bayesian Compressive Sensing}
+%\chapter{Multi-Scale Cascade of Estimations}
+\chapter{Bayesian Compressive Sensing}
 \label{ch:msce}
 
 In this chapter, we combine the Compressive Sensing framework from Chapter \ref{ch:cs} with the Bayesian framework from Chapter \ref{ch:rvm} to form the \emph{Bayesian Compressive Sensing} (BCS) framework.
 
 Following that, we will discuss the \emph{Multi-Scale Cascade of Estimations} (MSCE) algorithm.
 
-\section{Bayesian Compressive Sensing}
+\section{Compressive Sensing as Regression}
+%\section{Bayesian Compressive Sensing}
 In the Bayesian Compressive Sensing (BCS) \cite{ji2008} framework, we attempt to approach the Compressive Sensing problem from the point of view of linear regression.
 
 Recall the setup from Chapter \ref{ch:cs}.
@@ -98,7 +99,7 @@ We display the output in Figure \ref{fig:lenna_rvm} for various scales of the Ha
     \includegraphics[width=\textwidth]{Chapter5/Images/lenna_haar4.png}
     \caption{Scale 4: PSNR = 23.72}
   \end{subfigure}  
-  \caption{Reconstruction if the image in Figure \ref{fig:lenna_mask} using the RVM with Haar wavelets at various scales.
+  \caption[Reconstruction of masked image signals using Haar wavelets at various scales]{Reconstruction if the image in Figure \ref{fig:lenna_mask} using the RVM with Haar wavelets at various scales.
     We use the \emph{Peak Signal-to-Noise Ratio (PSNR)} as our performance metric. The larger the PSNR, the more accurate the reconstruction. See Chapter \ref{ch:results} for a definition of the PSNR.}
   \label{fig:lenna_rvm}
 \end{figure}
