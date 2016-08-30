@@ -1,6 +1,8 @@
 \chapter{Test Simulations}
 \label{ch:results}
 
+
+
 \section{Performance Metrics}
 In this section, we will introduce three performance metrics that are often used to measure the quality of reconstructed images and videos.
 
@@ -30,19 +32,6 @@ It is given by
 \end{equation*}
 This is the metric that was used in \cite{ji2008} and \cite{pilikos2014}.
 
-\section{Model Selection}
-Choice of $sigma^2$, $\tau$, threshold.
-
-% \begin{figure}
-% \includegraphics[width=\textwidth]{Chapter7/Images/noise_lenna_wide.png}
-% \end{figure}
-
-\section{Example Results: Video Interpolation}
-Different Decimation Patters. 
-
-Different Percentages. 
-
-Different block size.
 
 \section{Performance Evaluation}
 Performance curves
@@ -53,12 +42,228 @@ Show for random $\Theta$ that high scale Haar beats low scale Haar.
 
 DCT vs Haar 
 
-Comparison with literature?
-
-\section{Analysis of Speed}
-Time vs block dim.
-
-Serial vs MPI.
 
 
+\clearpage
+
+\section{Example Results}
+
+\begin{figure}[!ht]
+  \centering
+  \textbf{\hspace{0.2in} Frame 2 \hspace{1.5in} Frame 19\hspace{0.5in}\vspace{0.2in}}
+  \begin{subfigure}{0.4\textwidth}
+    \centering
+    \includegraphics[width=0.8\textwidth]{Chapter7/Images/akiyo40_masked_2.png}
+    \caption{Corrupted}
+  \end{subfigure}
+  \begin{subfigure}{0.4\textwidth}
+    \centering
+    \includegraphics[width=0.8\textwidth]{Chapter7/Images/akiyo40_masked_19.png}
+    \caption{Corrupted}
+  \end{subfigure}
+  \begin{subfigure}{0.4\textwidth}
+    \centering
+    \includegraphics[width=0.8\textwidth]{Chapter7/Images/akiyo40_rec_2.png}
+    \caption{Recovered}
+  \end{subfigure}
+  \begin{subfigure}{0.4\textwidth}
+    \centering
+    \includegraphics[width=0.8\textwidth]{Chapter7/Images/akiyo40_rec_19.png}
+    \caption{Recovered}
+  \end{subfigure}
+  \begin{subfigure}{0.4\textwidth}
+    \centering
+    \includegraphics[width=0.8\textwidth]{Chapter7/Images/akiyo40_orig_2.png}
+    \caption{Original}
+  \end{subfigure}
+  \begin{subfigure}{0.4\textwidth}
+    \centering
+    \includegraphics[width=0.8\textwidth]{Chapter7/Images/akiyo40_orig_19.png}
+    \caption{Original}
+  \end{subfigure}
+  \caption{Reconstruction of $128\times 128\times 128$ video signal ``akiyo'' from 40\% of the measurement using the MSCE with 3 cascades. Mask decimation pattern is uniform. $\psnr = 30.02$}
+\end{figure}
+
+\begin{figure}
+  \centering
+  \textbf{\hspace{0.2in} Frame 32 \hspace{1.5in} Frame 52\hspace{0.5in}\vspace{0.1in}}
+  \begin{subfigure}{0.4\textwidth}
+    \centering
+    \includegraphics[width=0.9\textwidth]{Chapter7/Images/akiyo70_masked_32.png}
+    \caption{Corrupted}
+  \end{subfigure}
+  \begin{subfigure}{0.4\textwidth}
+    \centering
+    \includegraphics[width=0.9\textwidth]{Chapter7/Images/akiyo70_masked_52.png}
+    \caption{Corrupted}
+  \end{subfigure}
+  \begin{subfigure}{0.4\textwidth}
+    \centering
+    \includegraphics[width=.9\textwidth]{Chapter7/Images/akiyo70_rec_32.png}
+    \caption{Recovered}
+  \end{subfigure}
+  \begin{subfigure}{0.4\textwidth}
+    \centering
+    \includegraphics[width=.9\textwidth]{Chapter7/Images/akiyo70_rec_52.png}
+    \caption{Recovered}
+  \end{subfigure}
+  \begin{subfigure}{0.4\textwidth}
+    \centering
+    \includegraphics[width=.9\textwidth]{Chapter7/Images/akiyo70_orig_32.png}
+    \caption{Original}
+  \end{subfigure}
+  \begin{subfigure}{0.4\textwidth}
+    \centering
+    \includegraphics[width=.9\textwidth]{Chapter7/Images/akiyo70_orig_52.png}
+    \caption{Original}
+  \end{subfigure}
+  \caption{Reconstruction of $128\times 128\times 128$ video signal ``akiyo'' from 70\% of the measurement using the MSCE with 3 cascades. Mask decimation pattern is uniform. $\psnr = 36.86$}
+\end{figure}
+
+\begin{figure}
+  \centering
+  \textbf{\hspace{0.2in} Frame 18 \hspace{1.5in} Frame 22\hspace{0.5in}\vspace{0.1in}}
+  \begin{subfigure}{0.4\textwidth}
+    \centering
+    \includegraphics[width=.9\textwidth]{Chapter7/Images/foreman40_masked_18.png}
+    \caption{Corrupted}
+  \end{subfigure}
+  \begin{subfigure}{0.4\textwidth}
+    \centering
+    \includegraphics[width=.9\textwidth]{Chapter7/Images/foreman40_masked_22.png}
+    \caption{Corrupted}
+  \end{subfigure}
+  \begin{subfigure}{0.4\textwidth}
+    \centering
+    \includegraphics[width=.9\textwidth]{Chapter7/Images/foreman40_rec_18.png}
+    \caption{Recovered}
+  \end{subfigure}
+  \begin{subfigure}{0.4\textwidth}
+    \centering
+    \includegraphics[width=.9\textwidth]{Chapter7/Images/foreman40_rec_22.png}
+    \caption{Recovered}
+  \end{subfigure}
+  \begin{subfigure}{0.4\textwidth}
+    \centering
+    \includegraphics[width=.9\textwidth]{Chapter7/Images/foreman40_orig_18.png}
+    \caption{Original}
+  \end{subfigure}
+  \begin{subfigure}{0.4\textwidth}
+    \centering
+    \includegraphics[width=.9\textwidth]{Chapter7/Images/foreman40_orig_22.png}
+    \caption{Original}
+  \end{subfigure}
+  \caption{Reconstruction of $128\times 128\times 128$ video signal ``foreman'' from 40\% of the measurement using the MSCE with 3 cascades. Mask decimation pattern is: horizontal lines that are randomly generated for each frame. $\psnr = 25.50$}
+\end{figure}
+
+
+\begin{figure}
+  \centering
+  \textbf{\hspace{0.2in} Frame 18 \hspace{1.5in} Frame 22\hspace{0.5in}\vspace{0.1in}}
+  \begin{subfigure}{0.4\textwidth}
+    \centering
+    \includegraphics[width=.9\textwidth]{Chapter7/Images/foreman70_masked_18.png}
+    \caption{Corrupted}
+  \end{subfigure}
+  \begin{subfigure}{0.4\textwidth}
+    \centering
+    \includegraphics[width=.9\textwidth]{Chapter7/Images/foreman70_masked_22.png}
+    \caption{Corrupted}
+  \end{subfigure}
+  \begin{subfigure}{0.4\textwidth}
+    \centering
+    \includegraphics[width=.9\textwidth]{Chapter7/Images/foreman70_rec_18.png}
+    \caption{Recovered}
+  \end{subfigure}
+  \begin{subfigure}{0.4\textwidth}
+    \centering
+    \includegraphics[width=.9\textwidth]{Chapter7/Images/foreman70_rec_22.png}
+    \caption{Recovered}
+  \end{subfigure}
+  \begin{subfigure}{0.4\textwidth}
+    \centering
+    \includegraphics[width=.9\textwidth]{Chapter7/Images/foreman70_orig_18.png}
+    \caption{Original}
+  \end{subfigure}
+  \begin{subfigure}{0.4\textwidth}
+    \centering
+    \includegraphics[width=.9\textwidth]{Chapter7/Images/foreman70_orig_22.png}
+    \caption{Original}
+  \end{subfigure}
+  \caption{Reconstruction of $128\times 128\times 128$ video signal ``foreman'' from 70\% of the measurement using the MSCE with 3 cascades. Mask decimation pattern is: horizontal lines that are randomly generated for each frame. $\psnr = 30.32$}
+\end{figure}
+
+\begin{figure}
+  \centering
+  \textbf{\hspace{0.2in} Frame 11 \hspace{1.5in} Frame 12\hspace{0.5in}\vspace{0.1in}}
+  \begin{subfigure}{0.4\textwidth}
+    \centering
+    \includegraphics[width=.9\textwidth]{Chapter7/Images/soccer40_masked_11.png}
+    \caption{Corrupted}
+  \end{subfigure}
+  \begin{subfigure}{0.4\textwidth}
+    \centering
+    \includegraphics[width=.9\textwidth]{Chapter7/Images/soccer40_masked_12.png}
+    \caption{Corrupted}
+  \end{subfigure}
+  \begin{subfigure}{0.4\textwidth}
+    \centering
+    \includegraphics[width=.9\textwidth]{Chapter7/Images/soccer40_rec_11.png}
+    \caption{Recovered}
+  \end{subfigure}
+  \begin{subfigure}{0.4\textwidth}
+    \centering
+    \includegraphics[width=.9\textwidth]{Chapter7/Images/soccer40_rec_12.png}
+    \caption{Recovered}
+  \end{subfigure}
+  \begin{subfigure}{0.4\textwidth}
+    \centering
+    \includegraphics[width=.9\textwidth]{Chapter7/Images/soccer40_orig_11.png}
+    \caption{Original}
+  \end{subfigure}
+  \begin{subfigure}{0.4\textwidth}
+    \centering
+    \includegraphics[width=.9\textwidth]{Chapter7/Images/soccer40_orig_12.png}
+    \caption{Original}
+  \end{subfigure}
+  \caption{Reconstruction of $128\times 128\times 128$ video signal ``soccer'' from 40\% of the measurement using the MSCE with 3 cascades. Mask decimation pattern is: missing pixels that are constant across the frames. $\psnr = 24.84$}
+\end{figure}
+
+
+
+\begin{figure}
+  \centering
+  \textbf{\hspace{0.2in} Frame 11 \hspace{1.5in} Frame 12\hspace{0.5in}\vspace{0.1in}}
+  \begin{subfigure}{0.4\textwidth}
+    \centering
+    \includegraphics[width=.9\textwidth]{Chapter7/Images/soccer70_masked_11.png}
+    \caption{Corrupted}
+  \end{subfigure}
+  \begin{subfigure}{0.4\textwidth}
+    \centering
+    \includegraphics[width=.9\textwidth]{Chapter7/Images/soccer70_masked_12.png}
+    \caption{Corrupted}
+  \end{subfigure}
+  \begin{subfigure}{0.4\textwidth}
+    \centering
+    \includegraphics[width=.9\textwidth]{Chapter7/Images/soccer70_rec_11.png}
+    \caption{Recovered}
+  \end{subfigure}
+  \begin{subfigure}{0.4\textwidth}
+    \centering
+    \includegraphics[width=.9\textwidth]{Chapter7/Images/soccer70_rec_12.png}
+    \caption{Recovered}
+  \end{subfigure}
+  \begin{subfigure}{0.4\textwidth}
+    \centering
+    \includegraphics[width=.9\textwidth]{Chapter7/Images/soccer70_orig_11.png}
+    \caption{Original}
+  \end{subfigure}
+  \begin{subfigure}{0.4\textwidth}
+    \centering
+    \includegraphics[width=.9\textwidth]{Chapter7/Images/soccer70_orig_12.png}
+    \caption{Original}
+  \end{subfigure}
+  \caption{Reconstruction of $128\times 128\times 128$ video signal ``soccer'' from 70\% of the measurement using the MSCE with 3 cascades. Mask decimation pattern is: missing pixels that are constant across the frames. $\psnr = 29.35$}
+\end{figure}
 

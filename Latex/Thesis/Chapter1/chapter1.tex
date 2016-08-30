@@ -2,7 +2,8 @@
 The goal of the MPhil project is an implementation of a generic Compressive Sensing algorithm that can efficiently reconstruct video signals from a small number of measurements.
 
 \emph{Compressive Sensing} (CS) \cite{candes2006, donoho2006} is a relatively recent framework within digital signal processing.
-Using the techniques in CS, we can measure signals \emph{directly in a compressed format}.
+Using the techniques in CS, we can measure signals \emph{directly in a compressed format}, leading to highly efficient data acquisition protocols.
+In application areas such as magnetic resonance imaging (MRI), which has an inherently slow data acquisition process, this could potentially result in large scan time reductions, thus helping patients and doctors.
 
 There are two major components to any CS system.
 Let $\bm v \in\mathbb{R}^M$ denote the digital signal of interest.
@@ -20,7 +21,8 @@ This means that we can perform a change-of-basis transformation
   \label{eqn:intro_basis}
   \bm v = \bm\Psi\bm w
 \end{equation}
-such that the transformed signal $\bm w$ is \emph{sparse}, i.e. it has only a small number of non-zero entries.
+such that the transformed signal $\bm w$ is \emph{sparse}, i.e. it has only a small number of non-zero entries
+This is a realistic assumption for a wide range of common signal types, such as digital images, audio, video and many kinds communication signals.
 
 Letting $\bm\Phi=\bm\Theta\bm\Psi$, the system (\ref{eqn:intro_cs}) can then be expressed as
 \begin{equation}
@@ -44,7 +46,7 @@ This algorithm was used by \cite{pilikos2014} to successfully reconstruct highly
 Comparing it to a range of classic deterministic CS reconstruction algorithms, \cite{pilikos2014} found that the RVM gave superior reconstruction performance.
 
 In practical CS systems, the sensing mechanism $\bm\Theta$ is typically implemented within the actual sensing hardware.
-To provide a range of reconstruction scenarios, our code simulates various types of sensing matrices.
+To provide a range of reconstruction scenarios, our code simulates three types of sensing matrices: random Gaussian, random Bernoulli and random signal masks.
 
 Of particular interest is the case when $\bm\Theta$ corresponds to a signal mask, so that $\bm y$ is a highly undersampled version of the signal $\bm v$.
 The problem of solving (\ref{eqn:intro_cs}) is then equivalent to the problem \emph{signal interpolation}.
