@@ -1,7 +1,5 @@
-\chapter{Test Simulations}
+\chapter{Simulations}
 \label{ch:results}
-
-
 
 \section{Performance Metrics}
 In this section, we will introduce three performance metrics that are often used to measure the quality of reconstructed images and videos.
@@ -34,15 +32,195 @@ This is the metric that was used in \cite{ji2008} and \cite{pilikos2014}.
 
 
 \section{Performance Evaluation}
-Performance curves
-
-Masks vs Gaussian vs Rademacher
-
-Show for random $\Theta$ that high scale Haar beats low scale Haar. 
-
-DCT vs Haar 
 
 
+
+\begin{figure}
+  \centering
+  \begin{tikzpicture}[scale = 0.8,baseline]
+    \begin{axis}[
+      xlabel=$N/M$ (\%),
+      ylabel=$\rre$ (\%),
+      xmin=0, xmax = 100,
+      ymin = 0, 
+      scaled ticks=false,
+      yticklabel style={
+        /pgf/number format/precision=2,
+        /pgf/number format/fixed,
+      }
+      ]
+      \addplot table [x=pc, y=rre] {Chapter7/Images/MSCE.dat};      
+    \end{axis}
+  \end{tikzpicture}
+  % 
+  \hskip 10pt
+  % 
+  \begin{tikzpicture}[scale = 0.8,baseline]
+    \begin{axis}[
+      xlabel=$N/M$ (\%),
+      ylabel=$\psnr$,
+      xmin=0, xmax = 90,      
+      scaled ticks=false,
+      yticklabel style={
+        /pgf/number format/precision=2,
+        /pgf/number format/fixed,
+      }
+      ]
+      \addplot table [x=pc, y=psnr] {Chapter7/Images/MSCE.dat};      
+    \end{axis}
+  \end{tikzpicture}
+\caption{Performance of MSCE with 3 cascades and uniform Masks}
+\end{figure}
+
+\begin{figure}
+  \centering
+  \begin{tikzpicture}[scale = 0.8,baseline]
+    \begin{axis}[
+      xlabel=$N/M$ (\%),
+      ylabel=$\rre$ (\%),
+      xmin=0, xmax = 100,
+      ymin = 0, 
+      scaled ticks=false,
+      yticklabel style={
+        /pgf/number format/precision=2,
+        /pgf/number format/fixed,
+      }
+      ]
+      \addplot table [x=pc, y=rre] {Chapter7/Images/GAUSS_DCT.dat};      
+      \addlegendentry{DCT}
+      \addplot table [x=pc, y=rre] {Chapter7/Images/GAUSS_HAAR.dat};      
+      \addlegendentry{Haar}
+    \end{axis}
+  \end{tikzpicture}
+  % 
+  \hskip 10pt
+  % 
+  \begin{tikzpicture}[scale = 0.8,baseline]
+    \begin{axis}[
+      xlabel=$N/M$ (\%),
+      ylabel=$\psnr$,
+      xmin=0, xmax = 90,      
+      scaled ticks=false,
+      legend style={
+        at={(0.03,0.98)},
+        anchor=north west,
+      },
+      yticklabel style={
+        /pgf/number format/precision=2,
+        /pgf/number format/fixed,
+      }
+      ]
+      \addplot table [x=pc, y=psnr] {Chapter7/Images/GAUSS_DCT.dat};      
+      \addlegendentry{DCT}
+      \addplot table [x=pc, y=psnr] {Chapter7/Images/GAUSS_HAAR.dat};      
+      \addlegendentry{Haar}
+    \end{axis}
+  \end{tikzpicture}
+\caption{DCT vs Haar DWT (scale 3) with Gaussian measurements}
+\end{figure}
+
+\begin{figure}
+  \centering
+  \begin{tikzpicture}[scale = 0.8,baseline]
+    \begin{axis}[
+      xlabel=$N/M$ (\%),
+      ylabel=$\rre$ (\%),
+      xmin=0, xmax = 100,
+      ymin = 0, 
+      scaled ticks=false,
+      yticklabel style={
+        /pgf/number format/precision=2,
+        /pgf/number format/fixed,
+      }
+      ]
+      \addplot table [x=pc, y=rre] {Chapter7/Images/GAUSS_DCT.dat};      
+      \addlegendentry{Gauss}
+      \addplot table [x=pc, y=rre] {Chapter7/Images/BERN_DCT.dat};      
+      \addlegendentry{Bernoulli}
+      \addplot table [x=pc, y=rre] {Chapter7/Images/MASK_DCT.dat};      
+      \addlegendentry{Mask}
+    \end{axis}
+  \end{tikzpicture}
+  % 
+  \hskip 10pt
+  % 
+  \begin{tikzpicture}[scale = 0.8,baseline]
+    \begin{axis}[
+      xlabel=$N/M$ (\%),
+      ylabel=$\psnr$,
+      xmin=0, xmax = 90,      
+      scaled ticks=false,
+      legend style={
+        at={(0.03,0.98)},
+        anchor=north west,
+      },
+      yticklabel style={
+        /pgf/number format/precision=2,
+        /pgf/number format/fixed,
+      }
+      ]
+      \addplot table [x=pc, y=psnr] {Chapter7/Images/GAUSS_DCT.dat};      
+      \addlegendentry{Gauss}
+      \addplot table [x=pc, y=psnr] {Chapter7/Images/BERN_DCT.dat};      
+      \addlegendentry{Bernoulli}
+      \addplot table [x=pc, y=psnr] {Chapter7/Images/MASK_DCT.dat};      
+      \addlegendentry{Mask}
+    \end{axis}
+  \end{tikzpicture}
+\caption{Gaussian vs Bernoulli vs Mask (uniform) with DCT basis}
+\end{figure}
+
+%% SCALES
+\begin{figure}
+  \centering
+  \begin{tikzpicture}[scale = 0.8,baseline]
+    \begin{axis}[
+      xlabel=$N/M$ (\%),
+      ylabel=$\rre$ (\%),
+      xmin=0, xmax = 100,
+      ymin = 0, 
+      scaled ticks=false,
+      yticklabel style={
+        /pgf/number format/precision=2,
+        /pgf/number format/fixed,
+      }
+      ]
+      \addplot table [x=pc, y=rre] {Chapter7/Images/HAAR_GAUSS_1.dat};      
+      \addlegendentry{Scale 1}
+      \addplot table [x=pc, y=rre] {Chapter7/Images/HAAR_GAUSS_2.dat};
+      \addlegendentry{Scale 2}
+      \addplot table [x=pc, y=rre] {Chapter7/Images/HAAR_GAUSS_3.dat};
+      \addlegendentry{Scale 3}
+    \end{axis}
+  \end{tikzpicture}
+  % 
+  \hskip 10pt
+  % 
+  \begin{tikzpicture}[scale = 0.8,baseline]
+    \begin{axis}[
+      xlabel=$N/M$ (\%),
+      ylabel=$\psnr$,
+      xmin=0, xmax = 90,      
+      scaled ticks=false,
+      legend style={
+        at={(0.03,0.98)},
+        anchor=north west,
+      },
+      yticklabel style={
+        /pgf/number format/precision=2,
+        /pgf/number format/fixed,
+      }
+      ]
+      \addplot table [x=pc, y=psnr] {Chapter7/Images/HAAR_GAUSS_1.dat};
+      \addlegendentry{Scale 1}
+      \addplot table [x=pc, y=psnr] {Chapter7/Images/HAAR_GAUSS_2.dat};
+      \addlegendentry{Scale 2}
+      \addplot table [x=pc, y=psnr] {Chapter7/Images/HAAR_GAUSS_3.dat};
+      \addlegendentry{Scale 3}
+    \end{axis}
+  \end{tikzpicture}
+\caption{Haar wavelets at different scales with Gaussian measurements (fixed block size)}
+\end{figure}
 
 \clearpage
 
@@ -267,3 +445,35 @@ DCT vs Haar
   \caption{Reconstruction of $128\times 128\times 128$ video signal ``soccer'' from 70\% of the measurement using the MSCE with 3 cascades. Mask decimation pattern is: missing pixels that are constant across the frames. $\psnr = 29.35$}
 \end{figure}
 
+\begin{figure}
+  \centering
+  \textbf{\hspace{0.5in} Frame 21 \hspace{1.5in} Frame 151\hspace{0.5in}\vspace{0.2in}}
+  \begin{subfigure}{0.4\textwidth}
+    \includegraphics[width=\textwidth]{Chapter5/Images/foreman_masked_21.png}
+    \caption{Corrupted}
+  \end{subfigure}
+  \begin{subfigure}{0.4\textwidth}
+    \includegraphics[width=\textwidth]{Chapter5/Images/foreman_masked_151.png}
+    \caption{Corrupted}
+  \end{subfigure}
+  \begin{subfigure}{0.4\textwidth}
+    \includegraphics[width=\textwidth]{Chapter5/Images/foreman_rec_21.png}
+    \caption{Recovered}
+  \end{subfigure}
+  \begin{subfigure}{0.4\textwidth}
+    \includegraphics[width=\textwidth]{Chapter5/Images/foreman_rec_151.png}
+    \caption{Recovered}
+  \end{subfigure}
+  \begin{subfigure}{0.4\textwidth}
+    \includegraphics[width=\textwidth]{Chapter5/Images/foreman_orig_21.png}
+    \caption{Original}
+  \end{subfigure}
+  \begin{subfigure}{0.4\textwidth}
+    \includegraphics[width=\textwidth]{Chapter5/Images/foreman_orig_151.png}
+    \caption{Original}
+  \end{subfigure}
+  \caption[Example output of our video interpolator]{Example of a masked video signal, where only 60\% of the pixel values are known (a-b). 
+    Reconstruction via the MSCE Algorithm using 2 cascades (PSNR: 28.6) (c-d).
+    Original video (e-f).}
+  \label{fig:foreman_masked}
+\end{figure}

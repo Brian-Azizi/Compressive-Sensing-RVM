@@ -55,6 +55,8 @@ The MSCE algorithm utilizes the \emph{multiresolution properties of Haar wavelet
 \cite{pilikos2014} investigated its performance in image interpolation and found that it can provide a significant boost in the reconstruction quality over a single RVM.
 For our implementation, we extended the MSCE to the case of video interpolation.
 
+
+
 \section*{Thesis Organization}
 In this thesis, we discuss the underlying theory and implementation details for all the building blocks of our Compressive Sensing implementation.
 
@@ -70,8 +72,9 @@ In Chapter \ref{ch:rvm}, we derive the Sparse Bayesian Learning framework and di
 Chapter \ref{ch:msce} combines Compressive Sensing with Sparse Bayesian Learning to form the Bayesian Compressive Sensing framework.
 We show how CS can be viewed from a Bayesian perspective and discuss the MSCE algorithm.
 
-Our methods for handling video input are described in Chapter \ref{ch:video} and we provide further implementation details and practical considerations in Chapter \ref{ch:code}.
+In Chapter \ref{ch:code} we provide further implementation details, including a discussion on blockwise signal reconstruction and a parallel implementation.
 
-Chapter \ref{ch:results} contains a range of example results as well as a performance evaluation of the code.
-Finally, we discuss future work and conclude in Chapter \ref{ch:conclusion}.
+Finally, in Chapter \ref{ch:results} we demonstrate the performance of our algorithm and show that it provides near-perfect reconstructions of video signals with $N = 0.3M$.
+
+We conclude in Chapter \ref{ch:conclusion}.
 

@@ -1,7 +1,7 @@
 % ******************************* PhD Thesis Template **************************
 % Please have a look at the README.md file for info on how to use the template
 
-\documentclass[a4paper,12pt,numbered,customfont,print,index,oneside]{Classes/PhDThesisPSnPDF}
+\documentclass[a4paper,12pt,numbered,oneside,customfont,print]{Classes/PhDThesisPSnPDF}
 
 % ******************************************************************************
 % ******************************* Class Options ********************************
@@ -23,9 +23,9 @@
 %
 % `index': For index at the end of the thesis
 %
-% `draftclassic': For draft mode without loading any images (same as draft in book)
+% `draft': For draft mode without loading any images (same as draft in book)
 %
-% `draft': Special draft mode with line numbers, images, and water mark with
+% `draftmode': Special draft mode with line numbers, images, and water mark with
 % timestamp and custom text. Position of the text can also be modified.
 %
 % `abstract': To generate only the title page and abstract page with
@@ -101,7 +101,7 @@
 % To use choose `chapter' option in the document class
 
 \ifdefineChapter
- \includeonly{Chapter3/chapter3}
+ \includeonly{Chapter1/chapter1}%, Chapter2/chapter2, Chapter4/chapter4}
 \fi
 
 % ******************************** Front Matter ********************************
@@ -109,7 +109,10 @@
 
 \frontmatter
 
-\maketitle
+\begin{titlepage}
+  \maketitle
+\end{titlepage}
+
 
 \include{Dedication/dedication}
 \include{Declaration/declaration}
@@ -123,15 +126,13 @@
 %\listoffigures
 
 %\listoftables
+% \printnomencl[space] space can be set as 2em between symbol and description
+%\printnomencl[3em]
 
-% \printnomenclature[space] space can be set as 2em between symbol and description
-%\printnomenclature[3em]
-
-%\printnomenclature
+%\printnomencl
 
 % ******************************** Main Matter *********************************
 \mainmatter
-
 \include{Chapter1/chapter1}
 \include{Chapter2/chapter2}
 \include{Chapter3/chapter3}
@@ -155,7 +156,6 @@
 % Reference styles: http://sites.stat.psu.edu/~surajit/present/bib.htm
 
 \bibliographystyle{apalike}
-%\bibliographystyle{unsrt} % Use for unsorted references  
 %\bibliographystyle{plainnat} % use this to have URLs listed in References
 \cleardoublepage
 \bibliography{References/references} % Path to your References.bib file
@@ -173,12 +173,12 @@
 
 % ********************************** Appendices ********************************
 
-% \begin{appendices} % Using appendices environment for more functunality
+\begin{appendices} % Using appendices environment for more functunality
 
 % \include{Appendix1/appendix1}
 % \include{Appendix2/appendix2}
 
-% \end{appendices}
+\end{appendices}
 
 % *************************************** Index ********************************
 \printthesisindex % If index is present

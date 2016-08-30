@@ -4,17 +4,18 @@
 %%                                                                            %%
 %% A PhD thesis LaTeX template for Cambridge University Engineering Department%%
 %%                                                                            %%
-%% Version: v2.2                                                              %%
+%% Version: v1.4.2                                                            %%
 %% Authors: Krishna Kumar                                                     %%
-%% License: MIT License (c) 2016 Krishna Kumar                                %%
+%% Date: 2013/11/16 (inception)                                               %%
+%% License: MIT License (c) 2013 Krishna Kumar                                %%
 %% GitHub Repo: https://github.com/kks32/phd-thesis-template/                 %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % ************************** Class Identification ******************************
-\newcommand\fileversion{2.2}
-\newcommand\filedate{2016/07/04}
+\newcommand\fileversion{1.4.2}
+\newcommand\filedate{2014/10/08}
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesClass{PhDThesisPSnPDF}[\filedate\space A PhD thesis class file
+\ProvidesClass{Classes/PhDThesisPSnPDF}[\filedate\space A PhD thesis class file
  by Krishna Kumar (v\fileversion)]
 \typeout{https://github.com/kks32/phd-thesis-template/}
 
@@ -182,7 +183,7 @@
 \newcommand\PHD@ptsize{12pt} %Set Default Size as 12
 
 \DeclareOption{10pt}{
-  \ClassWarning{PhDThesisPSnPDF}{The University of Cambridge PhD thesis guidelines
+  \ClassWarning{PhDThesisPSnPDF}{The Cambridge University PhD thesis guidelines
 recommend using a minimum font size of 11pt (12pt is preferred) and 10pt for
 footnotes.}
   \renewcommand\PHD@ptsize{10pt}
@@ -198,7 +199,7 @@ footnotes.}
 \DeclareOption{a4paper}{\renewcommand\PHD@papersize{a4paper}}
 \DeclareOption{a5paper}{\renewcommand\PHD@papersize{a5paper}}
 \DeclareOption{letterpaper}{
-  \ClassWarning{PhDThesisPSnPDF}{The University of Cambridge
+  \ClassWarning{PhDThesisPSnPDF}{The Cambridge University Engineering Deparment
     PhD thesis guidelines recommend using A4 or A5paper}
   \renewcommand\PHD@papersize{letterpaper}
 }
@@ -206,8 +207,7 @@ footnotes.}
 \PassOptionsToClass{\PHD@papersize}{book}%
 
 % Column layout
-\newif\if@oneside\@onesidefalse
-\DeclareOption{oneside}{\PassOptionsToClass{\CurrentOption}{book}\@onesidetrue}%
+\DeclareOption{oneside}{\PassOptionsToClass{\CurrentOption}{book}}%
 \DeclareOption{twoside}{\PassOptionsToClass{\CurrentOption}{book}}%
 
 % Draft Mode
@@ -270,19 +270,21 @@ supported!}
   \fi
 \fi
 
+
+
 % ******************************************************************************
 % ******************************** Packages ************************************
 % ******************************************************************************
 % ************************** Layout and Formatting *****************************
-
+\renewcommand\pdfshellescape{1}
 \RequirePackage{lscape}   % Supports Landscape Layout
 \RequirePackage{setspace} % Define line spacing in paragraph
-\RequirePackage{calc}     % calculate vertical spacing
+\RequirePackage{calc}     % To calculate vertical spacing
 
 % ************************* Conditional Statements *****************************
-\RequirePackage{ifthen}   % Conditional statements
+\RequirePackage{ifthen}  % conditional statements
 \RequirePackage{ifpdf}    % Check for pdfLaTeX
-\RequirePackage{ifxetex}  % XeLaTeX
+
 
 % *********************** Table of Contents & Appendices ***********************
 % add Bibliography, List of figures and tables to contents
@@ -305,16 +307,16 @@ supported!}
 % *************************** Graphics and Figures *****************************
 \RequirePackage[usenames, dvipsnames]{color}
 \ifpdf
-  % Convert eps figures to pdf
-  \RequirePackage{epstopdf}
-  \RequirePackage[pdftex]{graphicx}
-  \DeclareGraphicsExtensions{.png, .jpg, .pdf}
-  \pdfcompresslevel=9
-  \graphicspath{{Figs/Raster/}{Figs/}}
+        % Convert eps figures to pdf
+        \RequirePackage{epstopdf}
+        \RequirePackage[pdftex]{graphicx}
+	\DeclareGraphicsExtensions{.png, .jpg, .pdf}
+	\pdfcompresslevel=9
+	\graphicspath{{Figs/Raster/}{Figs/}}
 \else
-  \RequirePackage{graphicx}
-  \DeclareGraphicsExtensions{.eps, .ps}
-  \graphicspath{{Figs/Vector/}{Figs/}}
+	\RequirePackage{graphicx}
+	\DeclareGraphicsExtensions{.eps, .ps}
+	\graphicspath{{Figs/Vector/}{Figs/}}
 \fi
 
 
@@ -381,12 +383,12 @@ supported!}
 }%
 
 \AtBeginDocument{%
-  \patchBothAmsMathEnvironmentsForLineno{equation}%
-  \patchBothAmsMathEnvironmentsForLineno{align}%
-  \patchBothAmsMathEnvironmentsForLineno{flalign}%
-  \patchBothAmsMathEnvironmentsForLineno{alignat}%
-  \patchBothAmsMathEnvironmentsForLineno{gather}%
-  \patchBothAmsMathEnvironmentsForLineno{multline}%
+\patchBothAmsMathEnvironmentsForLineno{equation}%
+\patchBothAmsMathEnvironmentsForLineno{align}%
+\patchBothAmsMathEnvironmentsForLineno{flalign}%
+\patchBothAmsMathEnvironmentsForLineno{alignat}%
+\patchBothAmsMathEnvironmentsForLineno{gather}%
+\patchBothAmsMathEnvironmentsForLineno{multline}%
 }
 
 \fi % End \ifPDH@lineno
@@ -397,30 +399,23 @@ supported!}
 % Draft text
 \newcommand\drafttext{Draft}
 \renewcommand\SetDraftText[1]{%
-  \renewcommand\drafttext{#1}
-}
-
+  \renewcommand\drafttext{#1}}
 % Draft Version
 \newcommand\draftVersion{v1.0}
 \renewcommand\SetDraftVersion[1]{%
-  \renewcommand\draftVersion{#1}
-}
-
+  \renewcommand\draftVersion{#1}}
 % Draft Gray Scale
 \newcommand\draftGrayScale{0.75}
 \renewcommand\SetDraftGrayScale[1]{%
-  \renewcommand\draftGrayScale{#1}
-}
+  \renewcommand\draftGrayScale{#1}}
 
 % Draft Content
 \newcommand\DraftContent{%
-  \hspace*{\fill}
-  \Large
-  \textcolor[gray]{\draftGrayScale}{%
-    {\drafttext}\space-\space{\draftVersion}\hspace{\stretch{1}}{\PHD@daytime}
-    \hspace*{\fill}
-  }
-}
+\hspace*{\fill}
+\Large
+\textcolor[gray]{\draftGrayScale}{%
+{\drafttext}\space-\space{\draftVersion}\hspace{\stretch{1}}{\PHD@daytime}
+\hspace*{\fill}}}
 
 % Adding watermark in draft mode with time stamp
 \RequirePackage{everypage}
@@ -429,23 +424,23 @@ supported!}
 \newcommand\draftposition{top}
 \newcommand\draftnodeanchor{1in+\voffset-\topmargin}
 \AddEverypageHook{%
-  \begin{textblock*}{\paperwidth}[0.,2.5](0\paperwidth,\draftnodeanchor)
-    \DraftContent
-  \end{textblock*}
+\begin{textblock*}{\paperwidth}[0.,2.5](0\paperwidth,\draftnodeanchor)
+\DraftContent
+\end{textblock*}
 }
 
 % Conditional evaluation to position the draft water mark  (top / bottom)
 \renewcommand\SetDraftWMPosition[1]{%
   \renewcommand\draftposition{#1}
   \ifthenelse{\equal{\draftposition}{bottom}}
-    {\renewcommand\draftnodeanchor{\paperheight-\voffset}} %Bottom
-    {\ifthenelse{\equal{\draftposition}{top}}
-      {\renewcommand\draftnodeanchor{1in+\voffset-\topmargin}} %Top
-      {\ClassWarning{PDThesisPSnPDF}{Unrecognised draft position
-          using default value of top}
-        \renewcommand\draftnodeanchor{1in+\voffset-\topmargin}}} %Top
-    
-    \AddEverypageHook{%
+             {\renewcommand\draftnodeanchor{\paperheight-\voffset}} %Bottom
+             {\ifthenelse{\equal{\draftposition}{top}}
+               {\renewcommand\draftnodeanchor{1in+\voffset-\topmargin}} %Top
+               {\ClassWarning{PDThesisPSnPDF}{Unrecognised draft position
+                   using default value of top}
+                 \renewcommand\draftnodeanchor{1in+\voffset-\topmargin}}} %Top
+
+  \AddEverypageHook{%
     \begin{textblock*}{\paperwidth}[0.,2.5](0\paperwidth,\draftnodeanchor)
       \DraftContent
     \end{textblock*}
@@ -474,6 +469,7 @@ supported!}
 
 
 
+
 % ******************************* Bibliography *********************************
 \ifPHD@authoryear
   \ifPHD@biblatex
@@ -490,7 +486,7 @@ supported!}
         citestyle=numeric, sorting=none, natbib=true]{biblatex}
       \setBiBLaTeXtrue
     \else
-      \RequirePackage[numbers,compress]{natbib} % numbered citation
+      \RequirePackage[numbers,sort&compress]{natbib} % numbered citation
     \fi
   \else
     \ifuseCustomBib
@@ -510,7 +506,7 @@ supported!}
           citestyle=numeric, sorting=none, natbib=true]{biblatex}
         \setBiBLaTeXfalse
       \else
-        \RequirePackage[numbers,compress]{natbib} 
+        \RequirePackage[numbers,sort&compress]{natbib} 
       \fi % default
       \setBibfalse
     \fi % custombib
@@ -526,14 +522,11 @@ supported!}
   biblatex package with required style in the Preamble.tex file}
 \fi
 
-% ********************************** Fonts **********************************
+% *********************** To copy ligatures and Fonts **************************
 \RequirePackage{textcomp}
 % Font Selection
 \ifPHD@times
-  \ifxetex
-  \else
-    \RequirePackage{mathptmx}  % times roman, including math (where possible)
-  \fi
+  \RequirePackage{mathptmx}  % times roman, including math (where possible)
   \setFonttrue
   \message{PhDThesisPSnPDF: Using Times Roman font}
 \else
@@ -563,49 +556,23 @@ supported!}
   \RequirePackage{lmodern}
 \fi
 
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
 
-\ifxetex
-  % XeLaTeX
-  \usepackage{amsmath}
-  \usepackage{fontspec}
-  \usepackage[]{unicode-math}
-  \setmainfont[
-    Extension = .otf,
-    UprightFont = *-regular,
-    BoldFont = *-bold,
-    ItalicFont = *-italic,
-    BoldItalicFont = *-bolditalic,
-  ]{xits}
-  
-  \setmathfont[ 
-    Extension = .otf,
-    BoldFont = *bold,
-  ]{xits-math}
-  
-\else
-  % default: pdfLaTeX
-  \RequirePackage[utf8]{inputenc}
-  \RequirePackage[T1]{fontenc}
-  
-  % If building with PDFLaTeX, use microtype spacing adjustments
-  \RequirePackage[final]{microtype}
-  
-  \input{glyphtounicode}
-  \pdfglyphtounicode{f_f}{FB00}
-  \pdfglyphtounicode{f_i}{FB01}
-  \pdfglyphtounicode{f_l}{FB02}
-  \pdfglyphtounicode{f_f_i}{FB03}
-  \pdfglyphtounicode{f_f_l}{FB04}
-  \pdfgentounicode=1
-
-  \RequirePackage{amsfonts}
-  \RequirePackage{amsmath}
-  \RequirePackage{amssymb}
-\fi
+\input{glyphtounicode}
+\pdfglyphtounicode{f_f}{FB00}
+\pdfglyphtounicode{f_i}{FB01}
+\pdfglyphtounicode{f_l}{FB02}
+\pdfglyphtounicode{f_f_i}{FB03}
+\pdfglyphtounicode{f_f_l}{FB04}
+\pdfgentounicode=1
 
 % Don't break enumeration (etc.) across pages in an ugly manner
 \clubpenalty=10000
 \widowpenalty=10000
+
+% If building with PDFLaTeX, use microtype spacing adjustments
+\RequirePackage[final]{microtype}
 
 %******************************* Print / Online ********************************
 % Defines a print / online version to define page-layout and hyperrefering
@@ -614,81 +581,81 @@ supported!}
 % Based on the suggestion by John Plaice
 
 \ifsetDVI
-  \special{papersize=\the\paperwidth,\the\paperheight}
-  \RequirePackage[unicode=true]{hyperref}  % extra option dvips
+\special{papersize=\the\paperwidth,\the\paperheight}
+\RequirePackage[dvips,unicode=true]{hyperref}
 \else
-  \RequirePackage[unicode=true]{hyperref}
-  \pdfpagewidth=\the\paperwidth
-  \pdfpageheight=\the\paperheight
+\RequirePackage[unicode=true]{hyperref}
+\pdfpagewidth=\the\paperwidth
+\pdfpageheight=\the\paperheight
 \fi
 
 \if@print
-  % For Print version
-  \hypersetup{
-    final=true,
-    plainpages=false,
-    pdfstartview=FitV,
-    pdftoolbar=true,
-    pdfmenubar=true,
-    bookmarksopen=true,
-    bookmarksnumbered=true,
-    breaklinks=true,
-    linktocpage,
-    colorlinks=true,
-    linkcolor=black,
-    urlcolor=black,
-    citecolor=black,
-    anchorcolor=black
-  }
-  \ifsetCustomMargin
-  % Margin to be define in preamble using geometry package
-  \else
-    \ifsetDVI
-      % Odd and Even side Margin for binding and set viewmode for PDF
-      \RequirePackage[dvips,paper=\PHD@papersize,hmarginratio=1:1,
-        vmarginratio=1:1,scale=0.75,bindingoffset=5mm]{geometry}
-    \else
-      \RequirePackage[pdftex,paper=\PHD@papersize,hmarginratio=1:1,
-        vmarginratio=1:1,scale=0.75,bindingoffset=5mm]{geometry}
-    \fi
-  \fi
-
-  \if@twoside
-    \hypersetup{pdfpagelayout=TwoPageRight}
-  \else
-    \hypersetup{pdfpagelayout=OneColumn}
-  \fi
-
-\else
-  % For PDF Online version
-  \hypersetup{
-    final=true,
-    plainpages=false,
-    pdfstartview=FitV,
-    pdftoolbar=true,
-    pdfmenubar=true,
-    bookmarksopen=true,
-    bookmarksnumbered=true,
-    breaklinks=true,
-    linktocpage,
-    colorlinks=true,
-    linkcolor=blue,
-    urlcolor=blue,
-    citecolor=blue,
-    anchorcolor=green
-  }
-
-  \ifsetCustomMargin
+    % For Print version
+    \hypersetup{
+      final=true,
+      plainpages=false,
+      pdfstartview=FitV,
+      pdftoolbar=true,
+      pdfmenubar=true,
+      bookmarksopen=true,
+      bookmarksnumbered=true,
+      breaklinks=true,
+      linktocpage,
+      colorlinks=true,
+      linkcolor=black,
+      urlcolor=black,
+      citecolor=black,
+      anchorcolor=black
+    }
+    \ifsetCustomMargin
     % Margin to be define in preamble using geometry package
     \else
-      % No Margin staggering on Odd and Even side
-      \ifsetDVI
-        \RequirePackage[paper=\PHD@papersize,hmarginratio=1:1,
-          vmarginratio=1:1,scale=0.75]{geometry} % dvips
-      \else
-        \RequirePackage[pdftex,paper=\PHD@papersize,hmarginratio=1:1,
+        \ifsetDVI
+        % Odd and Even side Margin for binding and set viewmode for PDF
+	\RequirePackage[dvips,paper=\PHD@papersize,hmarginratio=1:1,
+          vmarginratio=1:1,scale=0.75,bindingoffset=5mm]{geometry}
+        \else
+	\RequirePackage[pdftex,paper=\PHD@papersize,hmarginratio=1:1,
+          vmarginratio=1:1,scale=0.75,bindingoffset=5mm]{geometry}
+        \fi
+    \fi
+
+    \if@twoside
+        \hypersetup{pdfpagelayout=TwoPageRight}
+    \else
+    	\hypersetup{pdfpagelayout=OneColumn}
+    \fi
+
+\else
+    % For PDF Online version
+    \hypersetup{
+      final=true,
+      plainpages=false,
+      pdfstartview=FitV,
+      pdftoolbar=true,
+      pdfmenubar=true,
+      bookmarksopen=true,
+      bookmarksnumbered=true,
+      breaklinks=true,
+      linktocpage,
+      colorlinks=true,
+      linkcolor=blue,
+      urlcolor=blue,
+      citecolor=blue,
+      anchorcolor=green
+    }
+
+    \ifsetCustomMargin
+    % Margin to be define in preamble using geometry package
+    \else
+	% No Margin staggering on Odd and Even side
+        \ifsetDVI
+	\RequirePackage[dvips,paper=\PHD@papersize,hmarginratio=1:1,
           vmarginratio=1:1,scale=0.75]{geometry}
-      \fi
+        \else
+	\RequirePackage[pdftex,paper=\PHD@papersize,hmarginratio=1:1,
+          vmarginratio=1:1,scale=0.75]{geometry}
+        \fi
     \fi
 
     \hypersetup{pdfpagelayout=OneColumn}
@@ -712,12 +679,10 @@ supported!}
 % option to split urls over multiple lines for latex >> DVIPS >> PDF option
 % PDFLaTeX does it automatically.
 
-\ifxetex % XeTeX doesn't require breakurl only dvi requires break url
-\else
-  \ifsetDVI
-    \RequirePackage{breakurl} % to split the url over multiple lines
-  \fi
-\fi  
+\ifsetDVI
+\RequirePackage{breakurl} % to split the url over multiple lines
+\fi
+
 
 % ******************************************************************************
 % **************************** Pre-defined Settings ****************************
@@ -837,6 +802,27 @@ wish to left align your text}
 	\if@twocolumn\hbox{}\newpage\fi\fi\fi}
 
 
+% ******************************** Roman Pages *********************************
+% The romanpages environment set the page numbering to lowercase roman one
+% for the contents and figures lists. It also resets
+% page-numbering for the remainder of the dissertation (arabic, starting at 1).
+
+\newenvironment{romanpages}{
+  \setcounter{page}{1}
+  \renewcommand{\thepage}{\roman{page}}}
+{\newpage\renewcommand{\thepage}{\arabic{page}}}
+
+% ******************************* Appendices **********************************
+% Appending the appendix name to the letter in TOC
+% Especially when backmatter is enabled
+
+%\renewcommand\backmatter{
+%    \def\chaptermark##1{\markboth{%
+%        \ifnum  \c@secnumdepth > \m@ne  \@chapapp\ \thechapter:  \fi  ##1}{%
+%        \ifnum  \c@secnumdepth > \m@ne  \@chapapp\ \thechapter:  \fi  ##1}}%
+%    \def\sectionmark##1{\relax}}
+
+
 % ******************************************************************************
 % **************************** Macro Definitions *******************************
 % ******************************************************************************
@@ -852,8 +838,8 @@ wish to left align your text}
 \newcommand{\degreedate}[1]{\renewcommand{\@degreedate}{#1}}
 
 % The full (unabbreviated) name of the degree
-\newcommand{\@degreetitle}{}
-\newcommand{\degreetitle}[1]{\renewcommand{\@degreetitle}{#1}}
+\newcommand{\@degree}{}
+\newcommand{\degree}[1]{\renewcommand{\@degree}{#1}}
 
 % The name of your department(eg. Engineering, Maths, Physics)
 \newcommand{\@dept}{}
@@ -871,31 +857,9 @@ wish to left align your text}
 \newcommand{\@crest}{}
 \newcommand{\crest}[1]{\renewcommand{\@crest}{#1}}
 
-% Defining the college crest
-\newif\ifPHD@collegeshield\PHD@collegeshieldfalse
-\newcommand{\@collegeshield}{}
-\newcommand{\collegeshield}[1]{\renewcommand{\@collegeshield}{#1}\PHD@collegeshieldtrue}
-
-% Supervisor
-\newif\ifPHD@supervisor\PHD@supervisorfalse
-\newcommand{\@supervisor}{}
-\newcommand{\supervisor}[1]{\renewcommand{\@supervisor}{#1}\PHD@supervisortrue}
-
-% Supervisor Title (Supervisor - Default, can be changed)
-\newcommand{\@supervisorrole}{Supervisor: }
-\newcommand{\supervisorrole}[1]{\renewcommand{\@supervisorrole}{#1}}
-
-% Advisor
-\newif\ifPHD@advisor\PHD@advisorfalse
-\newcommand{\@advisor}{}
-\newcommand{\advisor}[1]{\renewcommand{\@advisor}{#1}\PHD@advisortrue}
-
-% Advisor Title (Advisor - Default, can be changed)
-\newcommand{\@advisorrole}{Advisor: }
-\newcommand{\advisorrole}[1]{\renewcommand{\@advisorrole}{#1}}
-
 % Submission Text
 \newcommand{\submissiontext}{This dissertation is submitted for the degree of }
+
 
 % keywords (These keywords will appear in the PDF meta-information
 % called `pdfkeywords`.)
@@ -928,72 +892,96 @@ wish to left align your text}
 % *************************** Front Matter Layout ******************************
 % ******************************************************************************
 
+% ******************************** titlepage  **********************************
+
+% Fix issue of title page having same number as the next page in oneside option
+% Issue #24 https://github.com/kks32/phd-thesis-template/issues/24
+\renewenvironment{titlepage} % changed from "newenvironment"
+{%
+\begingroup
+\if@twocolumn
+    \@restonecoltrue\onecolumn
+\else
+    \@restonecolfalse\newpage
+\fi
+    \thispagestyle{empty}
+    \setcounter{page}\z@
+}%
+{
+\if@restonecol
+    \twocolumn
+\else 
+    \newpage 
+\fi 
+\endgroup
+\clearpage
+\addtocounter{page}{1}
+}
+
+
 % ******************************** Title Page **********************************
 \renewcommand{\maketitle}{
 
 % To compute the free vertical space in Title page
 \computeTitlePageSpacing
 
-\thispagestyle{empty}
+% Fix for issue #24 https://github.com/kks32/phd-thesis-template/issues/24
+\renewcommand*{\thepage}{i}
 
 \begin{singlespace}
 \begin{center}
-
-% University Crest Long if college crest is defined
-\ifPHD@collegeshield%
-	{\usebox{\PHD@crest}}
-	\vspace{.15\PHD@titlepagespacing}
-\fi
-
 % Title
-{\usebox{\PHD@Title}} % subtitle is defined
+{\Huge \bfseries{\@title} \par}
+\ifthenelse{\equal{\@subtitle}{}}{
+% subtitle is not defined
+}{
+\vspace*{1em}
+\centering \Large {\@subtitle}
+} % subtitle is defined
 
+\vspace{.25\PHD@titlepagespacing}
 
 % Crest
-
-\ifPHD@collegeshield%
-	\vspace{.15\PHD@titlepagespacing}
-	{\usebox{\PHD@collegecrest}}
-	\vspace{.1\PHD@titlepagespacing}
-\else
-	\vspace{.25\PHD@titlepagespacing}
-	{\usebox{\PHD@crest}}
-	\vspace{.15\PHD@titlepagespacing}
-\fi
-
-
+{\@crest \par}
+\vspace{.2\PHD@titlepagespacing}
 
 % Author
-{\usebox{\PHD@author}}
+{\Large \bfseries{\@author} \par}
 \vspace*{1em}
 
-% Supervisor
-\ifPHD@supervisor%
-{\usebox{\PHD@supervisor}}
-\vspace*{0.5em}
-\fi
-
-% Advisor
-\ifPHD@advisor%
-{\usebox{\PHD@advisor}}
-\vspace*{0.5em}
-\fi
-
 % Department and University
-{\usebox{\PHD@dept}}
+{\large \@dept \par}
+\vspace*{1ex}
+{\large \@university \par}
 \vspace{.2\PHD@titlepagespacing}
 
 % Submission Text
-{\usebox{\PHD@submission}}
+{\large \submissiontext \par}
+\vspace*{1ex}
+{\large \textit {\@degree} \par}
 
-% College and degree date
-\vfill
-{\usebox{\PHD@collegedate}}
-    
+
 \end{center}
-
+\vfill
+\large
+\begin{minipage}[c]{\textwidth}
+\ifthenelse{\equal{\@college}{}}{
+% college is not defined
+\centering
+\@degreedate
+}{
+% college is defined
+\begin{minipage}{0.45\textwidth}
+\flushleft\@college
+\end{minipage}
+\begin{minipage}{0.45\textwidth}
+\flushright \@degreedate
+\end{minipage}
+} % college is defined
+\end{minipage}
 \end{singlespace}
 }
+
 
 % ********************************* Dedication *********************************
 % The dedication environment makes sure the dedication gets its
@@ -1042,7 +1030,7 @@ wish to left align your text}
 
 
 % ******************************* Nomenclature *********************************
-\RequirePackage[intoc]{nomencl}
+\RequirePackage{nomencl}
 \makenomenclature
 \renewcommand{\nomgroup}[1]{%
 \ifthenelse{\equal{#1}{A}}{\item[\textbf{Roman Symbols}]}{%
@@ -1050,7 +1038,7 @@ wish to left align your text}
 \ifthenelse{\equal{#1}{Z}}{\item[\textbf{Acronyms / Abbreviations}]}{%
 \ifthenelse{\equal{#1}{R}}{\item[\textbf{Superscripts}]}{%
 \ifthenelse{\equal{#1}{S}}{\item[\textbf{Subscripts}]}{%
-\ifthenelse{\equal{#1}{X}}{\item[\textbf{Other Symbols}]}
+\ifthenelse{\equal{#1}{X}}{\item[\textbf{Other Symbols}]}%
 {}
 }% matches mathematical symbols > X
 }% matches Subscripts           > S
@@ -1067,7 +1055,7 @@ wish to left align your text}
 \ifthenelse{\equal {#1}{}}
 {\printnomenclature}
 {\printnomenclature[#1]}
-%\addcontentsline{toc}{chapter}{\nomname}
+\addcontentsline{toc}{chapter}{\nomname}
 }
 
 
@@ -1126,23 +1114,24 @@ wish to left align your text}
 \newenvironment{abstract} {
 \ifPHD@abstract
 % Separate abstract as per Student Registry guidelines
-  \thispagestyle{empty}
-  \setsinglecolumn
-  \begin{center}
-    { \Large {\bfseries {\@title}} \par}
-    {{\large \vspace*{1em} \@author} \par}
-  \end{center}
+	\thispagestyle{empty}
+	\setsinglecolumn
+	\begin{center}
+		{ \Large {\bfseries {\@title}} \par}
+		{{\large \vspace*{1em} \@author} \par}
+	\end{center}
+
 \else
 % Normal abstract in the thesis
-  \cleardoublepage
-  \setsinglecolumn
-  \chapter*{\centering \Large Abstract}
-  \thispagestyle{empty}
+	\cleardoublepage
+	\setsinglecolumn
+	\chapter*{\centering \Large Abstract}
+	\thispagestyle{empty}
 \fi
 }
 
 
-% ******************** To compute empty space in title page *******************
+% ******************** To compute empty space in title page ********************
 % Boxes below are used to space different contents on the title page
 % Based on https://github.com/cambridge/thesis
 
@@ -1152,106 +1141,70 @@ wish to left align your text}
 % Title Box
 \newsavebox{\PHD@Title}
 \begin{lrbox}{\PHD@Title}
-  \begin{minipage}[c]{0.98\textwidth}
-    \centering \Huge \bfseries{\@title}
-    \ifthenelse{\equal{\@subtitle}{}}{
-      % subtitle is not defined
-    }{
-      \\
-      \centering \Large {\@subtitle}
-    } % subtitle is defined
-  \end{minipage}
+\begin{minipage}[c]{0.98\textwidth}
+\centering \Huge \bfseries{\@title}
+\ifthenelse{\equal{\@subtitle}{}}{
+% subtitle is not defined
+}{
+\vspace*{1em}
+\centering \Large {\@subtitle}
+} % subtitle is defined
+\end{minipage}
 \end{lrbox}
 
 % University Crest Box
 \newsavebox{\PHD@crest}
 \begin{lrbox}{\PHD@crest}
-  {\@crest \par}
-\end{lrbox}
-
-\newsavebox{\PHD@collegecrest}
-\begin{lrbox}{\PHD@collegecrest}
-  \ifPHD@collegeshield%
-    {\@collegeshield}
-  \else
-    % College shield is undefined
-  \fi
+\@crest
 \end{lrbox}
 
 % Author Box
 \newsavebox{\PHD@author}
 \begin{lrbox}{\PHD@author}
-  \begin{minipage}[c]{\textwidth}
-    \centering \Large \bfseries{\@author}
-      \vspace{0.5em}   
-  \end{minipage}
-\end{lrbox}
-
-% Supervisor Box
-\newsavebox{\PHD@supervisor}
-\begin{lrbox}{\PHD@supervisor}
-  \begin{minipage}[c]{\textwidth}
-    \ifthenelse{\equal{\@supervisor}{}}{
-      % supervisor is not defined
-    }{
-      \centering \Large {\@supervisorrole \parbox[t]{0.4\textwidth}{\@supervisor}}
-      \vspace{0.5em}
-    } % supervisor is defined
-  \end{minipage}
-\end{lrbox}
-
-% Advisor Box
-\newsavebox{\PHD@advisor}
-\begin{lrbox}{\PHD@advisor}
-  \begin{minipage}[c]{\textwidth}
-    \ifthenelse{\equal{\@advisor}{}}{
-      % advisor is not defined
-    }{
-      \centering \Large {\@advisorrole \parbox[t]{0.4\textwidth}{\@advisor}}
-      \vspace{0.5em}
-    } % advisor is defined
-  \end{minipage}
+\begin{minipage}[c]{\textwidth}
+\centering \Large \bfseries{\@author}
+\end{minipage}
 \end{lrbox}
 
 % Department Box
 \newsavebox{\PHD@dept}
 \begin{lrbox}{\PHD@dept}
-  \begin{minipage}[c]{\textwidth}
-    \centering {\large \@dept \par}
-	       {\large \@university \par}
-  \end{minipage}
+\begin{minipage}[c]{\textwidth}
+\centering {\large \@dept \par}
+\vspace*{1em}
+{\large \@university \par}
+\end{minipage}
 \end{lrbox}
 
 % Submission Box
 \newsavebox{\PHD@submission}
 \begin{lrbox}{\PHD@submission}
-  \begin{minipage}[c]{\textwidth}
-    \begin{center}
-      \large \submissiontext \par
-      \large \textit {\@degreetitle} \par
-    \end{center}
-  \end{minipage}
+\begin{minipage}[c]{\textwidth}
+\begin{center}
+\large \submissiontext \par
+\vspace*{1ex}
+\large \textit {\@degree} \par
+\end{center}
+\end{minipage}
 \end{lrbox}
 
 % College and Date Box
 \newsavebox{\PHD@collegedate}
 \begin{lrbox}{\PHD@collegedate}
 \begin{minipage}[c]{\textwidth}
-  \large
-  \ifthenelse{\equal{\@college}{}}{
-    % college is not defined
-    \begin{center}
-      \@degreedate
-    \end{center}
-  }{
-    % college is defined
-    \begin{minipage}[b]{0.49\textwidth}
-      \flushleft\@college
-    \end{minipage}
-    \begin{minipage}[b]{0.49\textwidth}
-      \flushright \@degreedate
-    \end{minipage}
-  } % college is defined
+\large
+\ifthenelse{\equal{\@college}{}}{
+% college is not defined
+\@degreedate
+}{
+% college is defined
+\begin{minipage}{0.45\textwidth}
+\flushleft\@college
+\end{minipage}
+\begin{minipage}{0.45\textwidth}
+\flushright \@degreedate
+\end{minipage}
+} % college is defined
 \end{minipage}
 \end{lrbox}
 
@@ -1260,13 +1213,9 @@ wish to left align your text}
 \setlength{\PHD@titlepagespacing}{ \textheight %
 			- \totalheightof{\usebox{\PHD@Title}}
 			- \totalheightof{\usebox{\PHD@crest}}
-			- \totalheightof{\usebox{\PHD@collegecrest}}
 			- \totalheightof{\usebox{\PHD@author}}
-                   	- \totalheightof{\usebox{\PHD@supervisor}}
-                   	- \totalheightof{\usebox{\PHD@advisor}}
 			- \totalheightof{\usebox{\PHD@dept}}
 			- \totalheightof{\usebox{\PHD@submission}}
 			- \totalheightof{\usebox{\PHD@collegedate}}
 }
 }
-
