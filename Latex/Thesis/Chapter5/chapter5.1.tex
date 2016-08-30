@@ -1,17 +1,19 @@
-\chapter{Video Reconstruction}
+\chapter{Extensions for Video Signals}
 \label{ch:video}
-In this chapter, we explain how to use the MSCE algorithm in \cite{pilikos2014} to reconstruct masked video signals.
+This chapter contains some further considerations that need to be made when extending the discussed algorithms to three-dimensional signals.
 
-Throughout this chapter, we assume that $\bm v$ is a video signal of size $r\times c\times f$ ($r$ rows, $c$ columns and $f$ frames), where $r=2^{q_1}$, $c=2^{q_2}$ and $f=2^{q_3}$.
+We explain how to construct three-dimensional basis corresponding to the 3-D Discrete Wavelet Transform and provide a discussion of their properties in the context of video signals.
 
-First, we explain how to extend the basis functions that were discussed in Chapter \ref{ch:dwt} to three dimensions.
+We also explain the vectorization scheme that was employed in our implementation and describe how to construct the corresponding basis matrix $\bm\Psi$.
+
+Finally, we provide a quick summary of our implementation.
 
 \section{Three-Dimensional Basis Functions}
 \subsection{Haar Wavelets for Videos}
-A straightforward way of approaching the Discrete Wavelet Transform of a video would be to simply perform the two-dimensional DWT on each individual frame. 
+A straightforward way of approaching the Discrete Wavelet Transform of a video would be to perform the two-dimensional DWT on each individual frame. 
 This ``pseudo 3D'' approach is relatively simple, but typically also very inefficient.
-Usually, we expect there to be continuity between successive frames of a video.
-The pseudo 3D approach does not allow us to exploit any of the temporal correlations that are common in video signals.
+We expect there to be continuity between successive frames of a video.
+The pseudo 3D approach does not let us exploit any of the temporal correlations that are common in video signals.
 
 A better approach would be to perform a full 3-D wavelet decomposition using three-dimensional scaling and wavelet functions.
 In 3-D, we have one scaling function $\phi(x,y,t)$ and a total of $2^3-1=7$ wavelet functions.
@@ -22,6 +24,10 @@ These can be obtained by multiplying the 2-D functions in (\ref{eqn:2d_haar_wave
     \psi^H(x,y,t) &=\phi(t) \phi(x) \psi(y) \\
     \psi^V(x,y,t) &=\phi(t) \psi(x) \phi(y) \\
     \psi^D(x,y,t) &=\phi(t) \psi(x) \psi(y) \\
+  \end{split}
+\end{equation*}
+\begin{equation*}
+  \begin{split}
     \psi^T(x,y,t) &= \psi(t) \phi(x) \phi(y)\\
     \psi^{HT}(x,y,t) &=\psi(t) \phi(x) \psi(y) \\
     \psi^{VT}(x,y,t) &=\psi(t) \psi(x) \phi(y) \\
@@ -251,20 +257,21 @@ The functions are zero outside of the cube.}
 \end{figure}
 
 Figure \ref{fig:haar_3d} shows the 3-D scaling and wavelet functions for the Haar wavelets.
-To obtain the basis functions corresponding to the 3-D Haar wavelet domain, we compute scaled and shifted versions of these functions as in:% (\ref{eqn:haar_scaling_basis}) and (\ref{eqn:haar_wavelet_basis}).
+To obtain the basis functions corresponding to the 3-D Haar wavelet domain, we compute scaled and shifted versions of these functions:% (\ref{eqn:haar_scaling_basis}) and (\ref{eqn:haar_wavelet_basis}).
 \begin{equation*}
   \phi_{k_1,k_2,k_3}^j(x,y,t) = 2^{3j/2} \phi(2^j t - k_3)\phi(2^j x - k_1) \phi(2^j y - k_2)
 \end{equation*}
 
-At the first scale, the 3-D wavelet decomposition of a video results in 8 channels: one corresponding to a low-pass filter, and 7 corresponding to high-pass filters in various directions (see Figure \ref{fig:3d_channels}).
+At the first scale, the 3-D wavelet decomposition of a video results in 8 distinct channels: one corresponding to a low-pass filter, and 7 corresponding to high-pass filters in various directions.
+The approximation and detail coefficients of the various filters will be arranged as in Figure \ref{fig:3d_channels}.
 
 For the Haar wavelets, the high-pass filters act as edge detectors, just like in the 2-D case. 
 However, on top of detecting edges along spatial directions, we also get high-pass filters that detect sudden changes in the temporal direction, i.e. motion detectors.
 
 As an example, consider Figure \ref{fig:3d_dwt}.
 In panels (a) and (b), we show two adjacent frames of the ``soccer'' test video.
-We perform the 3-D Haar DWT at the first scale and arrange the coefficients as in Figure \ref{fig:3d_channels}.
-At the first scale, the 3-D Haar basis functions only have support over a $2\times 2\times 2$ volume.
+We perform the 3-D DWT using Haar basis functions at the first scale.
+At scale one, the 3-D Haar basis functions have support over a $2\times 2\times 2$ volume.
 Thus, all the DWT coefficients that are affected by the data in frames 11 and 12 of the original video, are contained within two ``frames'', or ``slices'', of the transformed signal.
 For frames 11 and 12 of the original 64-frame video, these slices are at positions $12/2=6$ and $(6+64)/2=38$ in the transformed video.
 
@@ -273,25 +280,28 @@ The top left corner corresponds to the low-pass filter $LLL$ and can be regarded
 
 Panel (d), shows the four channels associated with a high-pass filter in the temporal direction.
 The $HLL$ channel (top left corner of panel (d)) picks up overall differences in adjacent frames.
-In this example, we note that it detects the motion of the football players and the ball, (as well as a slight motion of the backgrund due to the panning of the camera).
+In this example, we note that it detects the motion of the football players and the ball, (as well as a slight motion of the background due to the panning of the camera).
 The remaining channels in panel (d) combine motion detection with edge detection.
 
 \subsection{Three-Dimensional DCT}
-The seperability property of the DCT makes the extension to three dimensions straightforward.
+The separability property of the DCT makes the extension to three dimensions straightforward.
 To compute the DCT of a video, we first compute the 2-D DCT for each individual frame of the video followed by a 1-D DCT across the temporal axis for each pixel.
 The DCT basis functions (\ref{eqn:dct_basis}) in 3-D are characterised by a horizontal and vertical spatial frequency, as well as an additional temporal frequency component.
 
-\section{Basis Matrix for Three-Dimensional Signals}
-We vectorize $\bm v$ by first vectorizing each individual frame in a row-major fashion (see Section \ref{sect:vectorize2d}), followed by stacking the vectorized frames on top of each other.
-The result $\bm v^V$ is a long vector of length $rcf$.
+\section{Basis Matrix \texorpdfstring{$\bm\Psi$}{[Psi]} for Three-Dimensional Signals}
+Let $\bm V$ is a video signal of size $r\times c\times f$ ($r$ rows, $c$ columns and $f$ frames), where $r=2^{q_1}$, $c=2^{q_2}$ and $f=2^{q_3}$.
 
+We vectorize $\bm V$ by first vectorizing each individual frame in a row-major fashion (see Section \ref{sect:vectorize2d}), followed by stacking the vectorized frames on top of each other.
+The result $\bm v$ is a long vector of length $rcf$.
+
+\subsubsection{DCT}
 The basis matrix corresponding to the DCT is given by 
 \begin{equation*}
   \bm\Psi = \bm\Psi_f\otimes\bm\Psi_c\otimes\bm\Psi_r
 \end{equation*}
 where $\bm\Psi_r$, $\bm\Psi_c$ and $\bm\Psi_f$ are the DCT basis matrices for 1-D signals (\ref{eqn:idct_basis}) of length $r$, $c$ and $f$, respectively.
-See equation (\ref{eqn:kron}) for a definition of the Kronecker product $\otimes$.
 
+\subsubsection{Haar}
 The Haar basis matrix for video signals at scale 1 is constructed as follows:
 \begin{equation*}
   \bm\Psi = 
@@ -338,13 +348,14 @@ The full basis matrix is
 $}
 \end{equation*}
 
-The size of the basis matrices is $(rcf)\times (rcf)$. 
-Even for relatively small signals, these matrices can be prohibitively large.
-We address this problem in Chapter \ref{ch:code}.
+The size of these basis matrices is $(rcf)\times (rcf)$. 
 
+\section{Video Reconstruction}
+All the theoretical building blocks that underlie our implementation are now in place.
+We have developed a code that can efficiently reconstruct a video signal $\bm v$ from a set of CS measurements $\bm y$.
+In order to do so, it uses the BCS algorithm, representing the signal either in the DCT domain or in the Haar wavelet domain.
 
-\section{Video Interpolation}
-Once we have successfully created a vectorization scheme for the video signal $\bm v$ and constructed the Haar basis matrices $\bm\Psi$ for the desired scales, we can apply to MSCE to reconstruct masked video signals.
+If the sensing mechanism is a signal mask, we can obtain an additional performance boost over the BCS by calling the MSCE algorithm.
 
 \begin{figure}
   \centering
@@ -379,26 +390,9 @@ Once we have successfully created a vectorization scheme for the video signal $\
   \label{fig:foreman_masked}
 \end{figure}
 
-We pass the measured pixel values $\bm y$ and the design matrix $\bm\Phi = \bm\Theta\bm\Psi$ (where $\bm\Theta$ is the video mask) t
-o Algorithm \ref{alg3}.
-The output will be an interpolated video that hopefully recovers very fine details across the entire signal.
-
-Figure \ref{fig:foreman_masked}, we show two example frames of the test video ``foreman''.
+In Figure \ref{fig:foreman_masked}, we show two example frames of the test video ``foreman''.
 Panels (a) and (b) show the undersampled signal $\bm y$.
-Panels (c) and (d) show the output of the MSCE algorithm.
+Panels (c) and (d) show the output of our reconstruction algorithm (using the MSCE with two cascades in this example).
 For reference, we have also included the frames from the original video in panels (e) and (f).
 
-Further test results of this method are shown in Chapter \ref{ch:results}.
-
-\section{Video Reconstruction from general CS measurements}
-Unfortunetaly the MSCE don't work for general sensing matrices because it was designed specifically to deal with the problem of `black pixels vs blurriness'.
-
-The problem is that the basis functions that the RVM works are actually (random) linear combinations of the DWT basis functions.
-We want to get error bars on the reconstructed pixels, but the pixels are in a different ``domain'' as the CS measurements. 
-So we cannot trust those errors.
-
-If we can make additional measurements (random projection), we \emph{can} use the error bars to select optimal random projections \cite{ji2008}. 
-
-To allow reconstruction of video from general CS measurements, we have also implemented the BCS algorithm [add alg box?].
-In ch 8, we compare performance between different sensors (for masks, use both algorithms).
-Also look at how block size and basis function choice affect performance for random sensors.
+Further test results are given in Chapter \ref{ch:results}.
