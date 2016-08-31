@@ -68,7 +68,7 @@ Using BCS, our implementation is able to reconstruct video signals from a small 
 
 \section{The Case when \texorpdfstring{$\bm\Theta$}{[Theta]} is a Signal Mask}
 
-\subsection{Image Interpolation}
+\subsection{Signal Interpolation}
 \begin{figure}
   \centering
   \includegraphics[width=0.6\textwidth]{Chapter5/Images/lenna_MASKED.png}
@@ -84,6 +84,7 @@ In this context, the design matrix $\bm\Phi$ can be computed efficiently from $\
 Moreover, it is possible to get a slight performance boost in the reconstruction by filling in the BCS solution $\bm{\hat v}$ (\ref{eqn:bcs_recover}) with the measured at data $\bm y$ at the appropriate locations.
 
 \subsection{Reconstruction using Haar Wavelets}
+\label{sect:interpol_haar}
 Using the BCS model from above with a Haar basis matrix, we reconstruct the image in Figure \ref{fig:lenna_mask}.
 We display the output in Figure \ref{fig:lenna_rvm} for various scales of the Haar basis.
 \begin{figure}

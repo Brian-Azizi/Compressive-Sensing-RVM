@@ -15,7 +15,11 @@ In order to deal with the large memory requirements of the algorithm, the recons
 We have also implemented the method as a distributed program, resulting in dramatically reduced execution times.
 
 Future research could improve performance by extending these methods in various ways.
+In order to fully harness the power of the MSCE for video interpolation, the implentation should be extended to accommodate different kinds of wavelets.
+Using the simple Haar wavelets, the MSCE struggles to outperform a BCT that uses DCT basis functions.
+It only shows its advantage in extremely undersampled situations ($N < 0.2M$).
 Alternative sets of waveles, such as the CDF-9/7 wavelet that is used by the JPEG2000 format, may lead to sparser representations of the video signals. 
+
 Furthermore, the speed of the algorithm can be increased by using a multi-threaded implementation of the Sequential Sparse Bayesian Learning Algorithm. 
 
 Development of Bayesian approaches to Compressive Sensing systems is an active area of research.
