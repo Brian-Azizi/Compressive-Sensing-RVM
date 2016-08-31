@@ -206,7 +206,7 @@ Equivalently, $\bm w$ is $K$-sparse if
 If $p=0$ we can define the $\ell_0$ ``norm'' of $\bm z$ to be the number of its non-zero entries:
 \begin{equation*}
 \label{eqn:l0-norm}
-  ||\bm z||_0 \equiv  \sum_{i=1}^n \mathbbm{1}\{z_j \neq 0\}
+  ||\bm z||_0 \equiv  \sum_{i=1}^n \mathbbm{1}\{z_j \neq 0\}.
 \end{equation*}
 }
 $||\bm w||_0 = K$.
@@ -251,7 +251,7 @@ We will not go into the theoretical details of designing an optimal CS measureme
 \begin{description}
 \item[Gaussian:] Form $\bm\Theta$ by sampling its entries $\theta_{ij}$ independently from the Gaussian distribution with mean zero and variance $1/M$: $\theta_{ij}\, \stackrel{iid}{\sim}\, \mathcal{N}(0,1/M)$.
 \item[Bernoulli:] Sample the entries $\theta_{ij}$ independently from a symmetric Bernoulli distribution, $P(\theta_{ij} = \pm 1/\sqrt{M}) = 1/2$. 
-\item[Signal Mask:] Form $\bm\Theta$ by starting with the $M\times M$ identity matrix $I_M$ and deleting $M-N$ of its rows at random. This sensing matrix corresponds to measuring a down-sampled version of the signal $\bm v$ directly. Throughout the thesis, will refer to such sensing matrices as ``signal masks''. 
+\item[Signal Mask:] Form $\bm\Theta$ by starting with the $M\times M$ identity matrix $I_M$ and deleting $M-N$ of its rows at random. This sensing matrix corresponds to measuring a down-sampled version of the signal $\bm v$ directly. Throughout the thesis, we refer to such sensing matrices as \emph{signal masks}. 
 \end{description}
 
 \subsection{Signal Recovery}
@@ -276,9 +276,7 @@ In practice, signals $\bm v$ usually only have an almost-sparse representation.
 Thus, the reconstruction is not completely exact and the solution $\bm{\hat v}$ will be a close approximation to $\bm v$.
 
 A large part of the CS literature is focused on developing algorithms that recover a signal $\bm v$ from a set CS measurement $\bm y$, either by solving (\ref{eqn:cs_l1}) or through some alternative route.
-
 For a discussion and comparison of some of the most widely used algorithms, see \cite{pilikos2014}.
 
-In Chapter \ref{ch:msce} we will approach the CS signal reconstruction problem from a Bayesian perspective.
-Before we do so, however, we need to introduce the Sparse Bayesian Learning framework (Chapter \ref{ch:rvm}) and provide a more thorough discussion about basis functions (Chapter \ref{ch:dwt}).
+
 

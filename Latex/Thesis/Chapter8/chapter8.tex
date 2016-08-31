@@ -1,26 +1,15 @@
 \chapter{Conclusion}
 \label{ch:conclusion}
 
-For the MPhil thesis, we set out to develop a generic Compressive Sensing algorithm that provides high quality reconstructions of video signals from relatively small numbers of samples.
+For the MPhil thesis, we developed a complete Compressive Sensing system that provides near-perfect reconstruction of video signals from as few as $0.3M$ compressed samples, where $M$ is the original signal length.
 
+We constructed three-dimensional DCT and Haar wavelet basis functions that allow for a highly compressible representations of video signal.
+The CS problem was then approached from a Bayesian machine learning perspective and we implemented the BCS algorithm as our main method for reconstruction.
+In the case of undersampled video signals, we were able to get an additional boost in reconstruction quality by a using a cascade of RVMs that exploits the multi-resolution properties of wavelet functions.
 
-In this thesis, we investigated the efficacy of the Bayesian Compressive Sensing framework for efficient reconstruction of highly under-sampled video signals.
-We developed an extension to the Multi-Scale Cascade of Estimations algorithm that achieves near-perfect reconstructions of videos from a very small set of measurements.
+In order to deal with the large data sets of the algorithm, our implementation can perform the reconstruction in a blockwise fashion.
+Furthermore, we implemented the system as distributed program, so as to achieve practical runtimes.
 
-To do so, we constructed three-dimensional wavelet basis functions that allow for a highly compressible representation of the video signal.
-Compressive Sensing inversion is then formulated as a machine learning problem and the Relevance Vector Machine was employed to find highly sparse solutions.
-To boost performance, a cascade of RVMs it built that exploits the multi-resolution properties of wavelet basis functions.
-
-In order to deal with the large memory requirements of the algorithm, the reconstruction is performed in blockwise fashion.
-We have also implemented the method as a distributed program, resulting in dramatically reduced execution times.
-
-Future research could improve performance by extending these methods in various ways.
-In order to fully harness the power of the MSCE for video interpolation, the implentation should be extended to accommodate different kinds of wavelets.
-Using the simple Haar wavelets, the MSCE struggles to outperform a BCT that uses DCT basis functions.
-It only shows its advantage in extremely undersampled situations ($N < 0.2M$).
-Alternative sets of waveles, such as the CDF-9/7 wavelet that is used by the JPEG2000 format, may lead to sparser representations of the video signals. 
-
-Furthermore, the speed of the algorithm can be increased by using a multi-threaded implementation of the Sequential Sparse Bayesian Learning Algorithm. 
-
-Development of Bayesian approaches to Compressive Sensing systems is an active area of research.
-
+Further research could improve the performance of the system.
+In order to fully harness the power of the MSCE, more sophisticated wavelet functions should be used.
+Alternative sets of wavelets, such as the CDF-9/7 wavelet that is used by the JPEG2000 format, can lead to sparser representations of the video signals. 
