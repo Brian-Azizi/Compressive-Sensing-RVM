@@ -1,24 +1,24 @@
 \chapter{Further Implementation Details}
 \label{ch:code}
-All the theoretical building blocks that underlie our implementation are now in place.
+All the theoretical building blocks that underlie our system are now in place.
 We have developed a code that can efficiently reconstruct a video signal $\bm v$ from a set of CS measurements $\bm y$.
 In order to do so, it uses the BCS algorithm, representing the signal either in the DCT domain or in the Haar wavelet domain.
 
 If the sensing mechanism is a signal mask, we can obtain an additional performance boost over the BCS by calling the MSCE algorithm.
 
-Moreover, by treating images as single-frame videos, our algorithm can apply these techniques to provide efficient reconstruction of digital images as well as videos.
+Moreover, by treating images as single-frame videos, our algorithm can readily be applied to image reconstruction as well.
 
-In this chapter, we will discuss some further implementation details and optimization strategies, that improve the memory requirements and execution time of out algorithm.
+This chapter contains some further implementation details and optimization strategies.
 
 \section{Blockwise Reconstruction}
 Let $\bm V$ be a video signal consisting of $f$ frames with a width of $w$ and a height $h$.
-Vectorization $\bm V$ gives us a vector $\bm v$ of length $hwf$.
+Vectorization of $\bm V$ gives us a vector $\bm v$ of length $hwf$.
 In order to reconstruct such signals in the BCS framework, we need to form the basis matrix $\bm\Psi$ which has dimensions $(hwf)\times (hwf)$.
 
 Even for relatively small videos, the memory requirements can easily reach the order of terabytes.
 As an example, consider the commonly used \emph{CIF (Common Intermediate Format)}.
 CIF videos have a spatial resolution of $352 \times 288$.
-For a CIF video containing 100 frames, the required memory for storing $\bm\Psi$ as in single-precision is
+For a CIF video containing 100 frames, the required memory for storing $\bm\Psi$ in single-precision is
 \begin{equation*}
 (288\times 352\times 100)^2 \times 4 \mbox{ bytes} = 4.11 \times 10^{14} \mbox{ bytes} = 411 \mbox{ TB}
 \end{equation*}
@@ -27,26 +27,25 @@ In our code, we address the problem by performing a \emph{blockwise reconstructi
 We split the input signal into small sub-blocks of size $2^{j_1}\times 2^{j_2}\times 2^{j_3}$.
 A typical size of such a block is $8\times 8\times 8$.
 
-The blocks are sequentially passed to our algorithm and after each block has been reconstructed , we reassemble to obtained the recovered video.
+The blocks are then sequentially passed to our algorithm and after each block has been reconstructed, we reassemble them to obtaine the recovered video.
 
-Note that the size of the block restricts the number of cascades in the MSCE algorithm.
+Note that the size of the blocks restricts the scale of the Haar wavelet basis and therefore also the number of cascades in the MSCE algorithm.
 To run the algorithm up to scale $s$, we require a block size of at least $2^s\times 2^s\times 2^s$.
 
 \section{Code Optimization}
 
 \subsection{Choice of Programming Language}
-We implemented our algorithm in C++ as it is one of the most efficient programming languages.
+We chose to implement the system in C++ as it is one of the most efficient programming languages.
 In order to boost the performance of matrix multiplications and inversions, we make use of the BLAS and LAPACK linear algebra libraries.
-To simulate the CS measurements, we use the random number generation facilities that were introduced into the C++11 standard.
 
 \subsection{Parallelization}
-In the blockwise reconstruction, each block is processed independently from the others.
+In the blockwise reconstruction, each block is processed completely independently from the others.
 This allows for very large speedups by implementing the code as a distributed algorithm.
 
 We have added a parallel mode to our implementation.
 Using the \emph{Message Passing Interface} (MPI), we run the program on several processors and split the workload evenly between them.
-This generally leads to a very significant speedup.
 
+This generally leads to a very significant speedup.
 However, if the blocksize is too small, the communication between processes (when gathering the results) will dominate over the actual computation time.
 Initial tests seem to indicate that, in order to achieve a significant increase in the execution time, the blocks should be at least of size $4\times4\times4$ before switching to parallel mode.
 
@@ -55,8 +54,8 @@ Initial tests seem to indicate that, in order to achieve a significant increase 
 We chose to keep the noise variance $\sigma^2$ of the RVM fixed.
 As mentioned in Section \ref{sect:ssbl}, this lets us use the efficient update formulae in \cite{tipping2003}, greatly speeding up training times.
 
-However, the downside to this is that we now have to set an additional model parameter.
-We tested range of values for $\sigma^2$, and setting $0.5 < \sigma^2 < 2$ gives consistently good performance.
+The downside to this is that we now have to set an additional model parameter.
+We tested range of values for $\sigma^2$ and found that setting $\sigma^2 = 1.0$ gives consistently good performance.
 
 \subsection{Modified RVM Training}
 When training the RVM, we use a slightly modified version of SSBL algorithm in which we only consider additions of candidate basis functions and no deletions or re-estimations.

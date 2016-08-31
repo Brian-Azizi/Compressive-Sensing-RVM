@@ -14,7 +14,6 @@ The aim of this chapter is to construct a basis matrix $\bm\Psi$ that gives us a
 \label{sect:dct}
 The first basis transform that we will describe is the Discrete Cosine Transform (DCT), one of the most widely used transforms in signal processing.
 It underlies JPEG image compression and is used in various video compression algorithms such as MJPEG, MPEG, H.261 and H.263 \cite{zeng2013}.
-\footnote{A related transform, known as the \emph{Modified DCT} is used in many lossy audio compression formats such as MP3, AAC and Vorbis.}
 
 A DCT decomposes a signal in terms of cosine functions with different frequencies.
 Its extensive use in lossy compression algorithms is due to the DCT's \emph{energy compaction} properties.
@@ -56,7 +55,7 @@ It can be verified that the basis matrix $\bm P$ is orthogonal, $\bm P^T\bm P=\b
 \subsection{Multi-Dimensional DCT}
 Once we know how to perform the DCT on a one-dimensional signal, we can easily extend the transform to multi-dimensional signals (images, video, etc).
 To do so, we simply perform successive 1-D transforms along each dimension of the signal.
-This is the \emph{seperability} of the DCT.
+This is the \emph{separability} of the DCT.
 
 Suppose the signal of interest is a digital image.
 That means that $\bm v$ is a $M_1\times M_2$ matrix where $M_1\times M_2$ is the resolution of the image.
@@ -75,7 +74,7 @@ Following that, we perform the DCT on every column of the resulting matrix to ge
     \includegraphics[width=\textwidth]{Chapter3/Images/dctCoeff.png}
     \caption{DCT of $\bm v$}
   \end{subfigure}
-  \caption[Two-dimensional DCT applied to a digital image]{Panel (a) shows the original signal $\bm v$, a 256$\times$256 grayscale image known as ``cameraman''. Panel (b) illustrates the 2-D DCT of $\bm v$. The brightness of a an element increases with the absolute value of the corresponding DCT coefficient. (The high-frequency coefficients have been enhanced to show more detail).}
+  \caption[Two-dimensional DCT applied to a digital image]{Panel (a) shows the original signal $\bm v$, a 256$\times$256 grayscale image ``cameraman''. Panel (b) illustrates the 2-D DCT of $\bm v$. The brightness of a an element increases with the absolute value of the corresponding DCT coefficient. (The high-frequency coefficients have been enhanced to show more detail).}
   \label{fig:ch3:dct}
 \end{figure}
 
@@ -91,7 +90,7 @@ Most of the DCT coefficients are zero or very close to zero.
   \label{fig:2D-DCT}
 \end{figure}
 
-In Figure \ref{fig:2D-DCT}, we show the 2-D basis functions that would used by the DCT to decompose a signal of size $4\times 4$.
+In Figure \ref{fig:2D-DCT}, we show the 2-D basis functions that are used by the DCT to decompose a signal of size $4\times 4$.
 Each basis function is characterised by a horizontal and vertical spatial frequency.
 Typically, natural images are mostly made up of low-frequency components and the corresponding coefficients are therefore relatively large.
 The highest-frequency components are usually only needed to describe very fine details.
@@ -99,19 +98,18 @@ The highest-frequency components are usually only needed to describe very fine d
 To compute the DCT of a video, we first compute the 2-D DCT for each individual frame of the video followed by a 1-D DCT across the temporal axis for each pixel.
 The DCT basis functions in 3-D are characterised by a horizontal and vertical spatial frequency, as well as an additional temporal frequency component.
 
-For a discussion on the properties of the DCT, see \cite{khayam2003}
+For a deeper discussion on the properties of the DCT, see \cite{khayam2003}.
 
 \section{Discrete Wavelet Transform}
 Wavelets have become a very popular tool in signal processing.
 Their energy compaction properties are on par and often superior to those of the DCT for a wide range of signal classes.
 Moreover, the multiresolution properties of wavelets allow us to analyze signals at different scales.
-
 In 2000, the JPEG committee released a new image coding standard, JPEG2000, that is gradually replacing the original JPEG standard.
 The new format moved away from the DCT and uses a Discrete Wavelet Transform (DWT) instead \cite{usevitch2001}.
 
-The aim of the following sections is to provide some intuition on the general properties of wavelets.
-We will discuss how a wavelet basis can be constructed at multiple resolution levels and how the DWT can be computed in practice.
-We will refrain from going to deep into mathematical detail and instead direct the interested reader to \cite{mallat1999,daubechies1992}.
+We will discuss how a wavelet basis can be constructed at multiple resolution levels and how the DWT of a signal can be computed in practice.
+The aim of this section is to provide some intuition for the general properties of wavelets, particularly for the \emph{Haar wavelets}.
+We will refrain from going to deeply into the mathematical details and instead direct the reader to \cite{mallat1999,daubechies1992}.
 
 \subsection{Introduction to Wavelets}
 To motivate wavelets, consider again the one-dimensional signal $\bm v$ of length $M$.
@@ -157,7 +155,7 @@ The form of the scaling function depends on the particular choice of wavelet dec
   \label{fig:haar_1d}
 \end{figure}
 
-For example, for the \emph{Haar wavelets}, the scaling function is given by
+For the Haar wavelets, the scaling function is given by
 \begin{equation}
   \label{eqn:haar_scale}
   \phi(x) = \left\{ \begin{array}{rl}
@@ -523,7 +521,7 @@ This gives us the 2-D DWT at the first scale.
 To get the next highest scale, we perform the scale 1 computations on the approximation coefficients of the current scale.
 This process process needs to be repeated $j$ times to obtain the DWT at $j$th scale.
 \footnote{
-  This construction procedure is the so-called ``non-standard'' construction.
+  This construction procedure is the so-called \emph{non-standard} construction.
   For an alternative construction strategy that leads to a different set of 2-D basis functions, see \cite{stollnitz1995}.
 }
 
@@ -531,7 +529,7 @@ In Figure \ref{fig:haar2_basis}, we illustrate the basis functions resulting cor
 We show two sets of basis functions that can be used to decompose a signal of size $4\times 4$, one corresponding to the first scale decomposition (panel (a)) and another set corresponding to the scale 2 (panel (b)).
 
 In Figure \ref{fig:dwt2}, we have computed the DWT of a digital image at various scales. 
-One can clearly see that the high-pass filters corresponding to the Haar wavelets act as edge detectors.
+Looking at the detail coefficients, one can observe that the output of the high-pass filters of the Haar wavelets correlate with edges in the image.
 
 
 %\section{Three-Dimensional Basis Functions}
@@ -785,9 +783,9 @@ To obtain the basis functions corresponding to the 3-D Haar wavelet domain, we c
 \end{equation*}
 
 At the first scale, the 3-D wavelet decomposition of a video results in 8 distinct channels: one corresponding to a low-pass filter, and 7 corresponding to high-pass filters in various directions.
-The approximation and detail coefficients of the various filters will be arranged as in Figure \ref{fig:3d_channels}.
+The arrangement of the output channels of the various filters is shown in Figure \ref{fig:3d_channels}.
 
-For the Haar wavelets, the high-pass filters act as edge detectors, just like in the 2-D case. 
+For the Haar wavelets, the high-pass filters act as edge detectors, similar to the 2-D case. 
 However, on top of detecting edges along spatial directions, we also get high-pass filters that detect sudden changes in the temporal direction, i.e. motion detectors.
 
 As an example, consider Figure \ref{fig:3d_dwt}.
@@ -797,7 +795,7 @@ At scale one, the 3-D Haar basis functions have support over a $2\times 2\times 
 Thus, all the DWT coefficients that are affected by the data in frames 11 and 12 of the original video, are contained within two ``frames'', or ``slices'', of the transformed signal.
 For frames 11 and 12 of the original 64-frame video, these slices are at positions $12/2=6$ and $(6+64)/2=38$ in the transformed video.
 
-In panel (c), we see the spatial edge detectors (the $LLH$, $LHL$ and $LHH$ channels) that are similar to those in the 2-D case (Figure \ref{fig:dwt2}).
+In panel (c), we see the spatial edge detectors (the $LLH$, $LHL$ and $LHH$ channels) that are comparable to those of the 2-D transform (Figure \ref{fig:dwt2}).
 The top left corner corresponds to the low-pass filter $LLL$ and can be regarded as an ``average'' of the video.
 
 Panel (d), shows the four channels associated with a high-pass filter in the temporal direction.
@@ -822,7 +820,7 @@ In this section we will define the vectorization scheme that we used in our impl
 We start with 1-D signals. 
 This case is trivial, since a one-dimensional signal $\bm v$ can directly be treated as a vector in $\mathbb{R}^M$, where $M$ is the length of the signal.
 
-The basis matrix matrix, in this case, is simply the inverse transform matrix.
+The basis matrix, in this case, is simply the inverse transform matrix.
 So, for the DCT, the basis matrix is $\bm\Psi = \bm P$, where $\bm P$ is defined in equation (\ref{eqn:idct_basis}).
 We have defined the basis matrix corresponding to the discrete Haar wavelet transform in equation (\ref{eqn:haar1_basis}).
 
@@ -831,8 +829,8 @@ We have defined the basis matrix corresponding to the discrete Haar wavelet tran
 Suppose $\bm A$ is a two-dimensional signal of size $r\times c$ (i.e. $r$ rows and $c$ columns).
 Suppose further that $r$ and $c$ are powers of 2, $r=2^{q_1}$ and $c = 2^{q_2}$, say.
 
-We vectorize $\bm A$ in a row-major fashion.
-To be explicit, let $\bm a_j^T$ be the $j$th row of $\bm A\in\mathbb{R}^{r\times c}$.
+We vectorize $\bm A$ in a row-major fashion:
+Let $\bm a_j^T$ be the $j$th row of $\bm A\in\mathbb{R}^{r\times c}$.
 The vectorized form of $\bm A$ is then given by
 \begin{equation*}
   \bm v = \begin{bmatrix}
@@ -967,6 +965,5 @@ The full basis matrix is
   \end{bmatrix}^T
 $}
 \end{equation*}
-
-For video signals, the basis matrix $\bm\Psi$ has dimensions $(hwf)\times(hwf)$.
+which has dimensions $(hwf)\times(hwf)$.
 

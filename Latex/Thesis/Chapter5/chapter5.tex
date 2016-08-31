@@ -3,11 +3,10 @@
 
 In this chapter, we combine the Compressive Sensing framework from Chapter \ref{ch:cs} with the Sparse Bayesian Learning framework from Chapter \ref{ch:rvm} to formulate the \emph{Bayesian Compressive Sensing} (BCS) algorithm.
 
-Following that, we discuss the scenario where the sensing mechanism $\bm\Theta$ corresponds to a signal mask.
-We describe how the performance of the BCS algorithm can be boosted via the \emph{Multi-Scale Cascade of Estimations} algorithm.
+Following that, we discuss the scenario where the sensing mechanism $\bm\Theta$ corresponds to a signal mask and describe how the performance of the BCS algorithm can be boosted via the \emph{Multi-Scale Cascade of Estimations} algorithm.
 
 \section{Compressive Sensing as Linear Regression}
-In the Bayesian Compressive Sensing (BCS) \cite{ji2008} framework, we attempt to approach the Compressive Sensing problem from the point of view of linear regression.
+In the Bayesian Compressive Sensing (BCS) \cite{ji2008} framework, we approach the Compressive Sensing problem from the point of view of linear regression.
 
 Recall the setup from Chapter \ref{ch:cs}.
 We are intersted in recovering the signal $\bm v\in\mathbb{R}^M$ from the CS measurements $\bm\Theta\bm v = \bm y\in\mathbb{R}^N$, where $N << M$.
@@ -44,7 +43,7 @@ Since in the BCS framework, we wish to solve the CS problem from a Bayesian stan
 The sparsity constraint can be entered into the model by placing a sparseness-inducing prior distribution over the weights $\bm w_K$.
 
 There is a range of popular sparseness priors.
-However, to make the connection to the RVM and exploit the analysis from Chapter \ref{ch:rvm}, we choose the prior (\ref{eqn:prior_w})
+However, to make the connection to the RVM and exploit the analysis from Chapter \ref{ch:rvm}, we choose the prior from (\ref{eqn:prior_w}):
 \begin{equation*}
   p(\bm w_K\,|\,\bm \alpha) = \prod_{j=1}^M \mathcal{N}\left(w_j\,|\,0,\alpha_j^{-1}\right)
 \end{equation*}
@@ -81,12 +80,11 @@ The problem of reconstructing such signals is sometimes referred to as \emph{int
 
 In this context, the design matrix $\bm\Phi$ can be computed efficiently from $\bm\Psi$ by simply deleting all the rows in $\bm\Psi$ that correspond to the entries of $\bm v$ that have missing data.
 
-Moreover, it is possible to get a slight performance boost in the reconstruction by filling in the BCS solution $\bm{\hat v}$ (\ref{eqn:bcs_recover}) with the measured at data $\bm y$ at the appropriate locations.
+Moreover, we can get a slight performance boost in the reconstruction by filling in the BCS solution $\bm{\hat v}$ (\ref{eqn:bcs_recover}) with the measured at data $\bm y$ at the appropriate locations.
 
 \subsection{Reconstruction using Haar Wavelets}
 \label{sect:interpol_haar}
-Using the BCS model from above with a Haar basis matrix, we reconstruct the image in Figure \ref{fig:lenna_mask}.
-We display the output in Figure \ref{fig:lenna_rvm} for various scales of the Haar basis.
+Using the BCS model from above with a Haar basis matrix, we reconstruct the image in Figure \ref{fig:lenna_mask} and display the output in Figure \ref{fig:lenna_rvm} for various scales of the Haar basis.
 \begin{figure}
 \centering
   \begin{subfigure}{0.4\textwidth}
@@ -106,7 +104,7 @@ We display the output in Figure \ref{fig:lenna_rvm} for various scales of the Ha
     \caption{Scale 4: PSNR = 23.72}
   \end{subfigure}  
   \caption[Reconstruction of masked image signals using Haar wavelets at various scales]{Reconstruction if the image in Figure \ref{fig:lenna_mask} using the RVM with Haar wavelets at various scales.
-    We use the \emph{Peak Signal-to-Noise Ratio (PSNR)} as our performance metric. The larger the PSNR, the more accurate the reconstruction. See Chapter \ref{ch:results} for a definition of the PSNR.}
+    We use the \emph{Peak Signal-to-Noise Ratio (PSNR)} (see Chapter \ref{ch:results}) as our performance metric. The larger the PSNR, the more accurate the reconstruction.}
   \label{fig:lenna_rvm}
 \end{figure}
 
@@ -190,3 +188,4 @@ We have summarized the MCSE in Algorithm \ref{alg3}.
   \end{algorithmic}
 \end{algorithm}
 
+Note that in practice, we often choose to keep any estimate for which $(\sigma^2)^*>\sigma^2$, so that any prediction that is not zero is trusted.

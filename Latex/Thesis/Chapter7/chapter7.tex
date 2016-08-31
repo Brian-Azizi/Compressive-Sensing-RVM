@@ -1,16 +1,12 @@
 \chapter{Simulations}
 \label{ch:results}
-In this chapter we get to test our implementation.
-
-We evaluate the reconstruction performance, we use the relative reconstruction error and the peak signal-to-noise ratio.
-We conduct four experiments in which we aim to compare the performance under different scenarios.
-
-To close off with, we show some examples.
+In this chapter we conduct three experiments in order to evaluate the performance of our system under different settings.
+We then demonstrate the system by providing a few example results.
 
 \section{Performance Metrics}
-In this section, we will introduce three performance metrics that are often used to measure the quality of reconstructed images and videos.
+In order to measure and compare the quality of reconstructed signal, we need to define a performance metric.
 
-Let $\bm{\hat v} \in\mathbb{R}^M$ be a reconstructed signal (in vectorized form) and let $\bm v$ be the corresponding orginal signal.
+Let $\bm{\hat v} \in\mathbb{R}^M$ be a reconstructed signal (in vectorized form) and let $\bm v$ be the orginal signal.
 The \emph{mean square error} (MSE) of the reconstruction is defined as
 \begin{equation*}
   \mse(\bm{\hat v}) = \frac{\sum_{i=1}^M (\hat v_i - v_i)^2}{M}
@@ -26,45 +22,40 @@ For grayscale images or videos in which the pixel values are stored as 8-bit uns
 
 The PSNR is usually expressed in term of decibel (dB). 
 Higher values of the PSNR correspond to more accurate reconstructions.
-The PSNR is widely used in the image and video compression literature to measure the quality of a compressed signal.
-Generally, when comparing the reconstruction quality, the PSNR should only be used if it was measured on the same signal.
+The PSNR is perhaps the most popular measure of reconstruction quality. 
 
-The final performance metric that we compute is the \emph{relative reconstruction error}.
-It is given by
+Final, we also compute the \emph{relative reconstruction error} given by
 \begin{equation*}
   \rre(\bm{\hat v}) = \frac{||\bm{\hat v} - \bm v||_2}{||\bm v||_2}
 \end{equation*}
 This is the metric that was used in \cite{ji2008} and \cite{pilikos2014}.
 
 \section{Experiments}
-Four experiments were conducted that show what sort of performance one can expect under different settings.
-All simulations were run using the ``foreman'' test video.
+Three experiments were conducted to evaluate the performance of the system in various scenarios.
 
-For each experiment, we plot the performance against the number of CS measurements as a percentage of the signal size.
-Two plots are generated per experiment, one using the RRE and the other using the PSNR as performance measure.
+For each experiment, we plot the performance against the number $N$ of CS measurements as a percentage of the total signal size $M$.
+Two plots are generated per experiment, one using the RRE and the other using the PSNR as performance metric.
 
-Throughout the simulations, the block size is kept constant at $8\times 8\times 8$.
+Throughout the simulations, all external parameters are kept constant.
+We also fix the block size at $8\times 8\times 8$.
 
-\subsection{MSCE vs BCS}
-The results of the first experiment are shown in Figure \ref{fig:sim_msce}.
-In the first experiment, we compare the performance of the MSCE algorithm to the BCS algorithm in the problem of video interpolation.
+\subsection{The MSCE vs the BCS Algorithm }
+In the first experiment (Figure \ref{fig:sim_msce}), we compare the performance of the MSCE algorithm against that of the BCS algorithm in the reconstruction of masked video signals.
 
-We run 3 instances of the BCS algorithm using Haar wavelet basis at scales 1, 2 and 3, respectively.
-We see that when the number of CS measurements $N$ is small compared to the size of the signal $M$, a BCS using Haar wavelets at scale 1 performs very poorly.
-As $N$ increases, its performance begins to accelarate and for $N > 0.5M$, the scale 1 Haar basis functions outperform the Haar bases at scales 2 and 3. 
+We run 3 instances of the BCS algorithm that use the Haar wavelet basis at scales 1, 2 and 3, respectively.
 
-We should expect this behaviour from our analysis in Section \ref{sect:interpol_haar}.
-At low measurement rates, the BCS with level 1 Haar wavelets is unable to fill in the entire signal.
-However, at the portions of the signal where the reconstruction succeeds, it will generally be of higher quality than that of the BCS using wavelets at higher scales.
+We see that when the number of CS measurements $N$ is small compared to the size of the signal $M$, the BCS using Haar wavelets at scale 1 performs very poorly.
+As $N$ increases, the performance of the algorithm begins to accelerate and for $N > 0.5M$, the scale 1 Haar basis functions begin to outperform the Haar bases at scales 2 and 3. 
+This behaviour ties in with our analysis in Section \ref{sect:interpol_haar}.
 
 Next, we run the MSCE algorithm with 3 cascades.
 We can see immediately that a cascade of BCS algorithms is superior to any individual BCS instance that uses Haar wavelets.
 
-The performances of the MSCE and the BCS using level 1 wavelets converge as the number of measurements $M$ increases.
-That is because, for large $M$, the later stages of the cascade become redundant as Haar wavelets at scale 1 manage to cover any missing signal values.
+The performances of the MSCE and the BCS using level 1 wavelets converge as the number of measurements $N$ approaches the total signal size $M$.
+The later stages of the cascade become redundant when $N$ is close to $M$.
 
-Finally, we also run an instance of the BCS algorithm that uses DCT basis functions.
-We see that it easily outperforms even the cascade.
+Finally, we also run the BCS algorithm with DCT basis functions.
+We see that it generally outperforms even the cascade.
 Only in extremely undersampled situations ($N<0.2M$) does the MSCE have an advantage over the BCS with DCT basis functions.
 
 A possible explanation is that the sparsifying properties of the DCT are superior to those of the Haar wavelet DWT.
@@ -136,11 +127,11 @@ It would be interesting to compare these performances to that of a MSCE which us
       \addlegendentry{BCS DCT}
     \end{axis}
   \end{tikzpicture}
-\caption{Performance of MSCE with 3 cascades and uniform Masks}
+\caption{Comparison of the MSCE with 3 cascades against the BCT using DCT basis functions and Haar wavelets at scale 1, 2 and 3.}
 \label{fig:sim_msce}
 \end{figure}
 
-\subsection{DCT vs Haar with Gaussian \texorpdfstring{$\bm\Theta$}{[Theta]}}
+\subsection{DCT Basis vs Haar Basis with Gaussian \texorpdfstring{$\bm\Theta$}{[Theta]}}
 In the second experiment we compare the performance of DCT and Haar basis functions in the case when $\bm\Theta$ consists of Gaussian samples.
 
 We simulate Compressive Sensing measurements that were acquired via a random Gaussian sensing mechanism $\bm\Theta$.
@@ -197,21 +188,23 @@ In this case, we see that the DCT outperforms the Haar basis function at all com
       \addlegendentry{Haar}
     \end{axis}
   \end{tikzpicture}
-\caption{DCT vs Haar DWT (scale 3) with Gaussian measurements}
+\caption{Comparison of the BCT algorithm using DCT basis functions against the BCT using scale 3 Haar basis functions in the case of Gaussian measurements.}
 \label{fig:sim_basis}
 \end{figure}
 
 
-\subsection{Gaussian vs Bernoulli vs Random Signal Masks}
+\subsection{Comparison of different sensing matrices \texorpdfstring{$\bm\Theta$}{[Theta]}}
 The aim of the third experiment is to see how reconstruction differs if we change the sensing mechanism.
 
-We simulate three sets of CS measurements using Gaussian, Bernoulli and random signal mask sensing matrices.
-The reconstruction is done using via the BCS algorithm and uses DCT basis functions.
+We simulate three sets of CS measurements using Gaussian sensing matrices, Bernoulli sensing matrices and random signal masks.
+The reconstruction is done using the BCS algorithm with DCT basis functions.
 
 Figure \ref{fig:sim_sensor} shows the result of that experiment.
 We get near-identical performance in all three scenarios.
 
 Only when the number of measurements is relatively high ($N\geq 0.8M$) do we begin to see a slight difference in the reconstruction quality.
+
+The reason is that, when reconstructing masked signals we have the advantage of being able to use the original data.
 
 %% SENSORS
 \begin{figure}
@@ -266,7 +259,7 @@ Only when the number of measurements is relatively high ($N\geq 0.8M$) do we beg
       \addlegendentry{Mask}
     \end{axis}
   \end{tikzpicture}
-\caption{Gaussian vs Bernoulli vs Mask (uniform) with DCT basis}
+\caption{Gaussian vs Bernoulli vs signal mask. Reconstruction is done using the BCT algorithm with DCT basis.}
 \label{fig:sim_sensor}
 \end{figure}
 
