@@ -21,3 +21,4 @@ host_file
 largeRun.sh
 smallRun.sh
 batchSimulation.sh
+simulate.sh

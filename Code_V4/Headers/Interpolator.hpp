@@ -62,7 +62,7 @@ private:
 
     double computeMSE(const Signal<double>& original, const Signal<double>& reconstructed);
     double MSEtoPSNR(double mse);
-
+    double computeRRE(const Signal<double>& original, const Signal<double>& reconstructed);
 
 public:
     Interpolator(const SignalSettings& settingsFile); // Construct using settings file
@@ -241,9 +241,12 @@ void Interpolator::run()
 	    for (int scale = 0; scale < cfg.numCascades; ++scale) {
 		double mse = computeMSE(signal, cascadeRecoveredSignals[scale]);
 		double psnr = MSEtoPSNR(mse);
+		double rre = computeRRE(signal, cascadeRecoveredSignals[scale]);
+
 		std::stringstream record;
 		record << "Scale " << scale+cfg.startScale << ":  MSE  = " << mse << "\n";
 		record << "\t  PSNR = " << psnr << "\n";
+		record << "\t  RRE  = " << rre << "\n";
 		std::cout << record.str();
 	    }
 	    std::cout << "\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%";
@@ -414,5 +417,32 @@ double Interpolator::MSEtoPSNR(double mse)
     
     return psnr;
 }
+
+double Interpolator::computeRRE(const Signal<double>& orig, const Signal<double>& rec)
+{
+   // check input
+    if (orig.dim() != rec.dim()) error("MSE: inputs must have the same dimensions");
+    
+    int maxEntry = 255;
+    int minEntry = 0;
+
+    double top = 0;
+    double bot = 0;
+    int xo, xr;			// note, this will convert to integers
+
+    for (int i = 0; i < orig.size(); ++i) {
+	/* So far, we have not restricted the range of the predicted pixel values. 
+	   However, when viewing the data as a video file, all pixel values will be clamped to a certain range ([0,255] usually).
+	   Thus, we need to convert the predicted pixels to integers in that range in order to compute the accurate PSNR*/
+	xo = getIntRange(orig.data()[i], minEntry, maxEntry);
+	xr = getIntRange(rec.data()[i], minEntry, maxEntry);
+	top += ((xo-xr) * (xo-xr));
+	bot += xo*xo;
+    }
+    double ret = (double) std::sqrt(top/bot);
+
+    return ret;
+}
+
 
 #endif

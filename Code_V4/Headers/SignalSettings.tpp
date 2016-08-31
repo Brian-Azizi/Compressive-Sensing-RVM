@@ -296,7 +296,7 @@ std::ostream& operator<<(std::ostream& os, const SignalSettings& setting)
 	os << "\nLog file:\t\t\t" << setting.logFileName;
 
     os << "\nFLS file:\t\t\t" << setting.flsFileName;
-    os << "\nNumber of Process:\t\t" << setting.nproc;
+    os << "\nNumber of Processes:\t\t" << setting.nproc;
     os << "\n";
     return os;
 }

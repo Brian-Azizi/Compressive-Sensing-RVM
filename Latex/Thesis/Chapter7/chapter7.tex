@@ -4,7 +4,7 @@
 \section{Performance Metrics}
 In this section, we will introduce three performance metrics that are often used to measure the quality of reconstructed images and videos.
 
-Let $\bm \hat{v} \in\mathbb{R}^M$ be a reconstructed signal (in vectorized form) and let $\bm v$ be the corresponding orginal signal.
+Let $\bm{\hat v} \in\mathbb{R}^M$ be a reconstructed signal (in vectorized form) and let $\bm v$ be the corresponding orginal signal.
 The \emph{mean square error} (MSE) of the reconstruction is defined as
 \begin{equation*}
   \mse(\bm{\hat v}) = \frac{\sum_{i=1}^M (\hat v_i - v_i)^2}{M}
@@ -30,11 +30,22 @@ It is given by
 \end{equation*}
 This is the metric that was used in \cite{ji2008} and \cite{pilikos2014}.
 
+\section{Experiments}
+In this section, we perform experiments in order to get an idea of how the different components of the implementation perform.
+All simulations were run on the ``foreman'' test video using blocks of size $8\times 8\times 8$.
 
-\section{Performance Evaluation}
+\subsection{MSCE vs BCS}
+We compare the performance of using cascades over individual BCS
 
+\subsection{DCT vs Haar(3)}
+In Figure \ref{fig:sim_basis}, we compareshows a comparison between using the DCT basis and the Haar basis.
 
+\subsection{Gaussan vs Bernoulli vs Mask}
+We compare 
 
+\subsection{Haar Scales with Gaussian \texorpdfstring{$\bm\Theta$}{[Theta]}}
+
+%% CASCADE
 \begin{figure}
   \centering
   \begin{tikzpicture}[scale = 0.8,baseline]
@@ -42,7 +53,7 @@ This is the metric that was used in \cite{ji2008} and \cite{pilikos2014}.
       xlabel=$N/M$ (\%),
       ylabel=$\rre$ (\%),
       xmin=0, xmax = 100,
-      ymin = 0, 
+      ymin = 0, ymax = 0.2,
       scaled ticks=false,
       yticklabel style={
         /pgf/number format/precision=2,
@@ -50,6 +61,13 @@ This is the metric that was used in \cite{ji2008} and \cite{pilikos2014}.
       }
       ]
       \addplot table [x=pc, y=rre] {Chapter7/Images/MSCE.dat};      
+      \addlegendentry{MSCE}
+      \addplot table [x=pc, y=rre] {Chapter7/Images/MASK_3.dat};      
+      \addlegendentry{BCS Scale 3}
+      \addplot table [x=pc, y=rre] {Chapter7/Images/MASK_2.dat};     
+      \addlegendentry{BCS Scale 2}
+      \addplot table [x=pc, y=rre] {Chapter7/Images/MASK_1.dat};
+      \addlegendentry{BCS Scale 1}
     \end{axis}
   \end{tikzpicture}
   % 
@@ -58,20 +76,33 @@ This is the metric that was used in \cite{ji2008} and \cite{pilikos2014}.
   \begin{tikzpicture}[scale = 0.8,baseline]
     \begin{axis}[
       xlabel=$N/M$ (\%),
-      ylabel=$\psnr$,
-      xmin=0, xmax = 90,      
+      ylabel=$\psnr$ (dB),
+      xmin=0, xmax = 90, 
       scaled ticks=false,
+      legend style={
+        at={(0.03,1.04)},
+        anchor=north west,
+      },
       yticklabel style={
         /pgf/number format/precision=2,
         /pgf/number format/fixed,
       }
       ]
       \addplot table [x=pc, y=psnr] {Chapter7/Images/MSCE.dat};      
+      \addlegendentry{MSCE}
+      \addplot table [x=pc, y=psnr] {Chapter7/Images/MASK_3.dat};
+      \addlegendentry{BCS Scale 3}
+      \addplot table [x=pc, y=psnr] {Chapter7/Images/MASK_2.dat};
+      \addlegendentry{BCS Scale 2}
+      \addplot table [x=pc, y=psnr] {Chapter7/Images/MASK_1.dat};
+      \addlegendentry{BCS Scale 1}
     \end{axis}
   \end{tikzpicture}
 \caption{Performance of MSCE with 3 cascades and uniform Masks}
+\label{fig:sim_msce}
 \end{figure}
 
+%% BASIS
 \begin{figure}
   \centering
   \begin{tikzpicture}[scale = 0.8,baseline]
@@ -98,7 +129,7 @@ This is the metric that was used in \cite{ji2008} and \cite{pilikos2014}.
   \begin{tikzpicture}[scale = 0.8,baseline]
     \begin{axis}[
       xlabel=$N/M$ (\%),
-      ylabel=$\psnr$,
+      ylabel=$\psnr$ (dB),
       xmin=0, xmax = 90,      
       scaled ticks=false,
       legend style={
@@ -117,8 +148,10 @@ This is the metric that was used in \cite{ji2008} and \cite{pilikos2014}.
     \end{axis}
   \end{tikzpicture}
 \caption{DCT vs Haar DWT (scale 3) with Gaussian measurements}
+\label{fig:sim_basis}
 \end{figure}
 
+%% SENSORS
 \begin{figure}
   \centering
   \begin{tikzpicture}[scale = 0.8,baseline]
@@ -147,7 +180,7 @@ This is the metric that was used in \cite{ji2008} and \cite{pilikos2014}.
   \begin{tikzpicture}[scale = 0.8,baseline]
     \begin{axis}[
       xlabel=$N/M$ (\%),
-      ylabel=$\psnr$,
+      ylabel=$\psnr$ (dB),
       xmin=0, xmax = 90,      
       scaled ticks=false,
       legend style={
@@ -168,6 +201,7 @@ This is the metric that was used in \cite{ji2008} and \cite{pilikos2014}.
     \end{axis}
   \end{tikzpicture}
 \caption{Gaussian vs Bernoulli vs Mask (uniform) with DCT basis}
+\label{fig:sim_sensor}
 \end{figure}
 
 %% SCALES
@@ -199,7 +233,7 @@ This is the metric that was used in \cite{ji2008} and \cite{pilikos2014}.
   \begin{tikzpicture}[scale = 0.8,baseline]
     \begin{axis}[
       xlabel=$N/M$ (\%),
-      ylabel=$\psnr$,
+      ylabel=$\psnr$ (dB),
       xmin=0, xmax = 90,      
       scaled ticks=false,
       legend style={
@@ -220,6 +254,7 @@ This is the metric that was used in \cite{ji2008} and \cite{pilikos2014}.
     \end{axis}
   \end{tikzpicture}
 \caption{Haar wavelets at different scales with Gaussian measurements (fixed block size)}
+\label{fig:sim_scales}
 \end{figure}
 
 \clearpage
