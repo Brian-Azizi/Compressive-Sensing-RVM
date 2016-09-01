@@ -228,38 +228,21 @@ For the MPhil project, a complete Compressive Sensing system was developed that 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Background %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{block}{Background}
-In the conventional signal processing pipeline signals are sampled at or above the Nyquist Rate and the acquired samples are then compressed for efficient storage and transmission.
-For many applications, this is highly inefficient since a lot of data is collected at the acquisition stage only to be - in large part - thrown away during compression.
-
-\emph{Compressive Sensing} (CS) \cite{candes2006,donoho2006} is a novel technique that is able to acquire signals \emph{directly in a compressed format}.
-
-% Let $\bm v \in \mathbb{R^M}$ be the underlying signal.
-% In CS. a compressed data set $\bm y \in\mathbb{R}^N$, with $N<<M$, is acquired
-%  via the linear sensing mechanism $\bm\Theta\bm v = \bm y$, where the sensing matrix $\bm\Theta$ is independent of $\bm v$.
-
-% To reconstruct $\bm v$ from the measurements $\bm y$, CS uses the fact that many common classes of signals are \emph{sparse}
-% when represented in a certain basis $\bm\Psi$: $\bm v = \bm\Psi\bm w$ and $\bm w\in\mathbb{R}^M$ has few non-zero entries.
-% Digital image and video signals are well approximated by sparse signals when expressed in wavelet bases.
-
-% The signal $\bm v$ can be recovered by finding the sparsest solution $\bm w$ to the under-determined system
-% \begin{equation*}
-%   \bm y\,\, (=\bm\Theta\bm v = \bm\Theta\bm\Psi\bm w )= \bm\Phi\bm w 
-% \end{equation*}
-% This is an NP-hard problem and alternative approaches are required.
+In conventional signal processing pipelines, signals are sampled at or above the Nyquist Rate and the acquired samples are then compressed for efficient storage and transmission.
+For many applications, including digital image and video processing, this is highly inefficient since a lot of data is collected at the acquisition stage only to be - in large part - thrown away during compression.
 
 \end{block}
 
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Formulation %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{block}{Formulation}
+\emph{Compressive Sensing} (CS) \cite{candes2006,donoho2006} is a novel technique that is able to acquire signals \emph{directly in a compressed format}.
 Let $\bm v \in \mathbb{R^M}$ be the underlying signal.
-In CS. a compressed data set $\bm y \in\mathbb{R}^N$, with $N<<M$, is acquired
+In CS, a compressed data set $\bm y \in\mathbb{R}^N$, with $N<<M$, is acquired
  via the linear sensing mechanism $\bm\Theta\bm v = \bm y$, where the sensing matrix $\bm\Theta$ is independent of $\bm v$.
 
 To reconstruct $\bm v$ from the measurements $\bm y$, CS uses the fact that many common classes of signals are \emph{sparse}
 when represented in a certain basis $\bm\Psi$: $\bm v = \bm\Psi\bm w$ and $\bm w\in\mathbb{R}^M$ has few non-zero entries.
-Digital image and video signals are well approximated by sparse signals when expressed in wavelet bases.
+(Digital image and video signals are well approximated by sparse signals when expressed in wavelet bases.)
 
 The signal $\bm v$ can be recovered by finding the sparsest solution $\bm w$ to the under-determined system
 \begin{equation*}
@@ -267,8 +250,6 @@ The signal $\bm v$ can be recovered by finding the sparsest solution $\bm w$ to 
 \end{equation*}
 This is an NP-hard problem and alternative approaches are required.
 \end{block}
-
-
 \end{textblock}
 
 % Second column
@@ -277,28 +258,25 @@ This is an NP-hard problem and alternative approaches are required.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Methods %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{block}{Methods}
-A machine learning approach is applied and the Compressive Sensing problem is formulated as a Bayesian regression: $\bm y = \bm\Phi\bm w + \bm\epsilon$, where $\bm\epsilon$ is a zero-mean Gaussian error.
+A machine learning approach is used and the Compressive Sensing problem is formulated as a Bayesian regression: $\bm y = \bm\Phi\bm w + \bm\epsilon$, where $\bm\epsilon$ is a zero-mean Gaussian error.
 The \emph{Relevance Vector Machine} (RVM) \cite{tipping2001,tipping2003} is used to find a solution $\bm w$ with a 
 very sparse posterior mean.
 
-For sensing matrices such as the one used in Figure \ref{fig}, a cascade of RVMs \cite{pilikos2014} is build to further imrove the reconstruction quality.
+For sensing mechanisms that measure a subset of individual pixel values directly, a cascade of RVMs \cite{pilikos2014} is build to further imrove the reconstruction quality.
 \end{block}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Results %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{block}{Results}
-%To illustrate the performance, we reconstruct a video from only 30\% of pixel measurements:
 \begin{figure}
 \begin{minipage}{0.8\linewidth}
 \centering
 \includegraphics[width = 0.4\linewidth]{foreman_large_masked_42.png}
 \includegraphics[width = 0.4\linewidth]{foreman_large_masked_43.png}
-%\includegraphics[width = 0.5\linewidth]{foreman_large_rec_42.png}
 \end{minipage}
 \begin{minipage}{0.8\linewidth}
 \centering
 \includegraphics[width = 0.4\linewidth]{foreman_large_rec_42.png}
-%\includegraphics[width = .5\linewidth]{foreman_large_masked_43.png}
 \includegraphics[width = 0.4\linewidth]{foreman_large_rec_43.png}
 \scriptsize\hphantom{.}\hspace{2.5cm} frame 42 \hspace{3cm} frame 43
 \end{minipage}\\
@@ -309,14 +287,12 @@ For sensing matrices such as the one used in Figure \ref{fig}, a cascade of RVMs
 \label{fig}
 \end{minipage}
 \end{figure}
-In Figure \ref{fig}, the sensing mechanism $\bm\Theta$ has measured 30\% of the original samples in $\bm v$. 
-The video is recovered using a cascade of RVMs. %The error is 6.9\%.
-% In Figure \ref{fig}, the sensing mechanism $\bm\Theta$ corresponds to \emph{signal mask}.
-% For such $\bm\Theta$, the reconstruction quality can be boosted by building a cascade of RVMs \cite{pilikos2014}.
+In Figure \ref{fig}, the sensing mechanism $\bm\Theta$ has measured 30\% of the data in $\bm v$. 
+The video is recovered using a cascade of RVMs, with a reconstruction error of 6.9\%.
 
 
 \end{block}
-%\normalsize
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% References %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{block}{References and Acknowledgements}
 \begin{minipage}{.9\linewidth}
