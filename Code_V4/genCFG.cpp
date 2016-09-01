@@ -17,7 +17,7 @@ int main()
     std::string w = "blockWidth = 8\n";
     std::string f = "blockFrames = 8\n";
     
-    std::string mode = "basisMode = haar\n sensorMode = mask\n";
+    std::string mode = "basisMode = dct\n sensorMode = mask\n";
     std::string scale = "basisStartScale = 3\n basisEndScale = 3\n";
     
     std::string dml = "deltaML_threshold = 1\n";

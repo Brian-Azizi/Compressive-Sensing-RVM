@@ -10,7 +10,7 @@ int main()
     std::vector<double> psnr;
     std::vector<double> rre;
 
-    std::string logDirectory = "../Data/ResultsDump/MASK_1/";
+    std::string logDirectory = "../Data/ResultsDump/DCT/";
     std::string stem = "foreman";
 	
     int N = 10;
@@ -60,7 +60,7 @@ int main()
 	inp.close();
     }
 
-    std::ofstream of("MASK_1.txt");
+    std::ofstream of("DCT.dat");
     if (!of) {std::cout << "ERROR" << std::endl; return 1;}
     
     of << "pc psnr rre\n";
