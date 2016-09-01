@@ -275,17 +275,19 @@ This is an NP-hard problem and alternative approaches are required.
 
 \begin{textblock}{19.5}(21.5,7.5)
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Results %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% \footnotesize The following graph shows my coffee intake over the year:\\
-% \vbox{}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Methods %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{block}{Methods}
-A machine learning approach is applied and the Compressive Sensing problem is formulated as a Bayesian regression: $\bm y = \bm\Phi\bm w + \bm\epsilon$, where $\bm\epsilon$ is a zero-mean Gaussian error.% $\epsilon \sim \mathcal{N}(0,\sigma^2)$.
+A machine learning approach is applied and the Compressive Sensing problem is formulated as a Bayesian regression: $\bm y = \bm\Phi\bm w + \bm\epsilon$, where $\bm\epsilon$ is a zero-mean Gaussian error.
 The \emph{Relevance Vector Machine} (RVM) \cite{tipping2001,tipping2003} is used to find a solution $\bm w$ with a 
 very sparse posterior mean.
+
+For sensing matrices such as the one used in Figure \ref{fig}, a cascade of RVMs \cite{pilikos2014} is build to further imrove the reconstruction quality.
 \end{block}
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Results %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{block}{Results}
-To illustrate the performance, we reconstruct a video from only 30\% of pixel measurements:
+%To illustrate the performance, we reconstruct a video from only 30\% of pixel measurements:
 \begin{figure}
 \begin{minipage}{0.8\linewidth}
 \centering
@@ -302,13 +304,15 @@ To illustrate the performance, we reconstruct a video from only 30\% of pixel me
 \end{minipage}\\
 \begin{minipage}{0.95\linewidth}
 \caption{Two consucutive frames of a sample video signal.
-  Top row: The sensing mechanism $\bm\Theta$ has measured 30\% of the original samples in $\bm v$. 
-  Bottom row: Recovered signal using a cascade of RVMs. The error is 6.9\%.}
+  Top row: CS measurements $\bm y$. 
+  Bottom row: Recovered video $\bm{\hat v}$}
 \label{fig}
 \end{minipage}
 \end{figure}
-In Figure \ref{fig}, the sensing mechanism $\bm\Theta$ corresponds to \emph{signal mask}.
-For such $\bm\Theta$, the reconstruction quality can be boosted by building a cascade of RVMs \cite{pilikos2014}.
+In Figure \ref{fig}, the sensing mechanism $\bm\Theta$ has measured 30\% of the original samples in $\bm v$. 
+The video is recovered using a cascade of RVMs. %The error is 6.9\%.
+% In Figure \ref{fig}, the sensing mechanism $\bm\Theta$ corresponds to \emph{signal mask}.
+% For such $\bm\Theta$, the reconstruction quality can be boosted by building a cascade of RVMs \cite{pilikos2014}.
 
 
 \end{block}
