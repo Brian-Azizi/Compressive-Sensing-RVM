@@ -1,0 +1,199 @@
+\documentclass[xcolor=table]{beamer}
+\usetheme{Madrid}
+\usepackage{amssymb}
+\usepackage{epsfig}
+\usepackage{psfrag}
+\usepackage{wrapfig}
+\usepackage{graphicx}
+\usepackage{color}
+\usepackage{amsmath}
+\usepackage{multimedia}
+%\usepackage{style}
+\usepackage{verbatim}
+\usepackage{listings}
+\usepackage{multicol}
+\usepackage[table]{xcolor}
+
+\DeclareSymbolFont{nosets}{U}{msb}{m}{7}
+\DeclareMathSymbol{\natural}{\mathalpha}{nosets}{'116} %can be done with \Bbb see page 218
+\DeclareMathSymbol{\real}{\mathalpha}{nosets}{'122}
+\DeclareMathSymbol{\complex}{\mathalpha}{nosets}{'103}
+\DeclareMathSymbol{\integer}{\mathalpha}{nosets}{'132}
+\newcommand{\cross}{\wedge}
+\newcommand{\vecdiv}{\nabla \cdot}
+\newcommand{\grad}{\nabla}
+\newcommand{\curl}{\nabla \cross}
+\newcommand{\ifff}{\Leftrightarrow} % \iff is already used
+\newcommand{\sgn}{\text{sgn}}
+\newcommand{\vect}[1]{\mathbf{#1}}
+\newcommand{\sectref}[1]{\S\ref{#1}}
+\providecommand{\norm}[1]{\lVert#1\rVert}
+\numberwithin{equation}{section}
+\usefonttheme{professionalfonts}
+%\usefonttheme[stillsansseriflarge,stillsansserifsmall]{serif}
+
+% BA defined commands
+\let\bs\boldsymbol
+\DeclareMathOperator*{\argmin}{arg\,min}
+%
+\lstset{language=C++}
+\lstset{otherkeywords={<<<,>>>}}
+\lstset{morekeywords={dim3,__host__,__kernel__,__global__,__device__}}
+\lstset{breaklines,breakatwhitespace,breakautoindent=false,showstringspaces=false}
+\lstset{keywordstyle=\color{purple}}
+\lstset{identifierstyle=\color{blue}}
+\lstset{basicstyle=\fontfamily{pcr}\fontsize{9pt}{9pt}\selectfont}
+%\lstset{numbers=left, numberstyle=\tiny, stepnumber=1, numbersep=5pt}
+\lstset{linewidth=4.9in,xleftmargin=10pt}
+
+\definecolor{lightblue}{rgb}{0.0,0.45,0.81}
+\definecolor{lighterblue}{rgb}{0.415,0.678,0.894}
+\definecolor{darkblue}{rgb}{0,0.243,0.447}
+\setbeamercolor{frametitle}{bg=lightblue,fg=white}
+\setbeamerfont{normal text}{family=helvet}
+\setbeamerfont{local structure}{family=helvet}
+
+\setbeamercolor*{author in head/foot}{bg=darkblue}
+\setbeamercolor*{logo in head/foot}{bg=darkblue,fg=white}
+\setbeamercolor*{title in head/foot}{bg=darkblue,fg=white}
+\setbeamercolor*{date in head/foot}{bg=darkblue,fg=white}
+\setbeamercolor{title}{bg=darkblue}
+\setbeamercolor{under headline}{bg=lighterblue}
+\setbeamercolor{footline}{bg=darkblue}
+
+\setbeamerfont*{title in head/foot}{size=\small}
+\setbeamerfont*{date in head/foot}{size=\small}
+
+
+\setbeamertemplate{frametitle}
+{
+  \leavevmode%
+  \begin{beamercolorbox}[wd=\paperwidth,ht=1cm]{frametitle}
+   \hspace{1em}\insertframetitle\vspace{0.35cm}
+   \end{beamercolorbox}%
+   \vskip-0.4cm%
+  \begin{beamercolorbox}[wd=\paperwidth,ht=1ex]{under headline}%
+    \end{beamercolorbox}%
+	
+}
+
+%\setbeamerfont{frametitle}{series=\bfseries}
+\setbeamertemplate{footline}
+{
+  \leavevmode%
+  \hbox{%
+  \begin{beamercolorbox}[wd=.3\paperwidth,ht=0.8cm,center,dp=1ex]{logo in
+    head/foot}%
+  \usebeamerfont{logo in head/foot}\includegraphics[width=.25\paperwidth]{./UClogo_bg.png}%
+\end{beamercolorbox}%
+  \begin{beamercolorbox}[wd=.28\paperwidth,center,dp=1ex,ht=0.8cm]{title in head/foot}%
+    \usebeamerfont{title in head/foot}Machine Learning \& Compressive Sensing\vspace{0.05cm}
+  \end{beamercolorbox}%
+  \begin{beamercolorbox}[wd=.35\paperwidth,dp=1ex,center,ht=0.8cm]{date in head/foot}%
+    \usebeamerfont{date in head/foot}Laboratory for Scientific
+    Computing\vspace{0.05cm}
+\end{beamercolorbox}%
+\begin{beamercolorbox}[wd=0.07\paperwidth,ht=0.8cm,dp=1ex,right,topskip=1em]{date
+    in head/foot}%
+    \insertframenumber{} / \inserttotalframenumber\hspace*{2ex}\vspace{0.3cm}
+  \end{beamercolorbox}}%
+  \vskip0pt%
+}
+
+
+
+\title[Beamer Intro]{Compressive Sensing in Video Reconstruction: Demonstration}
+\author{Brian Azizi}
+\institute[LSC]{Laboratory for Scientific Computing, University of Cambridge}
+\date{\today}
+
+\begin{document}
+\begin{frame}
+  \titlepage
+  % \begin{tabbing}
+  %   Thanks to:  \= Dr Anita Faul (Supervisor)\\
+  %   \>Dr Nikos Nikiforakis\\
+  %   \>Georgios Pilikos
+  % \end{tabbing}
+\end{frame}
+
+% \begin{frame}{Demos}
+%   \begin{itemize}
+%     \item Uniform Mask
+%   \end{itemize}
+% \end{frame}
+
+\begin{frame}{Uniform Mask | $N = 0.3\,M$ | DCT basis}
+  \begin{figure}    
+    \movie{\includegraphics[widht=2in,height=2in]{zero.png}}{foreman_large_MASKED.avi}
+    \,
+    \movie{\includegraphics[widht=2in,height=2in]{zero.png}}{foreman_large_RECOVERED_1_OF_1.avi}\\
+    $\bs y$ \hspace{2in} $\hat{\bs v}$
+  \end{figure}
+PSNR = 26.47 dB. Relative Error = 6.88\%.
+\end{frame}
+
+\begin{frame}{Uniform Mask | $N = 0.3\,M$ | DCT basis}
+  \begin{figure}    
+    \movie{\includegraphics[widht=2in,height=2in]{zero.png}}{soccer_large_2_MASKED.avi}
+    \,
+    \movie{\includegraphics[widht=2in,height=2in]{zero.png}}{soccer_large_2_RECOVERED_1_OF_1.avi}\\
+    $\bs y$ \hspace{2in} $\hat{\bs v}$
+  \end{figure}
+PSNR = 25.26 dB. Relative Error = 9.53\%.
+\end{frame}
+
+\begin{frame}{Horizontal Lines Mask | $N = 0.3\,M$ | DCT basis}
+  \begin{figure}    
+    \movie{\includegraphics[widht=2in,height=2in]{zero.png}}{soccer_large_MASKED.avi}
+    \,
+    \movie{\includegraphics[widht=2in,height=2in]{zero.png}}{soccer_large_RECOVERED_1_OF_1.avi}\\
+    $\bs y$ \hspace{2in} $\hat{\bs v}$
+  \end{figure}
+PSNR = 21.15 dB. Relative Error = 15.29\%.
+\end{frame}
+
+\begin{frame}{Gaussian Sensor | $N = 0.3\,M$ | DCT basis}
+  \begin{figure}    
+    \movie{\includegraphics[widht=2in,height=2in]{zero.png}}{soccer_large_gauss_MEASUREMENTS.avi}
+    \,
+    \movie{\includegraphics[widht=2in,height=2in]{zero.png}}{soccer_large_gauss_RECOVERED_1_OF_1.avi}\\
+    $\bs y$ \hspace{2in} $\hat{\bs v}$
+  \end{figure}
+PSNR = 25.12 dB. Relative Error = 9.69\%.
+\end{frame}
+
+\begin{frame}{Missing Frames | $N = 0.3\,M$ | DCT basis}
+  \begin{figure}    
+    \movie{\includegraphics[widht=2in,height=2in]{zero.png}}{foreman_large_frames_MASKED.avi}
+    \,
+    \movie{\includegraphics[widht=2in,height=2in]{zero.png}}{foreman_large_frames_RECOVERED_1_OF_1.avi}\\
+    $\bs y$ \hspace{2in} $\hat{\bs v}$
+  \end{figure}
+%PSNR = 21.15 dB. Relative Error = 15.29\%.
+\end{frame}
+
+\begin{frame}{Uniform Mask | $N = 0.3\,M$ | Haar Cascade}
+  \begin{figure}    
+    \movie{\includegraphics[widht=1in,height=1in]{zero.png}}{foreman_haar_MASKED.avi}
+    \movie{\includegraphics[widht=1in,height=1in]{zero.png}}{foreman_haar_RECOVERED_1_OF_3.avi}\\
+    \movie{\includegraphics[widht=1in,height=1in]{zero.png}}{foreman_haar_RECOVERED_2_OF_3.avi}    
+    \movie{\includegraphics[widht=1in,height=1in]{zero.png}}{foreman_haar_RECOVERED_3_OF_3.avi}\\
+%    $\bs y$ \hspace{2in} $\hat{\bs v}$
+  \end{figure}
+%PSNR = 25.12 dB. Relative Error = 9.69\%.
+\end{frame}
+
+
+
+\begin{frame}{Originals}
+  \begin{figure}    
+    \movie{\includegraphics[widht=2in,height=2in]{zero.png}}{foreman_256-256-256.avi}
+    \,
+    \movie{\includegraphics[widht=2in,height=2in]{zero.png}}{soccer_256-256-256.avi}\\
+    Foreman \hspace{2in} Soccer
+  \end{figure}
+\end{frame}
+
+
+\end{document}
