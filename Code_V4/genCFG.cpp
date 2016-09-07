@@ -24,7 +24,7 @@ int main()
     std::string conv = "convertToMedia = 0\n";
     std::string sigma = "stdDev = 1\n";
     std::string mm = "maskMode = uniform\n";
-    std::string rng = "rngSeed = 20081993\n";
+    std::string rng = "rngSeed = 20081424\n";
     // Desired params
     std::vector<double> perc;
     for (double i = 10; i <= 100; i += 10) perc.push_back(i);
