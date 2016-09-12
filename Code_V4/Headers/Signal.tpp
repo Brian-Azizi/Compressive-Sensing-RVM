@@ -4,6 +4,7 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <iomanip>
 #include <cmath>
 #include <cstdlib>
 #include <random>
@@ -374,7 +375,7 @@ template <typename T> std::ostream& operator<<(std::ostream& os, const Signal<T>
     for (int k = 0; k < f; ++k) {
 	for (int i = 0; i < h; ++i) {
 	    for (int j = 0; j < w; ++j) {
-		os << s(i,j,k) << " ";
+		os << std::setw(8) << s(i,j,k) << " ";
 	    }
 	    os << "\n";
 	}
@@ -1157,7 +1158,8 @@ Signal<double> getBasis(int height, int width, int frames, SignalBasis::mode bas
     Signal<double> ret(height*width*frames, height*width*frames);
     switch (basisMode) {
     case SignalBasis::haar:
-	ret = haarBasis(height, width, frames, scale);
+	//ret = haarBasis(height, width, frames, scale);  // BUG: height and width need to be swapped
+	ret = haarBasisDirect(height, width, frames, scale);
 	return ret;
     case SignalBasis::dct:
 	ret = dctBasis(height, width, frames);
@@ -1171,53 +1173,154 @@ Signal<double> getBasis(Dim dim, SignalBasis::mode basisMode, int scale)
 }
 
 
-/* NOT YET IMPLEMENTED */
-// Signal<double> haarBasisDirect2D(int h, int w, int scale)
-// {
-//     Signal<double> ret(h*w,h*w);
-//     // Haar coefficients
-//     double h0 = 1/std::sqrt(2);
-//     double h1 = h0;
-//     double g0 = h0;
-//     double g1 = -h0;
+Signal<double> haarBasisDirect2D(int h, int w, int scale)
+{
+    Signal<double> ret(h*w,h*w);
+       
+    Signal<double> wavelet(h,w); // container holding the 2D wavelet
+    double x,y;
+    int k = 0;
+    for (int i = 0; i < h; ++i) {
+	for (int j = 0; j < w; ++j) {
+	    for (int hidx = 0; hidx < h; ++hidx) {
+		for (int widx = 0; widx < w; ++widx) {
+		    x = h * hidx/(double)(h-1);
+		    y = w * widx/(double)(w-1);	    	    		    
+		    wavelet(hidx,widx) = haar2D(h,w,i,j, scale,x,y);		    
+		}
+	    }
+	    for (int idx = 0; idx < wavelet.size(); ++idx)
+		ret(idx,k) = wavelet.data()[idx];
+	    ++k;	    
+	}
+    }
     
-//     Signal<double> haarHH(h,w,false);
-//     haarHH.fill(h0*h1);
-//     Signal<double> haarHG = haarHH;
-//     Signal<double> haarGH = haarHH;
-//     Signal<double> haarGG = haarHH;
+    if (k != h*w) error("HAAR: internal error");
 
-//     for (int i = h/2; i < h; ++i)
-// 	for (int j = 0; j < w; ++j)
-// 	    haarHG(i,j) = - haarHH(i,j);
+    return ret;
+}    
+
+double haar2D(int h, int w, int i, int j, int scale, double x, double y) 
+{
+    double ret;
+    int s = 1;
+
+    if (i < h/2 && j < w/2) 
+	if (scale == 1)
+	    ret = haarPhi(s,i,x) * haarPhi(s,j,y);
+	else
+	    return 0.5*haar2D(h/2,w/2,i,j,scale - 1,x/2,y/2);
+    else if (i < h/2 && !(j < w/2)) 
+	ret = haarPhi(s,i,x) * haarPsi(s,j-w/2,y);
+    else if (!(i < h/2) && j < w/2) 
+	ret = haarPsi(s,i-h/2,x) * haarPhi(s,j,y);
+    else if (!(i < h/2) && !(j < w/2)) 
+	ret = haarPsi(s,i-h/2,x) * haarPsi(s,j-w/2,y);
+    else
+	error("HAAR: internal error");
     
-//     for (int j = w/2; j < w; ++j)
-// 	for (int i = 0; i < h; ++i)
-// 	    haarGH(i,j) = - haarHH(i,j);
+    return ret;
+}
 
-//     for (int j = w/2; j < w; ++j)
-// 	for (int i = 0; i < h/2; ++i)
-// 	    haarGG(i,j) = -haarHH(i,j);
-//     for (int j = 0; j < w/2; ++j)
-// 	for (int i = h/2; i < h; ++i)
-// 	    haarGG(i,j) = -haarHH(i,j);
+double haar3D(int h, int w, int f, int i, int j, int k, int scale, double x, double y, double z) 
+{
+    double ret;
+    int s = 1;
+
+    if (i < h/2 && j < w/2 && k < f/2) 
+	if (scale == 1)
+	    ret = haarPhi(s,i,x) * haarPhi(s,j,y) * haarPhi(s,k,z);
+	else
+	    return std::pow(2,-3) * haar3D(h/2,w/2,f/2,i,j,k,scale - 1,x/2,y/2,z/2);
+
+    else if (i < h/2 && !(j < w/2) && k < f/2) 
+	ret = haarPhi(s,i,x) * haarPsi(s,j-w/2,y) * haarPhi(s,k,z);
+    else if (!(i < h/2) && j < w/2 && k < f/2) 
+	ret = haarPsi(s,i-h/2,x) * haarPhi(s,j,y) * haarPhi(s,k,z);
+    else if (!(i < h/2) && !(j < w/2) && k < f/2) 
+	ret = haarPsi(s,i-h/2,x) * haarPsi(s,j-w/2,y) * haarPhi(s,k,z);
+
+    else if (i < h/2 && j < w/2 && !(k < f/2))
+	ret = haarPhi(s,i,x) * haarPhi(s,j,y) * haarPsi(s,k-f/2,z);    
+    else if (i < h/2 && !(j < w/2) && !(k < f/2))
+	ret = haarPhi(s,i,x) * haarPsi(s,j-w/2,y) * haarPsi(s,k-f/2,z);
+    else if (!(i < h/2) && j < w/2 && !(k < f/2))
+	ret = haarPsi(s,i-h/2,x) * haarPhi(s,j,y) * haarPsi(s,k-f/2,z);
+    else if (!(i < h/2) && !(j < w/2) && !(k < f/2))
+	ret = haarPsi(s,i-h/2,x) * haarPsi(s,j-w/2,y) * haarPsi(s,k-f/2,z);
+    else
+	error("HAAR: internal error");
     
-	 
-//     Signal<double> wavelet(h,w); // container holding the 2D wavelet
+    return ret;
+}
+
+Signal<double> haarBasisDirect(int h, int w, int f, int scale)
+{
+    if (f == 1)
+	return haarBasisDirect2D(h,w,scale);
+
+    Signal<double> ret(h*w*f,h*w*f);
+       
+    Signal<double> wavelet(h,w,f); // container holding the 2D wavelet
+    double x,y,z;
+    int b = 0;
+    for (int i = 0; i < h; ++i) {
+	for (int j = 0; j < w; ++j) {
+	    for (int k = 0; k < f; ++k) {
+
+		for (int hidx = 0; hidx < h; ++hidx) {
+		    for (int widx = 0; widx < w; ++widx) {
+			for (int fidx = 0; fidx < f; ++fidx) {
+			    x = h * hidx/(double)(h-1);
+			    y = w * widx/(double)(w-1);	    	    		    
+			    z = f * fidx/(double)(f-1);	    	    		    
+			    wavelet(hidx,widx,fidx) = haar3D(h,w,f,i,j,k,scale,x,y,z);		    
+			}
+		    }
+		}
+
+		for (int idx = 0; idx < wavelet.size(); ++idx)
+		    ret(idx,b) = wavelet.data()[idx];
+		++b;	    
+	    }
+	}
+    }
     
-    
+    if (b != h*w*f) error("HAAR: internal error");
 
+    return ret;    
+}
 
-//     return ret;
-// }    
+double haarFather(double x)
+{
+    if (0. <= x && x <= 1.)
+	return 1.0;
+    else 
+	return 0.;   
+}
 
-// Signal<double> haarBasisDirect(int h, int w, int f, int scale)
-// {
-//     if (f == 1)
-// 	return haarBasisDirect2D(h,w,scale);
+double haarMother(double x)
+{
+    if (0. <= x && x < 0.5)
+	return 1.0;
+    else if (0.5 <= x && x <= 1.0)
+	return -1.0;
+    else
+	return 0.0;	    
+}
 
-//     return Signal<double>(h*w*f,h*w*f);
-// }
+double haarPhi(int s, int k, double x)
+{
+    if (s < 0) error("HAAR: Scale cannot be negative");
+    //    if (k < 0 || !(k < std::pow(2,s))) error("HAAR: k must be between 0 and 2^s - 1");
+    return std::pow(2,-0.5*s) * haarFather(std::pow(2,-s) * x - k);
+}
 
+double haarPsi(int s, int k, double x)
+{
+    if (s < 0) error("HAAR: Scale cannot be negative");
+    //if (k < 0 || !(k < std::pow(2,s))) error("HAAR: k must be between 0 and 2^s - 1");
+    return std::pow(2,-0.5*s) * haarMother(std::pow(2,-s) * x - k);
+}
 
 #endif

@@ -151,10 +151,15 @@ Signal<double> dctBasis(int height, int width, int frames); // 3D
 Signal<double> getBasis(int height, int width, int frames, SignalBasis::mode basisMode, int scale = 1);
 Signal<double> getBasis(Dim dim, SignalBasis::mode basisMode, int scale = 1);
 
-/* NOT YET IMPLEMENTED */
-// Signal<double> haarBasisDirect(int height, int width, int frames, int scale); // Compute Haar Basis matrix directly 
-// Signal<double> haarBasisDirect2D(int height, int width, int scale);
 
+Signal<double> haarBasisDirect(int height, int width, int frames, int scale); // Compute Haar Basis matrix directly 
+Signal<double> haarBasisDirect2D(int height, int width, int scale);
+double haarMother(double);
+double haarFather(double);
+double haarPhi(int s, int k, double x);
+double haarPsi(int s, int k, double x);
+double haar2D(int h, int w, int i, int j, int s, double x, double y);
+double haar3D(int h, int w, int f, int i, int j, int k, int scale, double x, double y, double z);
 
 // Implementation
 #include "Signal.tpp"
