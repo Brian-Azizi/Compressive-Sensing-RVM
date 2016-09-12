@@ -1,10 +1,10 @@
 %% Script to generate pictures that display the 2D Haar wavelets at different scales.
 
-topScale = 3;  % Set the maximum scale
+topScale = 4;  % Set the maximum scale
 
 N = 2^topScale;  % Number of "pixels" in each dimension. Set to lowest value that still supports the chosen scale.
 
-n = 501;  % resolution of the grid (increase for higher quality plot)
+n = 301;  % resolution of the grid (increase for higher quality plot)
 b=ceil(0.3*n);  % border inside the grid
 
 

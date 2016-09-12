@@ -19,13 +19,13 @@ function P = haarMatrix2D(N,scale)
 
     k = 1;
     P = zeros(N*N);
-    for i=0:N-1
-        for j=0:N-1
+    for j=0:N-1
+        for i=0:N-1
             [u,v] = meshgrid(linspace(0,N,n));
             
             F = haar2D(N,u,v,i,j,s);                        
             
-            P(:,k) = reshape(F',N*N,1);
+            P(:,k) = reshape(F,N*N,1);
             k = k+1;
         end
     end

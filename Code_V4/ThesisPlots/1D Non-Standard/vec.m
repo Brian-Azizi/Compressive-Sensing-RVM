@@ -16,7 +16,13 @@ function B = vec(A,p,q)
     n = nq/q;
     
     B = zeros(m*n,p*q);
-    
-    
         
+    k = 1;
+    for j = 1:n
+        for i = 1:m
+            temp = A((i-1)*p+1:i*p,(j-1)*q+1:j*q);
+            B(k,:) = temp(:)';
+            k = k+1;
+        end
+    end    
 end
