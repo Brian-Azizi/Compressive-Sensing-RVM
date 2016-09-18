@@ -161,6 +161,9 @@ double haarPsi(int s, int k, double x);
 double haar2D(int h, int w, int i, int j, int s, double x, double y);
 double haar3D(int h, int w, int f, int i, int j, int k, int scale, double x, double y, double z);
 
+Signal<double> gaussianBasis(int height, int width, int frames, double concentration);
+Signal<double> gaussianRBF3D(int h, int w, int f, int i, int j, int k, double concentration);
+
 // Implementation
 #include "Signal.tpp"
 

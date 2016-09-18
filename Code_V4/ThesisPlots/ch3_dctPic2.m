@@ -16,6 +16,6 @@ for i=0:N-1
     end
 end
 
-% figure, imagesc(P), colormap(gray), axis off, axis square;
+figure, imagesc(P), colormap(gray), axis off, axis square;
 
-imwrite(P,'dct2functions.png');
+% imwrite(P,'dct2functions.png');

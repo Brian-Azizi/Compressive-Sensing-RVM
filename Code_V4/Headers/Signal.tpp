@@ -375,7 +375,8 @@ template <typename T> std::ostream& operator<<(std::ostream& os, const Signal<T>
     for (int k = 0; k < f; ++k) {
 	for (int i = 0; i < h; ++i) {
 	    for (int j = 0; j < w; ++j) {
-		os << std::setw(8) << s(i,j,k) << " ";
+	      os << std::setw(8) << s(i,j,k) << " ";
+	      //os << s(i,j,k) << " ";
 	    }
 	    os << "\n";
 	}
@@ -1155,10 +1156,11 @@ Signal<double> dctBasis(int h, int w, int f)
 
 Signal<double> getBasis(int height, int width, int frames, SignalBasis::mode basisMode, int scale)
 {
-    Signal<double> ret(height*width*frames, height*width*frames);
+  //return gaussianBasis(height,width,frames,0.0001); // Don't forget to remove this line!!
+  Signal<double> ret(height*width*frames, height*width*frames);
     switch (basisMode) {
     case SignalBasis::haar:
-	//ret = haarBasis(height, width, frames, scale);  // BUG: height and width need to be swapped
+      //ret = haarBasis(height, width, frames, scale);  // BUG: height and width need to be swapped
 	ret = haarBasisDirect(height, width, frames, scale);
 	return ret;
     case SignalBasis::dct:
@@ -1323,4 +1325,40 @@ double haarPsi(int s, int k, double x)
     return std::pow(2,-0.5*s) * haarMother(std::pow(2,-s) * x - k);
 }
 
+Signal<double> gaussianBasis(int h, int w, int f, double c)
+{
+  Signal<double> rbf(h,w,f);
+  Signal<double> ret(h*w*f,h*w*f);
+
+  int col = 0;
+  for (int fidx = 0; fidx < f; ++fidx) {
+    for (int hidx = 0; hidx < h; ++hidx) {
+      for (int widx = 0; widx < w; ++widx) {
+	rbf = gaussianRBF3D(h,w,f,hidx,widx,fidx,c);
+	std::cout << rbf << std::endl;
+	for(int idx = 0; idx < h*w*f; ++idx) {
+	  ret(idx,col) = rbf.data()[idx];
+	}
+	++col;
+      }
+    }
+  }
+
+  
+  return ret;
+}
+
+Signal<double> gaussianRBF3D(int h, int w, int f, int hidx, int widx, int fidx, double c)
+{
+  Signal<double> ret(h,w,f);
+  for (int i = 0; i < h; ++i) {
+    for (int j = 0; j < w; ++j) {
+      for (int k = 0; k < f; ++k) {
+	ret(i,j,k) = std::exp(-c * ((i-hidx)*(i-hidx)+(j-widx)*(j-widx)+(k-fidx)*(k-fidx)));
+      }
+    }
+  }
+    
+  return ret;
+}
 #endif
