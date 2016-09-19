@@ -148,8 +148,8 @@ Signal<double> dctMatrix(int dim); // 1D
 Signal<double> dctBasis2D(int height, int wwidth); // 2D 
 Signal<double> dctBasis(int height, int width, int frames); // 3D
 // Interface for getting basis matrix basis on the basisMode setting
-Signal<double> getBasis(int height, int width, int frames, SignalBasis::mode basisMode, int scale = 1);
-Signal<double> getBasis(Dim dim, SignalBasis::mode basisMode, int scale = 1);
+Signal<double> getBasis(int height, int width, int frames, SignalBasis::mode basisMode, int scale = 1, double concentration = 0);
+Signal<double> getBasis(Dim dim, SignalBasis::mode basisMode, int scale = 1, double concentration = 0);
 
 
 Signal<double> haarBasisDirect(int height, int width, int frames, int scale); // Compute Haar Basis matrix directly 

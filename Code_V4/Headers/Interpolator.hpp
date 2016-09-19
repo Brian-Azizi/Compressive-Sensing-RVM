@@ -101,7 +101,7 @@ void Interpolator::run()
 
     /*** Get basis matrices for various scales ***/
     for (int scale = 0; scale < cfg.numCascades; ++scale)
-	cascadeBasis.push_back(getBasis(block.dim(), cfg.basisMode, cfg.startScale+scale));
+	cascadeBasis.push_back(getBasis(block.dim(), cfg.basisMode, cfg.startScale+scale, cfg.concentration));
 
     /*** Reconstruct the signal ***/
     if (cfg.printProgress && cfg.rank==0) std::cout << "\t*** Start Reconstruction ***\n";

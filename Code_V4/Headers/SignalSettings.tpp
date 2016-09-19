@@ -140,10 +140,15 @@ void SignalSettings::initParameters() {
     std::string basisFunctionMode = cfg.getValueOfKey<std::string>("basisMode", "dct");    
     endScale = cfg.getValueOfKey<int>("basisEndScale", 1);
     startScale = cfg.getValueOfKey<int>("basisStartScale", 1);
-    if (basisFunctionMode == "dct") {
-	if (rank == 0) std::cout << "CFG: Using DCT basis - ignoring 'basisEndScale' and 'basisStartScale'.\n";
+    concentration = cfg.getValueOfKey<double>("concentration", 0);
+    if (basisFunctionMode != "haar") {
+	if (rank == 0) std::cout << "CFG: Not using Haar basis - ignoring 'basisEndScale' and 'basisStartScale'.\n";
 	startScale = 1;
 	endScale = 1;
+    }
+    if (basisFunctionMode != "rbf") {
+	if (rank == 0) std::cout << "CFG: Not using gaussian RBF - ignoring 'concentration' parameter.\n";
+	concentration = 0;
     }
     try {
 	basisMode = strToBasisMode(basisFunctionMode);
@@ -266,13 +271,18 @@ std::ostream& operator<<(std::ostream& os, const SignalSettings& setting)
     os << "\nSignal Basis Mode:\t\t" << modeToString(setting.basisMode);
     if (!setting.cfg.keyExists("basisMode")) os << "\t\t(default)";
     
-    if (setting.basisMode != SignalBasis::dct) {
+    if (setting.basisMode == SignalBasis::haar) {
 	os << "\nSignal Basis Start Scale:\t" << setting.startScale;
 	if (!setting.cfg.keyExists("basisStartScale")) os << "\t\t(default)";
 	os << "\nSignal Basis End Scale:\t\t" << setting.endScale;
 	if (!setting.cfg.keyExists("basisEndScale")) os << "\t\t(default)";
     }
     
+    if (setting.basisMode == SignalBasis::rbf) {
+	os << "\nRBF Concentration Parameter:\t" << setting.concentration;
+	if (!setting.cfg.keyExists("concentration")) os << "\t\t(default)";    
+    }
+
     os << "\nRVM std deviation:\t\t" << setting.stdDev;
     if (!setting.cfg.keyExists("stdDev")) os << "\t\t(default)";
     os << "\nRVM delta ML threshold:\t\t" << setting.deltaML_threshold ;
@@ -320,9 +330,10 @@ std::string helpMessage(const std::string& argv_0)
        << "  sensorMode\t\tType of sensing matrix (mask, gaussian, bernoulli) (default: mask; ignored if simulateCorruption=0)\n"
        << "  maskMode\t\tDecimation pattern of simulated mask. (Default: uniform. Ignored if sensorMode is not mask)\n"       
        << "  maskFill\t\tIf 1, fill up the recovered signals with original measurements for masked signals (default: 1)\n"
-       << "  basisMode\t\tType of basis transform. Possible values: haar, dct (default: dct)\n"
-       << "  basisStartScale\t\tMinimum scale of basis functions (default: 1; ignored if using dct)\n"
-       << "  basisEndScale\t\tMaximum scale of basis functions (default: 1; ignored if using dct)\n"
+       << "  basisMode\t\tType of basis transform. Possible values: haar, dct, rbf (default: dct)\n"
+       << "  basisStartScale\tMinimum scale of basis functions (default: 1; ignored if not using haar)\n"
+       << "  basisEndScale\t\tMaximum scale of basis functions (default: 1; ignored if not using haar)\n"
+       << "  concentration\t\tConcentration parameter for gaussian RBF (default: 0; ignored if not using rbf)\n"
        << "  stdDev\t\tStandard deviation of the noise in the RVM (default: 1.0)\n"
        << "  deltaML_threshold\tThreshold for change in marginal likelihood in the RVM (default: 1.0)\n"
        << "  rngSeed\t\tSeed for random number generator for reproducability (optional)\n"
@@ -357,8 +368,9 @@ std::string longHelpMessage(const std::string& argv_0)
        << "  maskMode\t\tDecimation pattern of simulated mask. Possible values: uniform, timeRays, verticalFlicker, horizontalFlicker, missingFrames, verticalLines, horizontalLines (default: uniform; ignored if we are not simulating corruption or not using 'mask' as sensor mode)\n"       
        << "  maskFill\t\tIf 1 and simulating a sensormode = mask, we fill up the recovered signals with original measurements where available\n"
        << "  basisMode\t\tForm of basis functions used to represent the signal. Possible values: haar, dct (default: dct)\n"
-       << "  basisStartScale\t\tMinimum scale of basis functions (default: 1; ignored if using dct)\n"
-       << "  basisEndScale\t\tMaximum scale of basis functions (default: 1; ignored if using dct)\n"
+       << "  basisStartScale\tMinimum scale of basis functions (default: 1; ignored if not using haar)\n"
+       << "  basisEndScale\t\tMaximum scale of basis functions (default: 1; ignored if not using haar)\n"
+       << "  concentration\t\tConcentration parameter for Gaussian RBF. Larger concentration leads to more strongly peaked RBF. (default: 0; ignored if not using rbf)\n"
        << "  stdDev\t\tStandard deviation of the noise in the RVM (default: 1.0)\n"
        << "  deltaML_threshold\tThreshold for change in marginal likelihood in the RVM (default: 1.0)\n"
        << "  rngSeed\t\tSeed for random number generator for reproducability (default: set to current time)\n"
