@@ -1258,7 +1258,7 @@ double haar3D(int h, int w, int f, int i, int j, int k, int scale, double x, dou
 
 Signal<double> haarBasisDirect(int h, int w, int f, int scale)
 {
-    if (h < 1 || w < 1 || f < 1) error("HAAR: Dimensions must be positive integers")
+    if (h < 1 || w < 1 || f < 1) error("HAAR: Dimensions must be positive integers");
     if (f == 1)
 	return haarBasisDirect2D(h,w,scale);
 
