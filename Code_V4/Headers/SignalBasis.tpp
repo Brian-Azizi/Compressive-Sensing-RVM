@@ -8,7 +8,7 @@
 #include "Signal.hpp"
 
 // static data
-const std::string SignalBasis::modeString[] = {"dct", "haar"};
+const std::string SignalBasis::modeString[] = {"dct", "haar", "rbf"};
 
 // constructers
 SignalBasis::SignalBasis(const std::string& m, int s)

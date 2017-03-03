@@ -6,7 +6,7 @@
 /*** simple class for basis function Mode ***/
 class SignalBasis{
 public:
-    enum mode {dct, haar};
+    enum mode {dct, haar, rbf};
 
     // Constructers    
     SignalBasis() : m_scale(1), m_setting(dct) { check(); }
@@ -25,7 +25,7 @@ public:
     
     // static data
     static const std::string modeString[];
-    static const int numModes = 2;
+    static const int numModes = 3;
     
     // check validity of data
     void check() const;

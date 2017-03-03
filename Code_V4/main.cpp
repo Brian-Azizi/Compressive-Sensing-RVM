@@ -1,4 +1,4 @@
-#define USE_MPI			// Comment out if MPI is not used
+//#define USE_MPI			// Comment out if MPI is not used
 
 #include <climits>
 #include <cstdlib>

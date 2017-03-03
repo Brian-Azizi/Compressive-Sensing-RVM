@@ -1154,24 +1154,24 @@ Signal<double> dctBasis(int h, int w, int f)
 
 
 
-Signal<double> getBasis(int height, int width, int frames, SignalBasis::mode basisMode, int scale)
+Signal<double> getBasis(int height, int width, int frames, SignalBasis::mode basisMode, int scale, double concentration)
 {
-  //return gaussianBasis(height,width,frames,0.0001); // Don't forget to remove this line!!
-  Signal<double> ret(height*width*frames, height*width*frames);
     switch (basisMode) {
     case SignalBasis::haar:
-      //ret = haarBasis(height, width, frames, scale);  // BUG: height and width need to be swapped
-	ret = haarBasisDirect(height, width, frames, scale);
-	return ret;
+	//ret = haarBasis(height, width, frames, scale);  // BUG: height and width need to be swapped
+	return haarBasisDirect(height, width, frames, scale);
     case SignalBasis::dct:
-	ret = dctBasis(height, width, frames);
-	return ret;
+	return dctBasis(height, width, frames);
+    case SignalBasis::rbf:	
+	return gaussianBasis(height,width,frames,concentration);	
+    default:
+	error("getBasis: Basis function setting not recognised");
     }
 }
 
-Signal<double> getBasis(Dim dim, SignalBasis::mode basisMode, int scale)
+Signal<double> getBasis(Dim dim, SignalBasis::mode basisMode, int scale, double concentration)
 {
-    return getBasis(dim.height(), dim.width(), dim.frames(), basisMode, scale);
+    return getBasis(dim.height(), dim.width(), dim.frames(), basisMode, scale, concentration);
 }
 
 
@@ -1258,6 +1258,7 @@ double haar3D(int h, int w, int f, int i, int j, int k, int scale, double x, dou
 
 Signal<double> haarBasisDirect(int h, int w, int f, int scale)
 {
+    if (h < 1 || w < 1 || f < 1) error("HAAR: Dimensions must be positive integers");
     if (f == 1)
 	return haarBasisDirect2D(h,w,scale);
 
@@ -1280,14 +1281,12 @@ Signal<double> haarBasisDirect(int h, int w, int f, int scale)
 			}
 		    }
 		}
-
 		for (int idx = 0; idx < wavelet.size(); ++idx)
 		    ret(idx,b) = wavelet.data()[idx];
 		++b;	    
 	    }
 	}
-    }
-    
+    }   
     if (b != h*w*f) error("HAAR: internal error");
 
     return ret;    
@@ -1314,51 +1313,52 @@ double haarMother(double x)
 double haarPhi(int s, int k, double x)
 {
     if (s < 0) error("HAAR: Scale cannot be negative");
-    //    if (k < 0 || !(k < std::pow(2,s))) error("HAAR: k must be between 0 and 2^s - 1");
     return std::pow(2,-0.5*s) * haarFather(std::pow(2,-s) * x - k);
 }
 
 double haarPsi(int s, int k, double x)
 {
     if (s < 0) error("HAAR: Scale cannot be negative");
-    //if (k < 0 || !(k < std::pow(2,s))) error("HAAR: k must be between 0 and 2^s - 1");
     return std::pow(2,-0.5*s) * haarMother(std::pow(2,-s) * x - k);
 }
 
 Signal<double> gaussianBasis(int h, int w, int f, double c)
 {
-  Signal<double> rbf(h,w,f);
-  Signal<double> ret(h*w*f,h*w*f);
+    if (h < 1 || w < 1 || f < 1) error("RBF: each dimension must be greater than 0");
 
-  int col = 0;
-  for (int fidx = 0; fidx < f; ++fidx) {
-    for (int hidx = 0; hidx < h; ++hidx) {
-      for (int widx = 0; widx < w; ++widx) {
-	rbf = gaussianRBF3D(h,w,f,hidx,widx,fidx,c);
-	std::cout << rbf << std::endl;
-	for(int idx = 0; idx < h*w*f; ++idx) {
-	  ret(idx,col) = rbf.data()[idx];
+    Signal<double> rbf(h,w,f);
+    Signal<double> ret(h*w*f,h*w*f);
+    
+    int col = 0;
+    for (int fidx = 0; fidx < f; ++fidx) {
+	for (int hidx = 0; hidx < h; ++hidx) {
+	    for (int widx = 0; widx < w; ++widx) {
+		rbf = gaussianRBF3D(h,w,f,hidx,widx,fidx,c);		
+		for(int idx = 0; idx < h*w*f; ++idx) {
+		    ret(idx,col) = rbf.data()[idx];
+		}
+		++col;
+	    }
 	}
-	++col;
-      }
-    }
-  }
-
-  
-  return ret;
+    }        
+    return ret;
 }
 
 Signal<double> gaussianRBF3D(int h, int w, int f, int hidx, int widx, int fidx, double c)
 {
-  Signal<double> ret(h,w,f);
-  for (int i = 0; i < h; ++i) {
-    for (int j = 0; j < w; ++j) {
-      for (int k = 0; k < f; ++k) {
-	ret(i,j,k) = std::exp(-c * ((i-hidx)*(i-hidx)+(j-widx)*(j-widx)+(k-fidx)*(k-fidx)));
-      }
+    if (h < 1 || w < 1 || f < 1) error("RBF: each dimension must be greater than 0");    
+    if (hidx >= h || widx >= w || fidx > f) error("RBF: index outside range");
+    if (c < 0) std::cerr << "RBF Warning: concentration parameter is negative" << std::endl;
+
+    Signal<double> ret(h,w,f);
+    for (int i = 0; i < h; ++i) {
+	for (int j = 0; j < w; ++j) {
+	    for (int k = 0; k < f; ++k) {
+		ret(i,j,k) = std::exp(-c * ((i-hidx)*(i-hidx)+(j-widx)*(j-widx)+(k-fidx)*(k-fidx)));
+	    }
+	}
     }
-  }
     
-  return ret;
+    return ret;
 }
 #endif

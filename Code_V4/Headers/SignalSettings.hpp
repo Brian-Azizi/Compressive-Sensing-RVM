@@ -33,6 +33,7 @@ struct SignalSettings {
     int startScale;		// initial scale of basis functions (ignored if basisMode == dct)
     int endScale;		// final scale of basis functions (ignored if basisMode == dct)
     int numCascades;		// total number of cascades in the algorithm (= endScale - startScale + 1)
+    double concentration;	// concentration parameter for Gaussian RBF
     Dim blockDim;		// hold dimensions of the signal blocks
     Dim signalDim;		// holds dimensions of input signal
     bool printProgress;		// if yes, we print direct output to a log file instead of stdout
