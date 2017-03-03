@@ -1,4 +1,5 @@
 # Compressive Sensing in Video Reconstruction #
+zsh:1: command not found: y
 by Brian Azizi
 
 Supervisor: Dr Anita Faul
